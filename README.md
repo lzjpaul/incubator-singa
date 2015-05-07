@@ -24,8 +24,8 @@ these steps to preview the website on you own Github site:
 
 After finishing updating the website, commiters can submit their commits as
 follows.
-**Make sure that you have changed back the BASE_URL to "/singa" if you have previewed.**
-it on your own Github site.
+(*Make sure that you have changed back the BASE_URL to "/singa" if you have previewed.
+it on your own Github site.*)
 
     # done only once
     git add upstream git://git.apache.org/incubator-singa.git
