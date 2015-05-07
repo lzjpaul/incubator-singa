@@ -50,10 +50,10 @@ Download the dataset and create the data shards for training and testing.
 
     cd examples/cifar10/
     make download
-    make shard
+    make create
 
 A training dataset and a test dataset are created under *train-shard* and
-*test-shard* folder respectively. A mena.shard file is also generated, which
+*test-shard* folder respectively. A image_mean.bin file is also generated, which
 contains the feature mean of all images.
 <!--After creating the data shards, you  to update the paths in the
 model configuration file (*model.conf*) for the
@@ -87,7 +87,7 @@ Start the training by running:
 
     #goto top level folder
     cd ..
-    ./build/singa -model=examples/cifar10/model.conf -cluster=examples/cifar10/cluster.conf
+    ./singa -model=examples/cifar10/model.conf -cluster=examples/cifar10/cluster.conf
 
 #### Training with data Partitioning
 

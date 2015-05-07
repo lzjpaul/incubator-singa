@@ -10,8 +10,16 @@ Please follow the [quick start]({{ BASE_PATH }}{% post_url /docs/2015-01-10-quic
 guide to download, install and run SINGA.
 
 ### Documentation
+* Documentations are listed [here]({{ BASE_PATH }}/docs.html).
 * Code API can be found [here]({{ BASE_PATH }}/api/index.html).
-* Documentations are listed [here]({{ BASE_PATH }}/docs.html)
+
+### Contribute
+
+* Please subscribe to our development mailing list dev@singa.incubator.apache.org.
+* If you find any issues using SIGNA, please report it to the
+[Issue Tracker](https://issues.apache.org/jira/browse/singa).
+
+More details on contributing to SINGA is describe [here]({{ BASE_PATH }}/community.html).
 
 ### License
 SINGA is released under [Apache License Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
