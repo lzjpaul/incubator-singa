@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>{{ page.title }}</title>
+    {% if page.description %}<meta name="description" content="{{ page.description }}">{% endif %}
+    <meta name="author" content="{{ site.author.name }}">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="{{ ASSET_PATH }}/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="{{ ASSET_PATH }}/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ ASSET_PATH }}/css/favicon.ico">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  -->
+
+    <!-- atom & rss feed -->
+    <link href="{{ BASE_PATH }}{{ site.JB.atom_path }}" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="{{ BASE_PATH }}{{ site.JB.rss_path }}" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+    <!-- toc -->
+    <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+    <script src="{{ ASSET_PATH }}/js/toc.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+        $('#toc').toc();
+        });
+    </script>
+    <style >
+        .clickable-header {
+            cursor:pointer;
+        }
+        .clickable-header:hover {
+            text-decoration:underline;
+        }
+        .top-level-header {
+            display:inline;
+        }
+        .back-to-top {
+            margin-left:5px;
+              cursor:pointer;
+        }
+        #backtotop {
+          position: fixed;
+          left: 50%;
+          bottom: 100px;
+          margin-left:520px;
+          width: 30px;
+          height: 30px;
+        }
+        #toc, .toc, .mw-warning {
+          background-color: #FFF;
+          border-left: 1px solid #AAAAAA;
+          font-size: 95%;
+          padding-top: 45px;
+          position: fixed;
+          top: 0px;
+          left: 50%;
+          margin-left: 520px;
+        }
+        #toc strong{
+          margin:20px;
+        }
+    </style>
+
+  </head>
+
+  <body>
+  <div id="topanchor"></div>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-narrow">
+          <a class="brand" href="{{ HOME_PATH }}">{{ site.title }}</a>
+          <ul class="nav">
+            {% assign pages_list = site.pages %}
+            {% assign group = 'navigation' %}
+            {% include JB/pages_list %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div id="banner">
+  <a href="https://github.com/apache/incubator-singa" style="float: left"><img style="position: relative; top: -9px;
+    left: 0; border: 0;"
+    src="https://camo.githubusercontent.com/8b6b8ccc6da3aa5722903da7b58eb5ab1081adee/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6f72616e67655f6666373630302e706e67"
+    alt="Fork me on GitHub"
+    data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_orange_ff7600.png"></a>
+
+      <div id="logos">
+        <img class="singa-logo" src="{{ BASE_PATH }}/assets/image/singa-logo.png"/>
+        <div>
+          <img class="incubator-logo" src="{{ BASE_PATH }}/assets/image/incubator.png"/>
+          <span> A General Distributed Deep Learning Platform</span>
+      </div>
+      </div>
+    </div>
+    <div class="container-narrow">
+      <div class="content">
+        {{ content }}
+      </div>
+      <hr>
+      <footer>
+        <p>Copyright &copy; {{ site.time | date: '%Y' }} {{ site.author.name }}
+        The Apache Software Foundation. All rights reserved.
+
+        Apache Singa, Apache, the Apache feather logo, and the Apache Singa
+        project logos are trademarks of The Apache Software Foundation. All
+        other marks mentioned may be trademarks or registered trademarks of
+        their respective owners.
+        <a href="./privacy.html"> Privacy Policy </a>.
+        </p>
+      </footer>
+
+    </div>
+
+    <!-- back to top
+    <div id="backtotop">
+      <a href="#topanchor"><i class="icon-arrow-up back-to-top"></i>Top</a>
+    </div>-->
+
+    {% include JB/analytics %}
+  </body>
+</html>

@@ -1,0 +1,11 @@
+---
+layout: page
+title: Documentation
+group: navigation
+---
+{% include JB/setup %}
+
+{% assign pages_list = site.categories.docs | sort: "date" %}
+{% include JB/pages_list %}
+
+

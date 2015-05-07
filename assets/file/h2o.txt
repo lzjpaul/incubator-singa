@@ -1,0 +1,171 @@
+Running H2O on single node (Xeon e3122@3.1GHz, 8GB RAM) through web interface.
+
+The model trained is a simple MLP configured as:
+EPOCHS=1
+hidden=c(2500,2000,1500,1000,500), epochs=EPOCHS, activation="Tanh",
+train_samples_per_iteration=1500, validation_frame=test_hex
+
+(1) The report is generated from H2O web interface:
+
+
+Java Model
+/* Java code is too large to display, download it directly.
+    To obtain the code please invoke in your terminal:
+    curl http://192.168.22.41:54321/h2o-model.jar > h2o-model.jar
+    curl http://192.168.22.41:54321/2/DeepLearningModelView.java?_modelKey=DeepLearning_8a01d4c65297698345eed0b331d64e43 > DeepLearning_8a01d4c65297698345eed0b331d64e43.java
+    javac -cp h2o-model.jar -J-Xmx2g -J-XX:MaxPermSize=128m DeepLearning_8a01d4c65297698345eed0b331d64e43.java
+  */
+
+DeepLearningModelView
+  Deep Learning Model
+  Model Parameters
+
+  {
+    "job_key": "$0301c0a8162932d4ffffffff$_9adb041d24962311264b941775da4b13",
+    "destination_key": "$02$_88831dd8f4d91bc4f6c96eaa35cd47ea",
+    "description": "DeepLearning",
+    "start_time": 1425392159684,
+    "end_time": 0,
+    "state": "DONE",
+    "source": {
+      "_key": "mnist_train.hex",
+      "num_cols": 785,
+      "num_rows": 60000,
+      "ignored_cols": "0,1,2,3,4,5,6,7,8,9,10,11,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,52,53,54,55,56,57,82,83,84,85,111,112,140,141,168,476,560,644,645,671,672,673,699,700,701,727,728,729,730,754,755,756,757,758,759,780,781,782,783",
+      "num_used_cols": 717
+    },
+    "response": {
+      "name": "C785"
+    },
+    "classification": "true",
+    "validation": {
+      "_key": "mnist_test.hex",
+      "num_cols": 785,
+      "num_rows": 10000
+    },
+    "n_folds": 0,
+    "keep_cross_validation_splits": "false",
+    "xval_models": [],
+    "override_with_best_model": "true",
+    "expert_mode": "false",
+    "autoencoder": "false",
+    "use_all_factor_levels": "true",
+    "activation": "Tanh",
+    "hidden": [
+      2500,
+    2000,
+    1500,
+    1000,
+    500
+      ],
+    "epochs": 1.0,
+    "train_samples_per_iteration": 1500,
+    "seed": 6710234266381815584,
+    "adaptive_rate": "true",
+    "rho": 0.99,
+    "epsilon": 1.0E-8,
+    "rate": 0.005,
+    "rate_annealing": 1.0E-6,
+    "rate_decay": 1.0,
+    "momentum_start": 0.0,
+    "momentum_ramp": 1000000.0,
+    "momentum_stable": 0.0,
+    "nesterov_accelerated_gradient": "true",
+    "input_dropout_ratio": 0.0,
+    "l1": 0.0,
+    "l2": 0.0,
+    "max_w2": "Infinity",
+    "initial_weight_distribution": "UniformAdaptive",
+    "initial_weight_scale": 1.0,
+    "loss": "CrossEntropy",
+    "score_interval": 5.0,
+    "score_training_samples": 10000,
+    "score_validation_samples": 0,
+    "score_duty_cycle": 0.1,
+    "classification_stop": 0.0,
+    "regression_stop": 1.0E-6,
+    "quiet_mode": "false",
+    "max_confusion_matrix_size": 20,
+    "max_hit_ratio_k": 10,
+    "balance_classes": "false",
+    "max_after_balance_size": 5.0,
+    "score_validation_sampling": "Uniform",
+    "diagnostics": "true",
+    "variable_importances": "false",
+    "fast_mode": "true",
+    "ignore_const_cols": "true",
+    "force_load_balance": "true",
+    "replicate_training_data": "false",
+    "single_node_mode": "false",
+    "shuffle_training_data": "false",
+    "sparse": "false",
+    "col_major": "false",
+    "average_activation": 0.0,
+    "sparsity_beta": 0.0,
+    "max_categorical_features": 2147483647,
+    "reproducible": "false"
+  }
+
+Actions: Inspect training data (mnist_train.hex), Inspect validation data (mnist_test.hex), Score on dataset, Compute new model, Go to best model, Continue training this model, Save model,
+
+Model Key: DeepLearning_8a01d4c65297698345eed0b331d64e43
+
+Job Key: $0301c0a8162932d4ffffffff$_9adb041d24962311264b941775da4b13
+
+Model type: Classification, predicting: C785
+
+Number of model parameters (weights/biases): 11,805,010
+
+Progress
+  Status of Neuron Layers
+# Units Type  Dropout L1  L2  Rate (Mean, RMS)  Weight (Mean, RMS)  Bias (Mean, RMS)
+  1 717 Input 0.00 %
+  2 2500  Tanh  0.00 %  0.0 0.0 (0.293010, 0.368681)  (-0.000355178, 0.0342025) (0.00100129, 0.0389023)
+  3 2000  Tanh  0.00 %  0.0 0.0 (0.171271, 0.127116)  (-1.11414e-05, 0.0301417) (-0.000691941, 0.0568320)
+  4 1500  Tanh  0.00 %  0.0 0.0 (0.110776, 0.0933277) (6.74001e-06, 0.0313084)  (-0.000938097, 0.0326461)
+  5 1000  Tanh  0.00 %  0.0 0.0 (0.169862, 0.227901)  (-3.41838e-05, 0.0344749) (0.000262734, 0.0287562)
+  6 500 Tanh  0.00 %  0.0 0.0 (0.631982, 0.446147)  (4.74725e-05, 0.0414679)  (-0.00121626, 0.0301384)
+  7 10  Softmax   0.0 0.0 (0.00188781, 0.000659766) (-0.00300107, 0.240221) (-0.0817232, 0.197679)
+  Classification error on training data: 6.81 %
+  Classification error on validation data: 7.36 %
+
+  Training samples: 60,913
+
+  Epochs: 1.015 / 1.000
+
+  Number of compute nodes: 1 (4 threads)
+
+  Training samples per iteration (user-given): 1,500
+
+  Training speed: 27 samples/s
+
+  Training time: 36 min 50.310 sec
+
+  Scoring results reported on validation data mnist_test.hex:
+  Confusion Matrix
+  ↓ Actual / Predicted →  0 1 2 3 4 5 6 7 8 9 Error
+  0 945 0 5 3 3 10  10  1 0 3 0.03571 = 35 / 980
+  1 0 1,113 7 5 1 1 4 1 2 1 0.01938 = 22 / 1,135
+  2 15  1 964 7 3 1 9 15  13  4 0.06589 = 68 / 1,032
+  3 1 3 35  900 2 17  1 19  10  22  0.10891 = 110 / 1,010
+  4 4 3 6 0 899 2 18  11  1 38  0.08452 = 83 / 982
+  5 9 1 6 34  3 816 5 3 5 10  0.08520 = 76 / 892
+  6 19  3 9 0 3 18  902 0 4 0 0.05846 = 56 / 958
+  7 1 10  12  5 10  0 0 961 0 29  0.06518 = 67 / 1,028
+  8 12  16  8 14  8 33  6 10  826 41  0.15195 = 148 / 974
+  9 7 5 1 4 29  5 1 16  3 938 0.07037 = 71 / 1,009
+  Totals  1,013 1,155 1,053 972 961 903 956 1,037 864 1,086 0.07360 = 736 / 10,000
+  Hit Ratio for Multi-Class Classification
+
+  (Frequency of actual class label to be among the top-K predicted class labels)
+  K Hit Ratio
+  1 92.640%
+  2 96.720%
+  3 98.270%
+  4 98.980%
+  5 99.430%
+  6 99.640%
+  7 99.780%
+  8 99.890%
+  9 99.970%
+  10  100.000%

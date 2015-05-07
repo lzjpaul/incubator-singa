@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['unarymapexp',['UnaryMapExp',['../structmshadow_1_1expr_1_1UnaryMapExp.html',1,'mshadow::expr']]],
+  ['unarymapexp',['UnaryMapExp',['../structmshadow_1_1expr_1_1UnaryMapExp.html#a69326e891063efa959544205b24a0210',1,'mshadow::expr::UnaryMapExp']]],
+  ['uniform',['uniform',['../classmshadow_1_1Random_3_01cpu_01_4.html#ac29cd89c4a4413aaaa76a0bb75ea7300',1,'mshadow::Random&lt; cpu &gt;']]],
+  ['unittest',['UnitTest',['../classtesting_1_1UnitTest.html',1,'testing']]],
+  ['unittestimpl',['UnitTestImpl',['../classtesting_1_1internal_1_1UnitTestImpl.html',1,'testing::internal']]],
+  ['unittestoptions',['UnitTestOptions',['../classtesting_1_1internal_1_1UnitTestOptions.html',1,'testing::internal']]],
+  ['universalprinter',['UniversalPrinter',['../classtesting_1_1internal_1_1UniversalPrinter.html',1,'testing::internal']]],
+  ['universalprinter_3c_20t_20_26_20_3e',['UniversalPrinter&lt; T &amp; &gt;',['../classtesting_1_1internal_1_1UniversalPrinter_3_01T_01_6_01_4.html',1,'testing::internal']]],
+  ['universalprinter_3c_20t_5bn_5d_3e',['UniversalPrinter&lt; T[N]&gt;',['../classtesting_1_1internal_1_1UniversalPrinter_3_01T[N]_4.html',1,'testing::internal']]],
+  ['universalterseprinter',['UniversalTersePrinter',['../classtesting_1_1internal_1_1UniversalTersePrinter.html',1,'testing::internal']]],
+  ['universalterseprinter_3c_20char_20_2a_20_3e',['UniversalTersePrinter&lt; char * &gt;',['../classtesting_1_1internal_1_1UniversalTersePrinter_3_01char_01_5_01_4.html',1,'testing::internal']]],
+  ['universalterseprinter_3c_20const_20char_20_2a_20_3e',['UniversalTersePrinter&lt; const char * &gt;',['../classtesting_1_1internal_1_1UniversalTersePrinter_3_01const_01char_01_5_01_4.html',1,'testing::internal']]],
+  ['universalterseprinter_3c_20const_20wchar_5ft_20_2a_20_3e',['UniversalTersePrinter&lt; const wchar_t * &gt;',['../classtesting_1_1internal_1_1UniversalTersePrinter_3_01const_01wchar__t_01_5_01_4.html',1,'testing::internal']]],
+  ['universalterseprinter_3c_20t_20_26_20_3e',['UniversalTersePrinter&lt; T &amp; &gt;',['../classtesting_1_1internal_1_1UniversalTersePrinter_3_01T_01_6_01_4.html',1,'testing::internal']]],
+  ['universalterseprinter_3c_20t_5bn_5d_3e',['UniversalTersePrinter&lt; T[N]&gt;',['../classtesting_1_1internal_1_1UniversalTersePrinter_3_01T[N]_4.html',1,'testing::internal']]],
+  ['universalterseprinter_3c_20wchar_5ft_20_2a_20_3e',['UniversalTersePrinter&lt; wchar_t * &gt;',['../classtesting_1_1internal_1_1UniversalTersePrinter_3_01wchar__t_01_5_01_4.html',1,'testing::internal']]],
+  ['unpack_5fpatch2col',['unpack_patch2col',['../namespacemshadow_1_1expr.html#a91f2f6a31c6d0fdfcf522e8928f3ce35',1,'mshadow::expr']]],
+  ['unpackpatchtocolxexp',['UnpackPatchToColXExp',['../structmshadow_1_1expr_1_1UnpackPatchToColXExp.html#a04d8a85f1494093864afcc463d72be52',1,'mshadow::expr::UnpackPatchToColXExp']]],
+  ['unpackpatchtocolxexp',['UnpackPatchToColXExp',['../structmshadow_1_1expr_1_1UnpackPatchToColXExp.html',1,'mshadow::expr']]],
+  ['unpool',['unpool',['../namespacemshadow_1_1expr.html#a9122d3e29b798bf56ea541a1c8a640f3',1,'mshadow::expr']]],
+  ['unpoolingexp',['UnPoolingExp',['../structmshadow_1_1expr_1_1UnPoolingExp.html',1,'mshadow::expr']]],
+  ['unpoolingexp',['UnPoolingExp',['../structmshadow_1_1expr_1_1UnPoolingExp.html#a366266a63e1172f9118e290c0506a9c4',1,'mshadow::expr::UnPoolingExp']]],
+  ['update',['Update',['../classsinga_1_1PMWorker.html#a31953e1006e0b19c10f5998b31e735c3',1,'singa::PMWorker::Update()'],['../classsinga_1_1Performance.html#a0868f1798592a8d61c30cee94ce37e87',1,'singa::Performance::Update()']]],
+  ['updater',['Updater',['../classsinga_1_1Updater.html',1,'singa']]],
+  ['upperalign',['UpperAlign',['../namespacemshadow_1_1sse2.html#ad607b657abf0fe69425038777807d3a3',1,'mshadow::sse2']]]
+];
