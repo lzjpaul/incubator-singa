@@ -119,6 +119,7 @@ class DBMBottomLayer: public Layer {
   int vdim_;
   int batchsize_;
   shared_ptr<Param> weight_, bias_;
+  Blob<float> hidden_data_;
 };
 
 /**
@@ -155,7 +156,9 @@ class DBMMiddleLayer: public Layer {
   //! dimension of the visible layer
   int vdim_;
   int batchsize_;
+  int neg_batchsize_;
   shared_ptr<Param> weight_, bias_;
+  Blob<float> hidden_data_;
 };
 
 /**
