@@ -118,8 +118,10 @@ class DBMBottomLayer: public Layer {
   //! dimension of the visible layer
   int vdim_;
   int batchsize_;
+  bool is_first_iteration_bottom;
   shared_ptr<Param> weight_, bias_;
   Blob<float> hidden_data_;
+  Blob<float> negsrc_;
 };
 
 /**
@@ -157,6 +159,7 @@ class DBMMiddleLayer: public Layer {
   int vdim_;
   int batchsize_;
   int neg_batchsize_;
+  bool is_first_iteration_middle;
   shared_ptr<Param> weight_, bias_;
   Blob<float> hidden_data_;
 };
@@ -195,7 +198,8 @@ class DBMTopLayer: public Layer {
   //! dimension of the visible layer
   int vdim_;
   int batchsize_;
-  shared_ptr<Param> weight_, bias_;
+  bool is_first_iteration_top;
+  shared_ptr<Param> bias_;
 };
 
 /**
