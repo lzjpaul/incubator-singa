@@ -172,10 +172,10 @@ void DBMBottomLayer::Setup(const LayerProto& proto,
   batchsize_=possrc.shape()[0];
   neg_batchsize_ =batchsize_;                   /*gibbs sampling size and input the same size*/
   vdim_=possrc.count()/batchsize_;
-  hdim_=proto.DBMMiddle_param().num_output();
+  hdim_=proto.DBMBottom_param().num_output();  /*bottom protocol??*/
   data_.Reshape(vector<int>{batchsize_, hdim_});
   hidden_data_.Reshape(vector<int>{neg_batchsize_, hdim_});
-  negsrc_.Reshape(vector<int>{neg_batchsize_, vdim_});;                                  /*is not from bottom layer, is a member of DBMBottomLayer*/
+  negsrc_.Reshape(vector<int>{neg_batchsize_, vdim_});                                  /*is not from bottom layer, is a member of DBMBottomLayer*/
   Factory<Param>* factory=Singleton<Factory<Param>>::Instance();
   weight_=shared_ptr<Param>(factory->Create("Param"));
   bias_=shared_ptr<Param>(factory->Create("Param"));
@@ -186,40 +186,35 @@ void DBMBottomLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
       const vector<SLayer>& srclayers){
   LayerProto newproto(proto);
-  DBMBottomProto * DBMBottomproto=newproto.mutable_DBMBottom_product_param();
+  DBMBottomProto * DBMBottomproto=newproto.mutable_DBMBottom_param();
   DBMBottomproto->set_num_output(shape[1]);  /*Is this correct? shape[1]*/
   Setup(newproto, srclayers);
 }
 
 void DBMBottomLayer::ComputeFeature(bool positive, const vector<SLayer>& srclayers) { 
   if (positive){
-        Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_)); /*u(n+1)*/
+        Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));/*u(n+1)*/
         CHECK_EQ(srclayers[0]->data_(this).count(), batchsize_*vdim_); /*v*/
         Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
          Shape2(batchsize_,vdim_));
         Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
-        Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));
+       /* Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));*/
         data=dot(possrc, weight) /*to dstlayer*/
   }
   else{   /*negative compute feature*/
         if (is_first_iteration_bottom){
-            CHECK_EQ(srclayers[0]->data_(this).count(), batchsize_*vdim_); /*u(n)*/
-            Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
+            CHECK_EQ(srclayers[0]->data_(this).count(), batchsize_*vdim_); /*v*/
+            Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(), /*v*/
             Shape2(batchsize_,vdim_));
             CHECK_EQ(srclayers[0]->hidden_data_(this).count(), neg_batchsize_*vdim_);
-            Tensor<cpu, 2> negsrc(negsrc_->mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));  /*For this , negsrc is not from src layer, it is a member of bottom layer*/
-            Tensor<cpu, 2> possrc_copy(nullptr,Shape2(neg_batchsize_,vdim_)); /**/
-            AllocSpace(possrc_copy);
+            Tensor<cpu, 2> negsrc(negsrc_->mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));  /*For this, negsrc (v) is not from src layer, it is a member of bottom layer*/
             for (int i = 0; i < batchsize_; i++) /*u(n+1)*/
                  for (int j = 0; j < vdim_; j++)
-                         negsrc[i][j] = possrc_copy[i][j];
+                         negsrc[i][j] = possrc[i][j];
             is_first_iteration_middle = false;
-            FreeSpace(possrc_copy)
         }
         else{
             Tensor<cpu, 2> hidden_data(hidden_data_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_)); /*h(n+1)*/
-           /* CHECK_EQ(srclayers[0]->hidden_data_(this).count(), neg_batchsize_*vdim_);*/
-           /* Tensor<cpu, 2> negsrc(srclayers[0]->mutable_hidden_data(this)->mutable_cpu_data(),no need to fetch from srclayer because is last iteration's h*/
             Tensor<cpu, 2> negsrc(negsrc_->mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));  /*For this , negsrc is not from src layer, it is a member of bottom layer*/
 	    Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
        	    Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));
@@ -272,7 +267,7 @@ void DBMMiddleLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
       const vector<SLayer>& srclayers){
   LayerProto newproto(proto);
-  DBMMiddleProto * DBMMiddleproto=newproto.mutable_DBMMiddle_product_param();
+  DBMMiddleProto * DBMMiddleproto=newproto.mutable_DBMMiddle_param();
   DBMMiddleproto->set_num_output(shape[1]);  /*Is this correct? shape[1]*/
   Setup(newproto, srclayers);
 }
@@ -293,18 +288,15 @@ void DBMMiddleLayer::ComputeFeature(bool positive, const vector<SLayer>& srclaye
   }
   else{   /*negative compute feature*/
 	if (is_first_iteration_middle){
-           CHECK_EQ(srclayers[0]->data_(this).count(), batchsize_*vdim_); /*u(n)*/
+           CHECK_EQ(srclayers[0]->data_(this).count(), batchsize_*vdim_); /*after meanfield, u(n)from src layer,u(n)*/
            Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
            Shape2(batchsize_,vdim_));
 	   CHECK_EQ(srclayers[0]->hidden_data_(this).count(), neg_batchsize_*vdim_);
            Tensor<cpu, 2> negsrc(srclayers[0]->mutable_hidden_data(this)->mutable_cpu_data(),  Shape2(neg_batchsize_,vdim_);/*h(n)*/
-	   Tensor<cpu, 2> possrc_copy(nullptr,Shape2(neg_batchsize_,vdim_)); /**/
-	   AllocSpace(possrc_copy);
 	   for (int i = 0; i < batchsize_; i++) /*u(n+1)*/
 		for (int j = 0; j < vdim_; j++)
-			negsrc[i][j] = possrc_copy[i][j];
+			negsrc[i][j] = possrc[i][j];
            is_first_iteration_middle = false;
-	   FreeSpace(possrc_copy)
 	}
 	else{
 	    Tensor<cpu, 2> hidden_data(hidden_data_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_)); /*h(n+1)*/
@@ -359,7 +351,7 @@ void DBMTopLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
       const vector<SLayer>& srclayers){
   LayerProto newproto(proto);
-  DBMTopProto * DBMTopproto=newproto.mutable_DBMTop_product_param();  /*where to set this parameter???????*/
+  DBMTopProto * DBMTopproto=newproto.mutable_DBMTop_param();  /*where to set this parameter???????*/
   /*DBMTopproto->set_num_output(shape[1]);*/  /*Is this correct? shape[1]?????????????????*/
   Setup(newproto, srclayers);
 }
@@ -381,13 +373,10 @@ void DBMTopLayer::ComputeFeature(bool positive, const vector<SLayer>& srclayers)
                 Shape2(batchsize_,vdim_));
                 CHECK_EQ(srclayers[0]->hidden_data_(this).count(), neg_batchsize_*vdim_);
                 Tensor<cpu, 2> negsrc(srclayers[0]->mutable_hidden_data(this)->mutable_cpu_data(), Shape2(neg_batchsize_,vdim_);/*h(n)*/
-                Tensor<cpu, 2> possrc_copy(nullptr,Shape2(neg_batchsize_,vdim_)); /**/
-		AllocSpace(possrc_copy);
-                for (int i = 0; i < batchsize_; i++) /*u(n+1)*/
+                for (int i = 0; i < batchsize_; i++) 
                      for (int j = 0; j < vdim_; j++)
-                             negsrc[i][j] = possrc_copy[i][j];
+                             negsrc[i][j] = possrc[i][j];
                 is_first_iteration_middle = false;
-		FreeSpace(possrc_copy);
         }
 	else{
         	CHECK_EQ(srclayers[0]->hidden_data_(this).count(), neg_batchsize_*vdim_);
