@@ -221,7 +221,6 @@ void DBMBottomLayer::ComputeFeature(bool positive, const vector<SLayer>& srclaye
             is_first_iteration_middle = false;
         }
         else{
-	    phase = false;
             Tensor<cpu, 2> hidden_data(hidden_data_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_)); /*h(n+1)*/
             Tensor<cpu, 2> negsrc(negsrc_->mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));  /*For this , negsrc is not from src layer, it is a member of bottom layer*/
 	    Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
@@ -394,11 +393,12 @@ void DBMTopLayer::ComputeFeature(bool positive, const vector<SLayer>& srclayers)
   }
   else{   /*negative compute feature*/
         if (is_first_iteration_top){
-		phase = false;
+		phase = true;
 		CHECK_EQ(srclayers[0]->data_(this).count(), batchsize_*vdim_); /*u(n)*/
                 Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
                 Shape2(batchsize_,vdim_));
                 CHECK_EQ(srclayers[0]->hidden_data_(this).count(), neg_batchsize_*vdim_);
+		phase = false;
                 Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(), Shape2(neg_batchsize_,vdim_);/*hidden_mutable,h(n)*/
                 for (int i = 0; i < batchsize_; i++) 
                      for (int j = 0; j < vdim_; j++)
