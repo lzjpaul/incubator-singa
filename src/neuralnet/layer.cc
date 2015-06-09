@@ -169,6 +169,7 @@ void DBMBottomLayer::Setup(const LayerProto& proto,
       const vector<SLayer>& srclayers){                  /*possrc(vdim): Wu(n-1) data from src layer; data_: u(n+1),from dst layer and w(n+1)u(n-1) to dst layer*/
   CHECK_EQ(srclayers.size(),1);
                                                         /*gibbs_prob: gibbs probability of h; negsrc(vdim): Wh(n-1),from srclayer; hidden_data_(hdim): Wh to next layer and h(n+1)from dst layer*/
+  phase = true;
   const auto& possrc=srclayers[0]->data(this);          /*???????????*/
   is_first_iteration_bottom = true;
   batchsize_=possrc.shape()[0];
@@ -199,10 +200,17 @@ Blob<float>* DBMBottomLayer::mutable_data(const Layer* from){
     else
 	return &hidden_data_;
 }
+const Blob<float>& DBMBottomLayer::data(const Layer* from) const {
+    if(phase)
+        return data_;
+    else
+        return hidden_data_;
+
+}
 void DBMBottomLayer::ComputeFeature(bool positive, const vector<SLayer>& srclayers) { 
   if (positive){
-	phase = true;
         Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));/*u(n+1)*/
+        phase = true;
         CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*v*/
         Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
          Shape2(batchsize_,vdim_));
@@ -216,7 +224,7 @@ void DBMBottomLayer::ComputeFeature(bool positive, const vector<SLayer>& srclaye
             CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*v*/
             Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(), /*v*/
             Shape2(batchsize_,vdim_));
-            CHECK_EQ(srclayers[0]->hidden_data_(this).count(), neg_batchsize_*vdim_);
+            /*CHECK_EQ(srclayers[0]->hidden_data_(this).count(), neg_batchsize_*vdim_);*/
             Tensor<cpu, 2> negsrc(negsrc_.mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));  /*For this, negsrc (v) is not from src layer, it is a member of bottom layer*/
             for (int i = 0; i < batchsize_; i++) /*u(n+1)*/
                  for (int j = 0; j < vdim_; j++)
@@ -243,8 +251,8 @@ void DBMBottomLayer::ComputeFeature(bool positive, const vector<SLayer>& srclaye
 void DBMBottomLayer::ComputeGradient(bool positive, const vector<SLayer>& srclayers) {
   Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_)); /*u(n+1)*/
   Tensor<cpu, 2> hidden_data(hidden_data_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_)); /*h(n+1)*/
-  CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*v*/
   phase = true;
+  CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*v*/
   Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
 	Shape2(batchsize_,vdim_));
   CHECK_EQ(srclayers[0]->hiddendata_(this).count(), neg_batchsize_*vdim_);
@@ -259,8 +267,10 @@ void DBMMiddleLayer::Setup(const LayerProto& proto,
       const vector<SLayer>& srclayers){                  /*possrc(vdim): Wu(n-1) data from src layer; data_: u(n+1),from dst layer and w(n+1)u(n-1) to dst layer*/
   CHECK_EQ(srclayers.size(),1);				 
 							/*gibbs_prob: gibbs probability of h; negsrc(vdim): Wh(n-1),from srclayer; hidden_data_(hdim): Wh to next layer and h(n+1)from dst layer*/
+  phase = true;
   const auto& possrc=srclayers[0]->data(this);          /*???????????*/
-  const auto& negsrc=srclayers[0]->hiddendata(this);    /*what is this used for ? if I want to make a judge for whether it is the first round, will be very troublesome because is_first_iteration is a static variable*/
+  phase = false;
+  const auto& negsrc=srclayers[0]->data(this);    /*hiddendata(this)*//*what is this used for ? if I want to make a judge for whether it is the first round, will be very troublesome because is_first_iteration is a static variable*/
   is_first_iteration_middle = true;
   batchsize_=possrc.shape()[0];                        
   neg_batchsize_ =negsrc.shape()[0];                   /*gibbs sampling size*/  
@@ -289,10 +299,17 @@ Blob<float>* DBMMiddleLayer::mutable_data(const Layer* from){
     else
         return &hidden_data_;
 }
+const Blob<float>& DBMMiddleLayer::data(const Layer* from) const {
+    if(phase)
+        return data_;
+    else
+        return hidden_data_;
+
+}
 void DBMMiddleLayer::ComputeFeature(bool positive, const vector<SLayer>& srclayers) {  
   if (positive){
-	phase = true;
   	Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_)); /*u(n+1)*/
+        phase = true;
   	CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*w(n)u(n-1)*/
   	Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(), 
       	 Shape2(batchsize_,vdim_));
@@ -310,9 +327,9 @@ void DBMMiddleLayer::ComputeFeature(bool positive, const vector<SLayer>& srclaye
            CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*after meanfield, u(n)from src layer,u(n)*/
            Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
            Shape2(batchsize_,vdim_));
-	   CHECK_EQ(srclayers[0]->hidden_data_(this).count(), neg_batchsize_*vdim_);
-           phase = false;
-           Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),  Shape2(neg_batchsize_,vdim_);/*hidden_mutable, h(n)*/
+	   phase = false;
+	   CHECK_EQ(srclayers[0]->data(this).count(), neg_batchsize_*vdim_); /*hidden_data_(this)*/
+           Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));/*hidden_mutable, h(n)*/
 	   for (int i = 0; i < batchsize_; i++) /*u(n+1)*/
 		for (int j = 0; j < vdim_; j++)
 			negsrc[i][j] = possrc[i][j];
@@ -320,9 +337,9 @@ void DBMMiddleLayer::ComputeFeature(bool positive, const vector<SLayer>& srclaye
 	}
 	else{
 	    Tensor<cpu, 2> hidden_data(hidden_data_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_)); /*h(n+1)*/
-            CHECK_EQ(srclayers[0]->hidden_data_(this).count(), neg_batchsize_*vdim_);
             phase = false;
-            Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),  Shape2(neg_batchsize_,vdim_);/*hidden_mutable,w(n)h(n-1)*/
+            CHECK_EQ(srclayers[0]->data(this).count(), neg_batchsize_*vdim_); /*hidden_data_(this)*/
+            Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));/*hidden_mutable,w(n)h(n-1)*/
 	    Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
             Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));
        	    negsrc+=dot(hidden_data, weight.T());
@@ -341,12 +358,12 @@ void DBMMiddleLayer::ComputeFeature(bool positive, const vector<SLayer>& srclaye
 void DBMMiddleLayer::ComputeGradient(bool positive, const vector<SLayer>& srclayers) {
   Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_)); /*u(n+1)*/
   Tensor<cpu, 2> hidden_data(hidden_data_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_)); /*h(n+1)*/
-  CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*u(n)*/
   phase = true;
+  CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*u(n)*/
   Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
 	Shape2(batchsize_,vdim_));
-  CHECK_EQ(srclayers[0]->hiddendata_(this).count(), neg_batchsize_*vdim_);
   phase = false;
+  CHECK_EQ(srclayers[0]->data(this).count(), neg_batchsize_*vdim_); /*hidden_data_(this)*/
   Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),/*hidden_mutable, h(n)*/
   	Shape2(neg_batchsize_,vdim_));
   Tensor<cpu, 2> gweight(weight_->mutable_cpu_grad(), Shape2(vdim_,hdim_));
@@ -360,8 +377,10 @@ void DBMTopLayer::Setup(const LayerProto& proto,
       const vector<SLayer>& srclayers){                  /*possrc(vdim): Wu(n-1) data from src layer*/
   CHECK_EQ(srclayers.size(),1);
                                                         /*gibbs_prob: gibbs probability of h; negsrc(vdim): Wh(n-1),from srclayer; hidden_data_(hdim): Wh to next layer and h(n+1)from dst layer*/
+  phase = true;
   const auto& possrc=srclayers[0]->data(this);          /*???????????*/
-  const auto& negsrc=srclayers[0]->hiddendata(this);    /*what is this used for ? if I want to make a judge for whether it is the first round, will be very troublesome because is_first_iteration is a static variable*/
+  phase = false;
+  const auto& negsrc=srclayers[0]->data(this);   /*hiddendata*/ /*what is this used for ? if I want to make a judge for whether it is the first round, will be very troublesome because is_first_iteration is a static variable*/
   is_first_iteration_top = true;
   batchsize_=possrc.shape()[0];
   neg_batchsize_ =negsrc.shape()[0];                   /*gibbs sampling size*/
@@ -380,12 +399,19 @@ void DBMTopLayer::SetupAfterPartition(const LayerProto& proto,
   /*DBMTopproto->set_num_output(shape[1]);*/  /*Is this correct? shape[1]?????????????????*/
  /* Setup(newproto, srclayers);*/
 }
-Blob<float>* DBMTopLayer::mutable_data(const Layer* from){
+/*no need for the top layer*/
+/*Blob<float>* DBMTopLayer::mutable_data(const Layer* from){
     if(phase)
         return &data_;
     else
         return &hidden_data_;
 }
+virtual const Blob<float>& DBMTopLayer::data(const Layer* from) const {
+    if(phase)
+        return data_;
+    else
+        return hidden_data_;
+}*/
 void DBMTopLayer::ComputeFeature(bool positive, const vector<SLayer>& srclayers) {
   if (positive){
 	phase = true;
@@ -403,9 +429,9 @@ void DBMTopLayer::ComputeFeature(bool positive, const vector<SLayer>& srclayers)
 		CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*u(n)*/
                 Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
                 Shape2(batchsize_,vdim_));
-                CHECK_EQ(srclayers[0]->hidden_data_(this).count(), neg_batchsize_*vdim_);
 		phase = false;
-                Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(), Shape2(neg_batchsize_,vdim_);/*hidden_mutable,h(n)*/
+                CHECK_EQ(srclayers[0]->data(this).count(), neg_batchsize_*vdim_); /*hidden_data_(this)*/
+                Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));/*hidden_mutable,h(n)*/
                 for (int i = 0; i < batchsize_; i++) 
                      for (int j = 0; j < vdim_; j++)
                              negsrc[i][j] = possrc[i][j];
@@ -413,7 +439,7 @@ void DBMTopLayer::ComputeFeature(bool positive, const vector<SLayer>& srclayers)
         }
 	else{
 		phase = false;
-        	CHECK_EQ(srclayers[0]->hidden_data_(this).count(), neg_batchsize_*vdim_);
+        	CHECK_EQ(srclayers[0]->data(this).count(), neg_batchsize_*vdim_);  /*hidden_data_(this)*/
         	Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),/*hidden_mutable, w(n)h(n-1)*/
          	Shape2(neg_batchsize_,vdim_));
 		Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));
@@ -429,12 +455,12 @@ void DBMTopLayer::ComputeFeature(bool positive, const vector<SLayer>& srclayers)
 }
 
 void DBMTopLayer::ComputeGradient(bool positive, const vector<SLayer>& srclayers) {
-  CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*u(n)*/
   phase = true;
+  CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*u(n)*/
   Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
 	Shape2(batchsize_,vdim_));
-  CHECK_EQ(srclayers[0]->hidden_data_(this).count(), neg_batchsize_*vdim_);
   phase = false;
+  CHECK_EQ(srclayers[0]->data(this).count(), neg_batchsize_*vdim_); /*hidden_data(this)*/
   Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),/*hidden_mutable, h(n)*/
 	Shape2(neg_batchsize_,vdim_));
   Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(vdim_));
