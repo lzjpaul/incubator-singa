@@ -108,6 +108,7 @@ class DBMBottomLayer: public Layer {
 
   virtual void ComputeFeature(bool positive, const vector<shared_ptr<Layer>>& srclayers);
   virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
+  virtual Blob<float>* mutable_data(const Layer* from); 
   //virtual void ToProto(LayerProto *layer_proto, bool copyData);
   virtual vector<shared_ptr<Param>> GetParams() {
     return vector<shared_ptr<Param>>{weight_, bias_};
@@ -149,6 +150,7 @@ class DBMMiddleLayer: public Layer {
 
   virtual void ComputeFeature(bool positive, const vector<shared_ptr<Layer>>& srclayers);
   virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
+  virtual Blob<float>* mutable_data(const Layer* from);
   //virtual void ToProto(LayerProto *layer_proto, bool copyData);
   virtual vector<shared_ptr<Param>> GetParams() {
     return vector<shared_ptr<Param>>{weight_, bias_};
@@ -189,9 +191,10 @@ class DBMTopLayer: public Layer {
 
   virtual void ComputeFeature(bool positive, const vector<shared_ptr<Layer>>& srclayers);
   virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
+  virtual Blob<float>* mutable_data(const Layer* from);
   //virtual void ToProto(LayerProto *layer_proto, bool copyData);
   virtual vector<shared_ptr<Param>> GetParams() {
-    return vector<shared_ptr<Param>>{weight_, bias_};
+    return vector<shared_ptr<Param>>{bias_};
   }
 
  private:
