@@ -184,6 +184,9 @@ message LayerProto {
   optional DataProto data_param = 22;
   optional DropoutProto dropout_param = 23;
   optional InnerProductProto inner_product_param = 24;
+  optional DBMBottomProto DBM_Bottom_param = 37;
+  optional DBMMiddleProto DBM_Middle_param = 38;
+  optional DBMTopProto DBM_Top_param = 39;
   optional LRNProto lrn_param = 25;
   optional MnistProto mnist_param= 26;
   optional PoolingProto pooling_param = 27;
@@ -269,6 +272,24 @@ message DropoutProto {
 }
 // Message that stores parameters used by InnerProductLayer
 message InnerProductProto {
+  optional uint32 num_output = 1; // The number of outputs for the layer
+  optional bool bias_term = 2 [default = true]; // whether to have bias terms
+}
+
+// Message that stores parameters used by DBMBottomLayer
+message DBMBottomProto {
+  optional uint32 num_output = 1; // The number of outputs for the layer
+  optional bool bias_term = 2 [default = true]; // whether to have bias terms
+}
+
+// Message that stores parameters used by DBMMiddleLayer
+message DBMMiddleProto {
+  optional uint32 num_output = 1; // The number of outputs for the layer
+  optional bool bias_term = 2 [default = true]; // whether to have bias terms
+}
+
+// Message that stores parameters used by DBMTopLayer
+message DBMTopProto {
   optional uint32 num_output = 1; // The number of outputs for the layer
   optional bool bias_term = 2 [default = true]; // whether to have bias terms
 }

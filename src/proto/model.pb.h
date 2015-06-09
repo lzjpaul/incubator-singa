@@ -49,9 +49,6 @@ class DataProto;
 class MnistProto;
 class DropoutProto;
 class InnerProductProto;
-class DBMBottomProto;
-class DBMMiddleProto;
-class DBMTopProto;
 class LRNProto;
 class PoolingProto;
 class SliceProto;
@@ -1352,33 +1349,6 @@ class LayerProto : public ::google::protobuf::Message {
   inline ::singa::InnerProductProto* release_inner_product_param();
   inline void set_allocated_inner_product_param(::singa::InnerProductProto* inner_product_param);
 
- // optional .singa.DBMBottomProto DBM_Bottom_param = 37;
-  inline bool has_DBM_Bottom_param() const;
-  inline void clear_DBM_Bottom_param();
-  static const int kDBMBottomParamFieldNumber = 37;
-  inline const ::singa::DBMBottomProto& DBM_Bottom_param() const;
-  inline ::singa::DBMBottomProto* mutable_DBM_Bottom_param();
-  inline ::singa::DBMBottomProto* release_DBM_Bottom_param();
-  inline void set_allocated_DBM_Bottom_param(::singa::DBMBottomProto* DBM_Bottom_param);
-
- // optional .singa.DBMBottomProto DBM_Middle_param = 38;
-  inline bool has_DBM_Middle_param() const;
-  inline void clear_DBM_Middle_param();
-  static const int kDBMMiddleParamFieldNumber = 38;
-  inline const ::singa::DBMMiddleProto& DBM_Middle_param() const;
-  inline ::singa::DBMMiddleProto* mutable_DBM_Middle_param();
-  inline ::singa::DBMMIddleProto* release_DBM_Middle_param();
-  inline void set_allocated_DBM_MIddle_param(::singa::DBMMiddleProto* DBM_Middle_param);
-
-// optional .singa.DBMTopProto DBM_Top_param = 39;
-  inline bool has_DBM_Top_param() const;
-  inline void clear_DBM_Top_param();
-  static const int kDBMTopParamFieldNumber = 39;
-  inline const ::singa::DBMTopProto& DBM_Top_param() const;
-  inline ::singa::DBMTopProto* mutable_DBM_Top_param();
-  inline ::singa::DBMTopProto* release_DBM_Top_param();
-  inline void set_allocated_DBM_Top_param(::singa::DBMTopProto* DBM_Top_param);
-
   // optional .singa.LRNProto lrn_param = 25;
   inline bool has_lrn_param() const;
   inline void clear_lrn_param();
@@ -1496,12 +1466,6 @@ class LayerProto : public ::google::protobuf::Message {
   inline void clear_has_dropout_param();
   inline void set_has_inner_product_param();
   inline void clear_has_inner_product_param();
-  inline void set_has_DBM_Bottom_param();
-  inline void clear_has_DBM_Bottom_param();
-  inline void set_has_DBM_Middle_param();
-  inline void clear_has_DBM_Middle_param();
-  inline void set_has_DBM_Top_param();
-  inline void clear_has_DBM_Top_param();
   inline void set_has_lrn_param();
   inline void clear_has_lrn_param();
   inline void set_has_mnist_param();
@@ -1538,9 +1502,6 @@ class LayerProto : public ::google::protobuf::Message {
   ::singa::DataProto* data_param_;
   ::singa::DropoutProto* dropout_param_;
   ::singa::InnerProductProto* inner_product_param_;
-  ::singa::DBMBottomProto* DBM_Bottom_param_;
-  ::singa::DBMMiddleProto* DBM_Middle_param_;
-  ::singa::DBMTopProto* DBM_Top_param_;
   ::singa::LRNProto* lrn_param_;
   ::singa::MnistProto* mnist_param_;
   ::singa::PoolingProto* pooling_param_;

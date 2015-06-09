@@ -185,10 +185,10 @@ void DBMBottomLayer::Setup(const LayerProto& proto,
 void DBMBottomLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
       const vector<SLayer>& srclayers){
-  LayerProto newproto(proto);
+/*  LayerProto newproto(proto);
   DBMBottomProto * DBMBottomproto=newproto.mutable_DBMBottom_param();
   DBMBottomproto->set_num_output(shape[1]);  /*Is this correct? shape[1]*/
-  Setup(newproto, srclayers);
+  /*Setup(newproto, srclayers);*/
 }
 Blob<float>* DBMBottomLayer::mutable_data(const Layer* from){
     if(phase)
@@ -274,10 +274,10 @@ void DBMMiddleLayer::Setup(const LayerProto& proto,
 void DBMMiddleLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
       const vector<SLayer>& srclayers){
-  LayerProto newproto(proto);
+ /* LayerProto newproto(proto);
   DBMMiddleProto * DBMMiddleproto=newproto.mutable_DBMMiddle_param();
   DBMMiddleproto->set_num_output(shape[1]);  /*Is this correct? shape[1]*/
-  Setup(newproto, srclayers);
+ /* Setup(newproto, srclayers);*/
 }
 Blob<float>* DBMMiddleLayer::mutable_data(const Layer* from){
     if(phase)
@@ -363,16 +363,16 @@ void DBMTopLayer::Setup(const LayerProto& proto,
   vdim_=possrc.count()/batchsize_;
   Factory<Param>* factory=Singleton<Factory<Param>>::Instance();
   bias_=shared_ptr<Param>(factory->Create("Param"));
-  bias_->Setup(proto.param(1), vector<int>{vdim_},0);/*here the bias is the visible dimension*/
+  bias_->Setup(proto.param(0), vector<int>{vdim_},0);/*here the bias is the visible dimension*/
 }
 
 void DBMTopLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
       const vector<SLayer>& srclayers){
-  LayerProto newproto(proto);
+ /* LayerProto newproto(proto);
   DBMTopProto * DBMTopproto=newproto.mutable_DBMTop_param();  /*where to set this parameter???????*/
   /*DBMTopproto->set_num_output(shape[1]);*/  /*Is this correct? shape[1]?????????????????*/
-  Setup(newproto, srclayers);
+ /* Setup(newproto, srclayers);*/
 }
 Blob<float>* DBMTopLayer::mutable_data(const Layer* from){
     if(phase)
