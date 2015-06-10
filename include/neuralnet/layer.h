@@ -21,8 +21,7 @@
  * the transformation of features.
  */
 namespace singa {
-
-bool phase;  /*phase information*/
+static bool kPhase=true;  /*phase information*/
 /**
  * Convolution layer.
  */
@@ -108,8 +107,18 @@ class DBMBottomLayer: public Layer {
 
   virtual void ComputeFeature(bool positive, const vector<shared_ptr<Layer>>& srclayers);
   virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
-  virtual Blob<float>* mutable_data(const Layer* from);
-  virtual const Blob<float>& data(const Layer* from) const; 
+  virtual Blob<float>* mutable_data(const Layer* from){
+	if(kPhase)
+        	return &data_;
+    	else
+        	return &hidden_data_;
+  }
+  virtual const Blob<float>& data(const Layer* from) const{
+	if(kPhase)
+        	return data_;
+    	else
+        	return hidden_data_;
+  } 
   //virtual void ToProto(LayerProto *layer_proto, bool copyData);
   virtual vector<shared_ptr<Param>> GetParams() {
     return vector<shared_ptr<Param>>{weight_, bias_};
@@ -151,8 +160,18 @@ class DBMMiddleLayer: public Layer {
 
   virtual void ComputeFeature(bool positive, const vector<shared_ptr<Layer>>& srclayers);
   virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
-  virtual Blob<float>* mutable_data(const Layer* from);
-  virtual const Blob<float>& data(const Layer* from) const;
+  virtual Blob<float>* mutable_data(const Layer* from){
+	if(kPhase)
+        	return &data_;
+    	else
+        	return &hidden_data_;
+  }
+  virtual const Blob<float>& data(const Layer* from) const{
+	if(kPhase)
+       		return data_;
+    	else
+        	return hidden_data_;
+  }
   //virtual void ToProto(LayerProto *layer_proto, bool copyData);
   virtual vector<shared_ptr<Param>> GetParams() {
     return vector<shared_ptr<Param>>{weight_, bias_};
@@ -193,8 +212,8 @@ class DBMTopLayer: public Layer {
 
   virtual void ComputeFeature(bool positive, const vector<shared_ptr<Layer>>& srclayers);
   virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
-  virtual Blob<float>* mutable_data(const Layer* from);
-  virtual const Blob<float>& data(const Layer* from) const;
+  /*virtual Blob<float>* mutable_data(const Layer* from);*/
+  /*virtual const Blob<float>& data(const Layer* from) const;*/
   //virtual void ToProto(LayerProto *layer_proto, bool copyData);
   virtual vector<shared_ptr<Param>> GetParams() {
     return vector<shared_ptr<Param>>{bias_};

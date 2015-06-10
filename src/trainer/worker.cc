@@ -410,5 +410,4 @@ void CDWorker::TrainOneBatch(int step){
 void CDWorker::TestOneBatch(shared_ptr<NeuralNet> net,int step, Phase phase){  //I think for RBM, this can be removed
   PositivePhase(net, step, false);
 }
-
 }  // namespace singa
