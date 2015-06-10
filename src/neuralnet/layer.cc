@@ -5,6 +5,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include "mshadow/tensor.h"
 #include "mshadow/cxxnet_op.h"
+#include "mshadow/tensor_expr_engine-inl.hpp"
 #include "neuralnet/layer.h"
 #include "utils/singleton.h"
 #include "utils/factory.h"
@@ -225,9 +226,10 @@ void DBMBottomLayer::ComputeFeature(bool positive, const vector<SLayer>& srclaye
             Shape2(batchsize_,vdim_));
             /*CHECK_EQ(srclayers[0]->hidden_data_(this).count(), neg_batchsize_*vdim_);*/
             Tensor<cpu, 2> negsrc(negsrc_.mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));  /*For this, negsrc (v) is not from src layer, it is a member of bottom layer*/
-            for (int i = 0; i < batchsize_; i++) /*u(n+1)*/
-                 for (int j = 0; j < vdim_; j++)
-                         negsrc[i][j] = possrc[i][j];
+           /* for (int i = 0; i < batchsize_; i++)*/ /*u(n+1)*/
+             /*    for (int j = 0; j < vdim_; j++)
+                         negsrc[i][j] = possrc[i][j];*/
+	    negsrc = possrc;
             is_first_iteration_bottom = false;
         }
         else{
@@ -258,8 +260,12 @@ void DBMBottomLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   Tensor<cpu, 2> negsrc(negsrc_.mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));/*v gibbs*/
   Tensor<cpu, 2> gweight(weight_->mutable_cpu_grad(), Shape2(vdim_,hdim_));
   Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(vdim_));
-  gbias=sum_rows(possrc)-sum_rows(negsrc); /*calculation correct??????????*/
-  gweight=dot(possrc.T(),data.T()) - dot(negsrc.T(),hidden_data.T()); /*need to normalize here???????*/
+  /*gbias=sum_rows(possrc)-sum_rows(negsrc);*/ /*calculation correct??????????*/
+  gbias=sum_rows(possrc);
+  gbias-=sum_rows(negsrc);
+  /*gweight=dot(possrc.T(),data.T()) - dot(negsrc.T(),hidden_data.T());*/ /*need to normalize here???????*/
+  gweight=dot(possrc.T(),data.T());
+  gweight-=dot(negsrc.T(),hidden_data.T());
 }
 /**************** Implementation for DBMMiddleLayer********************/
 void DBMMiddleLayer::Setup(const LayerProto& proto,
@@ -329,9 +335,10 @@ void DBMMiddleLayer::ComputeFeature(bool positive, const vector<SLayer>& srclaye
 	   kPhase = false;
 	   CHECK_EQ(srclayers[0]->data(this).count(), neg_batchsize_*vdim_); /*hidden_data_(this)*/
            Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));/*hidden_mutable, h(n)*/
-	   for (int i = 0; i < batchsize_; i++) /*u(n+1)*/
-		for (int j = 0; j < vdim_; j++)
-			negsrc[i][j] = possrc[i][j];
+	 /*  for (int i = 0; i < batchsize_; i++)*/ /*u(n+1)*/
+	/*	for (int j = 0; j < vdim_; j++)
+			negsrc[i][j] = possrc[i][j];*/
+	   negsrc = possrc;
            is_first_iteration_middle = false;
 	}
 	else{
@@ -368,8 +375,12 @@ void DBMMiddleLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   Tensor<cpu, 2> gweight(weight_->mutable_cpu_grad(), Shape2(vdim_,hdim_));
   Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(vdim_));
 
-  gbias=sum_rows(possrc)-sum_rows(negsrc); /*calculation correct??????????*/
-  gweight=dot(possrc.T(),data.T()) - dot(negsrc.T(),hidden_data.T()); /*need to normalize here???????*/
+  /*gbias=sum_rows(possrc)-sum_rows(negsrc);*/ /*calculation correct??????????*/
+  gbias=sum_rows(possrc);
+  gbias-=sum_rows(negsrc);
+  /*gweight=dot(possrc.T(),data.T()) - dot(negsrc.T(),hidden_data.T());*/ /*need to normalize here???????*/
+  gweight=dot(possrc.T(),data.T());
+  gweight-=dot(negsrc.T(),hidden_data.T());
 }
 /**************** Implementation for DBMTopLayer********************/
 void DBMTopLayer::Setup(const LayerProto& proto,
@@ -430,9 +441,10 @@ void DBMTopLayer::ComputeFeature(bool positive, const vector<SLayer>& srclayers)
 		kPhase = false;
                 CHECK_EQ(srclayers[0]->data(this).count(), neg_batchsize_*vdim_); /*hidden_data_(this)*/
                 Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));/*hidden_mutable,h(n)*/
-                for (int i = 0; i < batchsize_; i++) 
+              /*  for (int i = 0; i < batchsize_; i++) 
                      for (int j = 0; j < vdim_; j++)
-                             negsrc[i][j] = possrc[i][j];
+                             negsrc[i][j] = possrc[i][j];*/
+		negsrc = possrc;
                 is_first_iteration_top = false;
         }
 	else{
@@ -462,7 +474,9 @@ void DBMTopLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),/*hidden_mutable, h(n)*/
 	Shape2(neg_batchsize_,vdim_));
   Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(vdim_));
-  gbias=sum_rows(possrc)-sum_rows(negsrc); /*calculation correct??????????*/
+  /*gbias=sum_rows(possrc)-sum_rows(negsrc);*/ /*calculation correct??????????*/
+  gbias=sum_rows(possrc);
+  gbias-=sum_rows(negsrc);
 }
 /**************** Implementation for InnerProductLayer********************/
 void InnerProductLayer::Setup(const LayerProto& proto,
