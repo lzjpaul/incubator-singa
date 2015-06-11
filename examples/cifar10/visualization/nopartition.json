@@ -1,0 +1,17 @@
+{"directed":1,
+"nodes":[
+{"id":"data()", "color":"red","shape":"box"}
+,{"id":"mnist(1000, 28, 28, )", "color":"red","shape":"box"}
+,{"id":"DBMBottom(1000, 1000, )", "color":"red","shape":"box"}
+,{"id":"DBMMiddle1(1000, 1000, )", "color":"red","shape":"box"}
+,{"id":"DBMMiddle2(1000, 1000, )", "color":"red","shape":"box"}
+,{"id":"DBMTop()", "color":"red","shape":"box"}
+]
+,"links":[
+{"source":0, "target":1, "color":"black"}
+,{"source":1, "target":2, "color":"black"}
+,{"source":2, "target":3, "color":"black"}
+,{"source":3, "target":4, "color":"black"}
+,{"source":4, "target":5, "color":"black"}
+]
+}
