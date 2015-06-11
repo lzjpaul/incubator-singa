@@ -1339,28 +1339,28 @@ class LayerProto : public ::google::protobuf::Message {
   inline ::singa::InnerProductProto* release_inner_product_param();
   inline void set_allocated_inner_product_param(::singa::InnerProductProto* inner_product_param);
 
-  // optional .singa.DBMBottomProto DBM_Bottom_param = 37;
+  // optional .singa.DBMBottomProto dbm_bottom_param = 37;
   inline bool has_dbm_bottom_param() const;
   inline void clear_dbm_bottom_param();
-  static const int kDBMBottomParamFieldNumber = 37;
+  static const int kDbmBottomParamFieldNumber = 37;
   inline const ::singa::DBMBottomProto& dbm_bottom_param() const;
   inline ::singa::DBMBottomProto* mutable_dbm_bottom_param();
   inline ::singa::DBMBottomProto* release_dbm_bottom_param();
   inline void set_allocated_dbm_bottom_param(::singa::DBMBottomProto* dbm_bottom_param);
 
-  // optional .singa.DBMMiddleProto DBM_Middle_param = 38;
+  // optional .singa.DBMMiddleProto dbm_middle_param = 38;
   inline bool has_dbm_middle_param() const;
   inline void clear_dbm_middle_param();
-  static const int kDBMMiddleParamFieldNumber = 38;
+  static const int kDbmMiddleParamFieldNumber = 38;
   inline const ::singa::DBMMiddleProto& dbm_middle_param() const;
   inline ::singa::DBMMiddleProto* mutable_dbm_middle_param();
   inline ::singa::DBMMiddleProto* release_dbm_middle_param();
   inline void set_allocated_dbm_middle_param(::singa::DBMMiddleProto* dbm_middle_param);
 
-  // optional .singa.DBMTopProto DBM_Top_param = 39;
+  // optional .singa.DBMTopProto dbm_top_param = 39;
   inline bool has_dbm_top_param() const;
   inline void clear_dbm_top_param();
-  static const int kDBMTopParamFieldNumber = 39;
+  static const int kDbmTopParamFieldNumber = 39;
   inline const ::singa::DBMTopProto& dbm_top_param() const;
   inline ::singa::DBMTopProto* mutable_dbm_top_param();
   inline ::singa::DBMTopProto* release_dbm_top_param();
@@ -6174,7 +6174,7 @@ inline void LayerProto::set_allocated_inner_product_param(::singa::InnerProductP
   // @@protoc_insertion_point(field_set_allocated:singa.LayerProto.inner_product_param)
 }
 
-// optional .singa.DBMBottomProto DBM_Bottom_param = 37;
+// optional .singa.DBMBottomProto dbm_bottom_param = 37;
 inline bool LayerProto::has_dbm_bottom_param() const {
   return (_has_bits_[0] & 0x00010000u) != 0;
 }
@@ -6189,13 +6189,13 @@ inline void LayerProto::clear_dbm_bottom_param() {
   clear_has_dbm_bottom_param();
 }
 inline const ::singa::DBMBottomProto& LayerProto::dbm_bottom_param() const {
-  // @@protoc_insertion_point(field_get:singa.LayerProto.DBM_Bottom_param)
+  // @@protoc_insertion_point(field_get:singa.LayerProto.dbm_bottom_param)
   return dbm_bottom_param_ != NULL ? *dbm_bottom_param_ : *default_instance_->dbm_bottom_param_;
 }
 inline ::singa::DBMBottomProto* LayerProto::mutable_dbm_bottom_param() {
   set_has_dbm_bottom_param();
   if (dbm_bottom_param_ == NULL) dbm_bottom_param_ = new ::singa::DBMBottomProto;
-  // @@protoc_insertion_point(field_mutable:singa.LayerProto.DBM_Bottom_param)
+  // @@protoc_insertion_point(field_mutable:singa.LayerProto.dbm_bottom_param)
   return dbm_bottom_param_;
 }
 inline ::singa::DBMBottomProto* LayerProto::release_dbm_bottom_param() {
@@ -6212,10 +6212,10 @@ inline void LayerProto::set_allocated_dbm_bottom_param(::singa::DBMBottomProto* 
   } else {
     clear_has_dbm_bottom_param();
   }
-  // @@protoc_insertion_point(field_set_allocated:singa.LayerProto.DBM_Bottom_param)
+  // @@protoc_insertion_point(field_set_allocated:singa.LayerProto.dbm_bottom_param)
 }
 
-// optional .singa.DBMMiddleProto DBM_Middle_param = 38;
+// optional .singa.DBMMiddleProto dbm_middle_param = 38;
 inline bool LayerProto::has_dbm_middle_param() const {
   return (_has_bits_[0] & 0x00020000u) != 0;
 }
@@ -6230,13 +6230,13 @@ inline void LayerProto::clear_dbm_middle_param() {
   clear_has_dbm_middle_param();
 }
 inline const ::singa::DBMMiddleProto& LayerProto::dbm_middle_param() const {
-  // @@protoc_insertion_point(field_get:singa.LayerProto.DBM_Middle_param)
+  // @@protoc_insertion_point(field_get:singa.LayerProto.dbm_middle_param)
   return dbm_middle_param_ != NULL ? *dbm_middle_param_ : *default_instance_->dbm_middle_param_;
 }
 inline ::singa::DBMMiddleProto* LayerProto::mutable_dbm_middle_param() {
   set_has_dbm_middle_param();
   if (dbm_middle_param_ == NULL) dbm_middle_param_ = new ::singa::DBMMiddleProto;
-  // @@protoc_insertion_point(field_mutable:singa.LayerProto.DBM_Middle_param)
+  // @@protoc_insertion_point(field_mutable:singa.LayerProto.dbm_middle_param)
   return dbm_middle_param_;
 }
 inline ::singa::DBMMiddleProto* LayerProto::release_dbm_middle_param() {
@@ -6253,10 +6253,10 @@ inline void LayerProto::set_allocated_dbm_middle_param(::singa::DBMMiddleProto* 
   } else {
     clear_has_dbm_middle_param();
   }
-  // @@protoc_insertion_point(field_set_allocated:singa.LayerProto.DBM_Middle_param)
+  // @@protoc_insertion_point(field_set_allocated:singa.LayerProto.dbm_middle_param)
 }
 
-// optional .singa.DBMTopProto DBM_Top_param = 39;
+// optional .singa.DBMTopProto dbm_top_param = 39;
 inline bool LayerProto::has_dbm_top_param() const {
   return (_has_bits_[0] & 0x00040000u) != 0;
 }
@@ -6271,13 +6271,13 @@ inline void LayerProto::clear_dbm_top_param() {
   clear_has_dbm_top_param();
 }
 inline const ::singa::DBMTopProto& LayerProto::dbm_top_param() const {
-  // @@protoc_insertion_point(field_get:singa.LayerProto.DBM_Top_param)
+  // @@protoc_insertion_point(field_get:singa.LayerProto.dbm_top_param)
   return dbm_top_param_ != NULL ? *dbm_top_param_ : *default_instance_->dbm_top_param_;
 }
 inline ::singa::DBMTopProto* LayerProto::mutable_dbm_top_param() {
   set_has_dbm_top_param();
   if (dbm_top_param_ == NULL) dbm_top_param_ = new ::singa::DBMTopProto;
-  // @@protoc_insertion_point(field_mutable:singa.LayerProto.DBM_Top_param)
+  // @@protoc_insertion_point(field_mutable:singa.LayerProto.dbm_top_param)
   return dbm_top_param_;
 }
 inline ::singa::DBMTopProto* LayerProto::release_dbm_top_param() {
@@ -6294,7 +6294,7 @@ inline void LayerProto::set_allocated_dbm_top_param(::singa::DBMTopProto* dbm_to
   } else {
     clear_has_dbm_top_param();
   }
-  // @@protoc_insertion_point(field_set_allocated:singa.LayerProto.DBM_Top_param)
+  // @@protoc_insertion_point(field_set_allocated:singa.LayerProto.dbm_top_param)
 }
 
 // optional .singa.LRNProto lrn_param = 25;
