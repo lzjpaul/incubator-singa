@@ -8,6 +8,12 @@
 #include "utils/factory.h"
 #include "trainer/worker.h"
 #include "proto/model.pb.h"
+#include "mshadow/tensor.h"
+
+using namespace mshadow;
+using namespace mshadow::expr;
+
+
 using std::thread;
 namespace singa {
 Worker::Worker(int thread_id, int group_id, int worker_id):
@@ -293,6 +299,53 @@ void BPWorker::TrainOneBatch(int step){
 
 void BPWorker::TestOneBatch(shared_ptr<NeuralNet> net,int step, Phase phase){
   Forward(net, step, false);
+  int rownum;
+  int columnnum;
+  int param_index = 0;
+  int i,j;
+  if (step % 100 == 0){
+	LOG(INFO)<<StringPrintf("step %d \n", step);
+	auto& layers=net->layers();
+  	for(auto& layer: layers){
+		for(shared_ptr<Param> p: layer->GetParams()){
+			if(param_index == 0){  /*weight*/
+       				LOG(INFO)<<StringPrintf("param id %2d, name %10s,\
+              			value norm1 %13.9f, grad norm1 %13.9f",
+              			p->id(), p->name().c_str(),
+              			p->data().asum_data(), p->grad().asum_data());
+				rownum = p->data().shape()[0];
+/*p is a shared_ptr<param>, p->data(), is the float data blob in the param class, shape() return the shape vector of the data blob*/
+				columnnum = p->data().shape()[1];
+				Tensor<cpu, 2> weight(p->mutable_cpu_data(), Shape2(rownum,columnnum)); 
+/*mutable_cpu_data() returns float pointer, row num and column is to give tensor shape*/
+				for (i = 0; i < rownum; i++){
+					LOG(INFO)<<StringPrintf("rownum %d\n", i);
+					for (j = 0; j < columnnum; j++)
+						LOG(INFO)<<StringPrintf("%f ", weight[rownum][columnnum]);
+					LOG(INFO)<<StringPrintf("\n");
+				}			 
+				/*FreeSpace(weight);*/
+				param_index++;
+			}
+			else{         /*bias*/
+				LOG(INFO)<<StringPrintf("param id %2d, name %10s,\
+                                value norm1 %13.9f, grad norm1 %13.9f",
+                                p->id(), p->name().c_str(),
+                                p->data().asum_data(), p->grad().asum_data());
+                                rownum = p->data().shape()[0]; 
+/*p is a shared_ptr<param>, p->data(), is the float data blob in the param class, shape() return the shape vector of the data blob*/
+                                Tensor<cpu, 1> bias(p->mutable_cpu_data(), Shape1(rownum)); 
+/*mutable_cpu_data() returns float pointer, row num and column is to give tensor shape*/
+                                for (i = 0; i < rownum; i++){
+                                         LOG(INFO)<<StringPrintf("%f ", bias[rownum]);
+				}
+                                LOG(INFO)<<StringPrintf("\n");
+                              /*  FreeSpace(bias);*/
+			}		
+     		 }
+	}	
+	 
+  }
 }
 
 }  // namespace singa
