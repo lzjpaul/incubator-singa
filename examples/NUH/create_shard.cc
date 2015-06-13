@@ -24,41 +24,53 @@ using singa::WriteProtoToBinaryFile;
 using std::string;
 
 
-void create_shard(const char* data_filename, const char* output) {
+void create_shard(const char* image_filename, const char* output) {
   // Open files
-  std::ifstream data_file(data_filename, std::ios::in | std::ios::binary);
-  CHECK(data_file) << "Unable to open file " << data_filename;
-  // Read the meta data
-  uint32_t num_items;
-  uint32_t num_features;
+  std::ifstream file(image_filename, std::ios::in | std::ios::binary);
+  CHECK(file) << "Unable to open file " << image_filename;
 
+  string value;
+  int n;
+  // Read the magic and the meta data
+  int num_items;
+  int rows;
+  int cols;
+  getline (file, value, ',');  // to check whether int will overflow if there are too many records
+  num_items = atoi (value.c_str());
+  getline (file, value, ',');
+  rows = atoi (value.c_str());
+  getline (file, value, '\n');
+  cols = atoi (value.c_str());
 
-  data_file.read(reinterpret_cast<char*>(&num_items), 4);
-  data_file.read(reinterpret_cast<char*>(&num_features), 4);
+  
 
   DataShard shard(output, DataShard::kCreate);
   char label;
-  char* features = new char[num_features];
-  int count = 0;
+  char* pixels = new char[rows * cols];
   const int kMaxKeyLength = 10;
   char key[kMaxKeyLength];
-  string value;
 
   singa::Record record;
-  singa::SingleLabelImageRecord* data=record.mutable_image();
-  data->add_shape(1);
-  data->add_shape(num_features);
+  singa::SingleLabelImageRecord* image=record.mutable_image();
+  image->add_shape(rows);
+  image->add_shape(cols);
   LOG(INFO) << "A total of " << num_items << " items.";
   LOG(INFO) << "Rows: " << rows << " Cols: " << cols;
   for (int item_id = 0; item_id < num_items; ++item_id) {
-    data_file.read(features, rows * cols);
-    data_file.read(&label, 1);
-    data->set_pixel(features, rows*cols);
-    data->set_label(label);
+    for (int i = 0; i < rows * cols; i++){
+	getline (file, value, ',');
+	n = atoi(value.c_str());
+	pixels[i] = (char)n;
+    }
+    getline (file, value, '\n');
+    n = atoi(value.c_str());
+    label = (char)n;
+    image->set_pixel(pixels, rows*cols);
+    image->set_label(label);
     snprintf(key, kMaxKeyLength, "%08d", item_id);
     shard.Insert(string(key), record);
   }
-  delete features;
+  delete pixels;
   shard.Flush();
 }
 
@@ -81,7 +93,10 @@ int main(int argc, char** argv) {
   if (argc != 3) {
     std::cout<<"This program create a DataShard for a MNIST dataset\n"
         "Usage:\n"
-        "    create_shard.bin  input_data_file output_db_file\n";
+        "    create_shard.bin  input_image_file input_label_file output_db_file\n"
+        "The MNIST dataset could be downloaded at\n"
+        "    http://yann.lecun.com/exdb/mnist/\n"
+        "You should gunzip them after downloading.";
   } else {
     google::InitGoogleLogging(argv[0]);
     create_shard(argv[1], argv[2]);

@@ -26,6 +26,7 @@ void NeuralNet::RegisterLayers(){
   factory->Register("kPrefetch", CreateLayer(PrefetchLayer));
   factory->Register("kRGBImage", CreateLayer(RGBImageLayer));
   factory->Register("kReLU", CreateLayer(ReLULayer));
+  factory->Register("kReadmissionData", CreateLayer(ReadmissionDataLayer));
   factory->Register("kShardData", CreateLayer(ShardDataLayer));
   factory->Register("kSlice", CreateLayer(SliceLayer));
   factory->Register("kSoftmaxLoss", CreateLayer(SoftmaxLossLayer));

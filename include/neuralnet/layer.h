@@ -85,117 +85,6 @@ class DropoutLayer: public Layer {
 };
 
 /**
-  * DBM bottom layer
-  */
-class DBMBottomLayer: public Layer {
- public:
-  using Layer::Setup;
-  using Layer::SetupAfterPartition;
-  using Layer::ComputeFeature;
-  using Layer::ComputeGradient;
-
-  virtual void Setup(const LayerProto& proto,
-      const vector<SLayer>& srclayers);
-  
-  virtual void SetupAfterPartition(const LayerProto& proto,
-      const vector<int> &shape,
-      const vector<SLayer>& srclayers);
-  virtual ConnectionType connection_type(int k) const {
-    CHECK_LT(k, srclayers_.size());
-    return kOneToAll;
-  }
-
-  virtual void ComputeFeature(bool positive, const vector<shared_ptr<Layer>>& srclayers);
-  virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
-  //virtual void ToProto(LayerProto *layer_proto, bool copyData);
-  virtual vector<shared_ptr<Param>> GetParams() {
-    return vector<shared_ptr<Param>>{weight_, bias_};
-  }
-
- private:
-  //! dimension of the hidden layer
-  int hdim_;
-  //! dimension of the visible layer
-  int vdim_;
-  int batchsize_;
-  shared_ptr<Param> weight_, bias_;
-};
-
-/**
-  * DBM middle layer
-  */
-class DBMMiddleLayer: public Layer {
- public:
-  using Layer::Setup;
-  using Layer::SetupAfterPartition;
-  using Layer::ComputeFeature;
-  using Layer::ComputeGradient;
-
-  virtual void Setup(const LayerProto& proto,
-      const vector<SLayer>& srclayers);
-
-  virtual void SetupAfterPartition(const LayerProto& proto,
-      const vector<int> &shape,
-      const vector<SLayer>& srclayers);
-  virtual ConnectionType connection_type(int k) const {
-    CHECK_LT(k, srclayers_.size());
-    return kOneToAll;
-  }
-
-  virtual void ComputeFeature(bool positive, const vector<shared_ptr<Layer>>& srclayers);
-  virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
-  //virtual void ToProto(LayerProto *layer_proto, bool copyData);
-  virtual vector<shared_ptr<Param>> GetParams() {
-    return vector<shared_ptr<Param>>{weight_, bias_};
-  }
-
- private:
-  //! dimension of the hidden layer
-  int hdim_;
-  //! dimension of the visible layer
-  int vdim_;
-  int batchsize_;
-  shared_ptr<Param> weight_, bias_;
-};
-
-/**
-  * DBM top layer
-  */
-class DBMTopLayer: public Layer {
- public:
-  using Layer::Setup;
-  using Layer::SetupAfterPartition;
-  using Layer::ComputeFeature;
-  using Layer::ComputeGradient;
-
-  virtual void Setup(const LayerProto& proto,
-      const vector<SLayer>& srclayers);
-  
-  virtual void SetupAfterPartition(const LayerProto& proto,
-      const vector<int> &shape,
-      const vector<SLayer>& srclayers);
-  virtual ConnectionType connection_type(int k) const {
-    CHECK_LT(k, srclayers_.size());
-    return kOneToAll;
-  }
-
-  virtual void ComputeFeature(bool positive, const vector<shared_ptr<Layer>>& srclayers);
-  virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
-  //virtual void ToProto(LayerProto *layer_proto, bool copyData);
-  virtual vector<shared_ptr<Param>> GetParams() {
-    return vector<shared_ptr<Param>>{weight_, bias_};
-  }
-
- private:
-  //! dimension of the hidden layer
-  int hdim_;
-  //! dimension of the visible layer
-  int vdim_;
-  int batchsize_;
-  shared_ptr<Param> weight_, bias_;
-};
-
-/**
   * fully connected layer
   */
 class InnerProductLayer: public Layer {
@@ -296,6 +185,25 @@ class MnistImageLayer: public ParserLayer {
   //float* gauss_, *displacementx_, *displacementy_, *colimg_, *tmpimg_;
   float  gamma_, beta_, sigma_, kernel_, alpha_, norm_a_, norm_b_;
   int resize_, elastic_freq_;
+};
+
+class ReadmissionDataLayer: public ParserLayer {
+ public:
+  using Layer::Setup;
+
+  virtual void Setup(const LayerProto& proto, const vector<SLayer>& srclayers);
+  virtual void ParseRecords(bool training, const vector<Record>& records,
+      Blob<float>* blob);
+
+ protected:
+  // height and width of the image after deformation
+  // kernel size for elastic distortion
+  // n^2 images are processed as a batch for elastic distortion
+  // conv height and conv width
+  // gauss kernel values, displacements, column image and tmp buffer
+  //float* gauss_, *displacementx_, *displacementy_, *colimg_, *tmpimg_;
+  //float  gamma_, beta_, sigma_, kernel_, alpha_, norm_a_, norm_b_;
+  int resize_;
 };
 
 class PoolingLayer: public Layer {
