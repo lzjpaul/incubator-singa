@@ -1,3 +1,7 @@
+1. commit the right "NUH" code to master
+2. swithch from "master" to "NUH"
+3. replace src, include and examples/NUH, 3 folders in total
+
 Distributed deep learning system
 
 [Project Page](http://singa.incubator.apache.org)
