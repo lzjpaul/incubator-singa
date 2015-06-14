@@ -498,7 +498,9 @@ void ReadmissionDataLayer::ParseRecords(bool training,
           // time to debug this
           *dptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
 	   dptr++;
-         }	
+	   LOG(INFO)<<StringPrintf("zj: data %f\n", *dptr);
+         }
+	 LOG(INFO)<<StringPrintf("One Record Done!\n");	
     }else{
       for(int i=0,k=0;i<rows;i++)
         for(int j=0;j<cols;j++){
@@ -542,6 +544,7 @@ void ReadmissionDataLayer::Setup(const LayerProto& proto,
     int rows=sample.image().shape(ndim-2);
     int cols=sample.image().shape(ndim-1);
     data_.Reshape(vector<int>{batchsize, rows, cols });
+    LOG(INFO)<<StringPrintf("zj: rows %d cols %d\n", rows,cols);
   }
 }
 
