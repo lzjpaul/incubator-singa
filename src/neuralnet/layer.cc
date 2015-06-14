@@ -231,8 +231,11 @@ void LabelLayer::ParseRecords(bool training, const vector<Record>& records,
   float *label= blob->mutable_cpu_data() ;
   for(const Record& record: records){
     label[rid++]=record.image().label();
+    LOG(INFO)<<StringPrintf("label_num_records: %d label: %d\n", rid, static_cast<int>(record.image().label()));
+    LOG(INFO)<<StringPrintf("float label_num_records: %d label: %f\n", rid, label[rid-1]);
  //   CHECK_LT(record.image().label(),10);
   }
+  LOG(INFO)<<StringPrintf("label_num_records: %d\n", rid); 
   CHECK_EQ(rid, blob->shape()[0]);
 }
 
@@ -484,23 +487,27 @@ void ReadmissionDataLayer::ParseRecords(bool training,
   int ndim=records.at(0).image().shape_size();
   int rows =records.at(0).image().shape(ndim-2);  //rows and columns
   int cols =records.at(0).image().shape(ndim-1);
-
+  LOG(INFO)<<StringPrintf("zj: ndim %d rows %d cols %d \n", ndim, rows, cols);
+  
   float* dptr=blob->mutable_cpu_data();
+  int num_records = 0;
   for(const Record& record: records){
+    num_records ++;
     // copy from record to cv::Mat
   //  cv::Mat input(rows, cols, CV_32FC1);      //not perfect rectangular, so rows and columns
     const SingleLabelImageRecord& imagerecord=record.image();
     if(imagerecord.pixel().size()){
       string pixel=imagerecord.pixel();
+      LOG(INFO)<<StringPrintf(pixel);
       for(int i=0,k=0;i<rows;i++)
         for(int j=0;j<cols;j++){
           // NOTE!!! must cast pixel to uint8_t then to float!!! waste a lot of
           // time to debug this
           *dptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
-	   dptr++;
-	   LOG(INFO)<<StringPrintf("zj: data %f\n", *dptr);
+	  LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *dptr);
+	  dptr++;
          }
-	 LOG(INFO)<<StringPrintf("One Record Done!\n");	
+	 LOG(INFO)<<StringPrintf("One Record Done! label: %d\n", (int)record.image().label());	
     }else{
       for(int i=0,k=0;i<rows;i++)
         for(int j=0;j<cols;j++){
@@ -508,15 +515,9 @@ void ReadmissionDataLayer::ParseRecords(bool training,
 	   dptr++;
 	}
     }
-    /*int size=blob->shape()[1];
-
-    for(int i=0;i<size;i++){
-      for(int j=0;j<size;j++){
-        *dptr=input.at<float>(i,j)/norm_a_-norm_b_;
-        dptr++;
-      }
-    }*/
+  LOG(INFO)<<StringPrintf("num_records: %d\n", num_records);
   }
+  LOG(INFO)<<StringPrintf("num_records: %d\n", num_records);
   CHECK_EQ(dptr, blob->mutable_cpu_data()+blob->count());
 }
 void ReadmissionDataLayer::Setup(const LayerProto& proto,
