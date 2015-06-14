@@ -821,6 +821,9 @@ void SoftmaxLossLayer::ComputeFeature(bool training, const vector<SLayer>& srcla
   const float* label=srclayers[1]->data(this).cpu_data();
   const float* probptr=prob.dptr;
   float loss=0, precision=0;
+  int precision_1 = 0;
+  int true_1 = 0;
+  int predict_1 = 0;
   for(int n=0;n<batchsize_;n++){
     int ilabel=static_cast<int>(label[n]);
     CHECK_LT(ilabel,10);
@@ -839,10 +842,20 @@ void SoftmaxLossLayer::ComputeFeature(bool training, const vector<SLayer>& srcla
       if (probvec[k].second == static_cast<int>(label[n])) {
         precision++;
         break;
-      }
+      }	
     }
+    if (static_cast<int>(label[n]) == 1 && probvec[0].second == 1)
+      precision_1++;
+    if (static_cast<int>(label[n]) == 1)
+      true_1++;
+    if (probvec[0].second == 1)
+      predict_1++;
+
     probptr+=dim_;
   }
+  LOG(INFO)<<StringPrintf("precision: %f precision_1: %d true_1: %d predict_1: %d\n", precision, precision_1, true_1, predict_1);  
+
+ 
   CHECK_EQ(probptr, prob.dptr+prob.shape.Size());
   float *metric=metric_.mutable_cpu_data();
   metric[0]=loss*scale_/(1.0f*batchsize_);
