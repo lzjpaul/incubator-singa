@@ -498,7 +498,8 @@ void ReadmissionDataLayer::ParseRecords(bool training,
     const SingleLabelImageRecord& imagerecord=record.image();
     if(imagerecord.pixel().size()){
       string pixel=imagerecord.pixel();
-      LOG(INFO)<<StringPrintf(pixel);
+     /* LOG(INFO)<<StringPrintf("pixel string: %s\n", pixel);*/
+     /* LOG(INFO)<< pixel;*/
       for(int i=0,k=0;i<rows;i++)
         for(int j=0;j<cols;j++){
           // NOTE!!! must cast pixel to uint8_t then to float!!! waste a lot of
