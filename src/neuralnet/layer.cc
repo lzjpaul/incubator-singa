@@ -231,11 +231,11 @@ void LabelLayer::ParseRecords(bool training, const vector<Record>& records,
   float *label= blob->mutable_cpu_data() ;
   for(const Record& record: records){
     label[rid++]=record.image().label();
-    LOG(INFO)<<StringPrintf("label_num_records: %d label: %d\n", rid, static_cast<int>(record.image().label()));
-    LOG(INFO)<<StringPrintf("float label_num_records: %d label: %f\n", rid, label[rid-1]);
+   /* LOG(INFO)<<StringPrintf("label_num_records: %d label: %d\n", rid, static_cast<int>(record.image().label()));
+    LOG(INFO)<<StringPrintf("float label_num_records: %d label: %f\n", rid, label[rid-1]);*/
  //   CHECK_LT(record.image().label(),10);
   }
-  LOG(INFO)<<StringPrintf("label_num_records: %d\n", rid); 
+ /* LOG(INFO)<<StringPrintf("label_num_records: %d\n", rid);*/ 
   CHECK_EQ(rid, blob->shape()[0]);
 }
 
@@ -504,10 +504,10 @@ void ReadmissionDataLayer::ParseRecords(bool training,
           // NOTE!!! must cast pixel to uint8_t then to float!!! waste a lot of
           // time to debug this
           *dptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
-	  LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *dptr);
+	/*  LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *dptr);*/
 	  dptr++;
          }
-	 LOG(INFO)<<StringPrintf("One Record Done! label: %d\n", (int)record.image().label());	
+	/* LOG(INFO)<<StringPrintf("One Record Done! label: %d\n", (int)record.image().label());*/	
     }else{
       for(int i=0,k=0;i<rows;i++)
         for(int j=0;j<cols;j++){
@@ -515,9 +515,9 @@ void ReadmissionDataLayer::ParseRecords(bool training,
 	   dptr++;
 	}
     }
-  LOG(INFO)<<StringPrintf("num_records: %d\n", num_records);
+ /* LOG(INFO)<<StringPrintf("num_records: %d\n", num_records);*/
   }
-  LOG(INFO)<<StringPrintf("num_records: %d\n", num_records);
+ /* LOG(INFO)<<StringPrintf("num_records: %d\n", num_records);*/
   CHECK_EQ(dptr, blob->mutable_cpu_data()+blob->count());
 }
 void ReadmissionDataLayer::Setup(const LayerProto& proto,
@@ -839,6 +839,7 @@ void SoftmaxLossLayer::ComputeFeature(bool training, const vector<SLayer>& srcla
         probvec.end(), std::greater<std::pair<float, int> >());
     // check if true label is in top k predictions
     for (int k = 0; k < topk_; k++) {
+      LOG(INFO)<<StringPrintf("probvec[k].second %d\n", probvec[k].second);
       if (probvec[k].second == static_cast<int>(label[n])) {
         precision++;
         break;

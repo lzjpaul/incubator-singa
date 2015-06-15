@@ -303,7 +303,7 @@ void BPWorker::TestOneBatch(shared_ptr<NeuralNet> net,int step, Phase phase){
   int columnnum;
   int param_index = 0;
   int i,j;
-  if (step % 100 == 0){
+  if (step % 120 == 0 && step!= 0){
 	LOG(INFO)<<StringPrintf("step %d \n", step);
 	auto& layers=net->layers();
   	for(auto& layer: layers){
