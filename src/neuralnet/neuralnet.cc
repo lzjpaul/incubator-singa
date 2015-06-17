@@ -17,6 +17,8 @@ void NeuralNet::RegisterLayers(){
   factory->Register("kConvolution", CreateLayer(ConvolutionLayer));
   factory->Register("kConcate", CreateLayer(ConcateLayer));
   factory->Register("kDropout", CreateLayer(DropoutLayer));
+  factory->Register("kDBMBottomLayer", CreateLayer(DBMBottomLayer));
+  factory->Register("kDBMTopLayer", CreateLayer(DBMTopLayer));
   factory->Register("kInnerProduct", CreateLayer(InnerProductLayer));
   factory->Register("kLabel", CreateLayer(LabelLayer));
   factory->Register("kLMDBData", CreateLayer(LMDBDataLayer));
