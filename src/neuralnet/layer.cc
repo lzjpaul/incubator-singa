@@ -213,7 +213,7 @@ void DBMBottomLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers
            /* for (int i = 0; i < batchsize_; i++)*/ /*u(n+1)*/
              /*    for (int j = 0; j < vdim_; j++)
                          negsrc[i][j] = possrc[i][j];*/
-	    /*negsrc = possrc;*/
+	   /* negsrc = possrc;*/
 	    /*the first iteration using gibbs as well*/
 	    for (int i = 0; i < neg_batchsize_; i++)
                     for (int j = 0; j < vdim_; j++)
@@ -259,7 +259,7 @@ void DBMBottomLayer::ComputeGradient(const vector<SLayer>& srclayers) {
 }
 
 void DBMBottomLayer::ComputeLoss(const vector<SLayer>& srclayers){
-	float loss=0;
+	float loss= (0.0f);
 	kPhase = true;
         CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*v*/
         Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
