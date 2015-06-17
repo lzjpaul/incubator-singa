@@ -21,7 +21,7 @@
  * the transformation of features.
  */
 namespace singa {
-
+static bool kPhase=true;  /*phase information*/
 /**
  * Convolution layer.
  */
@@ -82,6 +82,101 @@ class DropoutLayer: public Layer {
    * if mask[i]=0, then the i-th neuron is dropped.
    */
   Blob<float> mask_;
+};
+
+/**
+  * DBM bottom layer
+  */
+class DBMBottomLayer: public Layer {
+ public:
+  using Layer::Setup;
+  using Layer::SetupAfterPartition;
+  using Layer::ComputeFeature;
+  using Layer::ComputeGradient;
+
+  virtual void Setup(const LayerProto& proto,
+      const vector<SLayer>& srclayers);
+  
+  virtual void SetupAfterPartition(const LayerProto& proto,
+      const vector<int> &shape,
+      const vector<SLayer>& srclayers);
+  virtual ConnectionType connection_type(int k) const {
+    CHECK_LT(k, srclayers_.size());
+    return kOneToAll;
+  }
+
+  virtual void ComputeFeature(Phase phase, const vector<shared_ptr<Layer>>& srclayers);
+  virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
+  virtual void ComputeLoss(const vector<shared_ptr<Layer>>& srclayers);
+  virtual Blob<float>* mutable_data(const Layer* from){
+	if(kPhase)
+        	return &data_;
+    	else
+        	return &hidden_data_;
+  }
+  virtual const Blob<float>& data(const Layer* from) const{
+	if(kPhase)
+        	return data_;
+    	else
+        	return hidden_data_;
+  } 
+  //virtual void ToProto(LayerProto *layer_proto, bool copyData);
+  virtual vector<shared_ptr<Param>> GetParams() {
+    return vector<shared_ptr<Param>>{weight_, bias_};
+  }
+
+ private:
+  //! dimension of the hidden layer
+  int hdim_;
+  //! dimension of the visible layer
+  int vdim_;
+  int batchsize_;
+  int neg_batchsize_;
+  bool is_first_iteration_bottom;
+  float scale_;
+  shared_ptr<Param> weight_, bias_;
+  Blob<float> hidden_data_;
+  Blob<float> negsrc_;
+};
+
+/**
+  * DBM top layer
+  */
+class DBMTopLayer: public Layer {
+ public:
+  using Layer::Setup;
+  using Layer::SetupAfterPartition;
+  using Layer::ComputeFeature;
+  using Layer::ComputeGradient;
+
+  virtual void Setup(const LayerProto& proto,
+      const vector<SLayer>& srclayers);
+
+  virtual void SetupAfterPartition(const LayerProto& proto,
+      const vector<int> &shape,
+      const vector<SLayer>& srclayers);
+  virtual ConnectionType connection_type(int k) const {
+    CHECK_LT(k, srclayers_.size());
+    return kOneToAll;
+  }
+
+  virtual void ComputeFeature(Phase phase, const vector<shared_ptr<Layer>>& srclayers);
+  virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
+  /*virtual Blob<float>* mutable_data(const Layer* from);*/
+  /*virtual const Blob<float>& data(const Layer* from) const;*/
+  //virtual void ToProto(LayerProto *layer_proto, bool copyData);
+  virtual vector<shared_ptr<Param>> GetParams() {
+    return vector<shared_ptr<Param>>{bias_};
+  }
+
+ private:
+  //! dimension of the visible layer
+  int vdim_;
+  int batchsize_;
+  int neg_batchsize_;
+  bool is_first_iteration_top;
+  float scale_;
+  shared_ptr<Param> bias_;
 };
 
 /**

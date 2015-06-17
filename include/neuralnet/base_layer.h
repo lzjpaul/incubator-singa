@@ -114,6 +114,10 @@ class Layer {
    * \copybrief ComputeFeature(const vector<SLayer>& srclayers)
    */
   virtual void ComputeFeature(Phase phase);
+   /**
+   * \copybrief ComputeLoss(const vector<SLayer>& srclayers)
+   */
+  virtual void ComputeLoss(){};
   /**
    * Compute gradients for parameters and connecting layers.
    *
