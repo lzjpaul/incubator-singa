@@ -133,6 +133,7 @@ class DBMBottomLayer: public Layer {
   int batchsize_;
   int neg_batchsize_;
   bool is_first_iteration_bottom;
+  float scale_;
   shared_ptr<Param> weight_, bias_;
   Blob<float> hidden_data_;
   Blob<float> negsrc_;
@@ -159,7 +160,7 @@ class DBMTopLayer: public Layer {
     return kOneToAll;
   }
 
-  virtual void ComputeFeature(Phase, const vector<shared_ptr<Layer>>& srclayers);
+  virtual void ComputeFeature(Phase phase, const vector<shared_ptr<Layer>>& srclayers);
   virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
   /*virtual Blob<float>* mutable_data(const Layer* from);*/
   /*virtual const Blob<float>& data(const Layer* from) const;*/
@@ -174,6 +175,7 @@ class DBMTopLayer: public Layer {
   int batchsize_;
   int neg_batchsize_;
   bool is_first_iteration_top;
+  float scale_;
   shared_ptr<Param> bias_;
 };
 
