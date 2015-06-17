@@ -115,6 +115,10 @@ class Layer {
    */
   virtual void ComputeFeature(bool training);
   /**
+   * \copybrief ComputeLoss(const vector<SLayer>& srclayers)
+   */
+  virtual void ComputeLoss(){};
+  /**
    * Compute gradients for parameters and connecting layers.
    *
    * Implement backward propagation for BP.

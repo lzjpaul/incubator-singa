@@ -297,49 +297,17 @@ void BPWorker::TestOneBatch(shared_ptr<NeuralNet> net,int step, Phase phase){
 
 /****************************CDWorker**********************************/
 
-void CDWorker::PositivePhase(shared_ptr<NeuralNet> net, int step, bool training){
+void CDWorker::PositivePhase(shared_ptr<NeuralNet> net, int step){
   auto& layers=net->layers();
   for(auto& layer: layers){
-    if(layer->partitionid()==worker_id_){
-      if(layer->is_bridgedstlayer()){
-        auto* dst=static_cast<BridgeDstLayer*>(layer.get());
-        while(!dst->ready()){
-          auto msg=layer_dealer_->Receive();
-          CHECK_EQ(msg->src_first(), group_id_);
-          string name((char*)msg->frame_data(), msg->frame_size());
-          auto tmp=net->name2layer(name);
-          CHECK(tmp->is_bridgedstlayer());
-          auto* dstlayer=static_cast<BridgeDstLayer*>(tmp.get());
-          auto data=dstlayer->mutable_data(nullptr);
-          msg->next_frame();
-          memcpy(data->mutable_cpu_data(), msg->frame_data(), msg->frame_size());
-          dstlayer->set_ready(true);
-          delete msg;
-        }
-      }
-      if(training){                                     //in RBM there is no difference between training and testing??
-        for(shared_ptr<Param> p: layer->GetParams()){
-          Collect(p, step);
-        }
-      }
+
       //clock_t s=clock();
-      layer->ComputeFeature(true);			//I only modified here
+      layer->ComputeFeature(kPositive);			//I only modified here
       //LOG(ERROR)<<layer->name()<<":"<<(clock()-s)*1.0/CLOCKS_PER_SEC;
-      if(layer->is_bridgesrclayer()){
-        auto dst=layer->dstlayers().at(0);
-        Msg *msg=new Msg();
-        msg->set_src(group_id_, worker_id_, kWorkerLayer);
-        msg->set_dst(group_id_, dst->partitionid(), kWorkerLayer);
-        msg->add_frame(dst->name().c_str(), dst->name().length());
-        auto const & blob=layer->data(nullptr);
-        msg->add_frame(blob.cpu_data(), blob.count()*sizeof(float));
-        layer_dealer_->Send(&msg);
-      }
-      if(training&&DisplayDebugInfo(step)&&layer->mutable_data(nullptr)!=nullptr){
+      /*if(training&&DisplayDebugInfo(step)&&layer->mutable_data(nullptr)!=nullptr){
         LOG(INFO)<<StringPrintf("Forward layer  %10s data norm1 %13.9f",
             layer->name().c_str(), layer->data(nullptr).asum_data());
-      }
-    }
+      }*/
   }
 }
 
@@ -347,13 +315,8 @@ void CDWorker::NegativePhase(shared_ptr<NeuralNet> net, int step){
   auto& layers=net->layers();
   for (auto it = layers.rbegin(); it != layers.rend(); it++){    //what is the difference between forward and backward in terms of traverse all layers (line302)
     shared_ptr<Layer> layer=*it;
-    if(layer->partitionid()==worker_id_){
-      if(layer->is_bridgesrclayer()){
-        //auto* src=static_cast<BridgeSrcLayer*>(layer.get());
-        // receive grad blobs
-      }
-      layer->ComputeFeature(false);				//I only modified here
-      if(DisplayDebugInfo(step)&&layer->mutable_grad(nullptr)!=nullptr){
+      layer->ComputeFeature(kNegative);				//I only modified here
+      /*if(DisplayDebugInfo(step)&&layer->mutable_grad(nullptr)!=nullptr){
         LOG(INFO)<<StringPrintf("Backward layer %10s grad norm1 %13.9f\t",
             layer->name().c_str(), layer->grad(nullptr).asum_data());
         for(shared_ptr<Param> p: layer->GetParams())
@@ -361,14 +324,7 @@ void CDWorker::NegativePhase(shared_ptr<NeuralNet> net, int step){
               value norm1 %13.9f, grad norm1 %13.9f",
               p->id(), p->name().c_str(),
               p->data().asum_data(), p->grad().asum_data());
-      }
-      for(shared_ptr<Param> p: layer->GetParams()){
-        Update(p, step);
-      }
-      if(layer->is_bridgedstlayer()){
-        // send grad blobs
-      }
-    }
+      }*/
   }
 }
 
@@ -376,13 +332,8 @@ void CDWorker::GradientPhase(shared_ptr<NeuralNet> net, int step){
   auto& layers=net->layers();
   for (auto it = layers.rbegin(); it != layers.rend(); it++){
     shared_ptr<Layer> layer=*it;
-    if(layer->partitionid()==worker_id_){
-      if(layer->is_bridgesrclayer()){
-        //auto* src=static_cast<BridgeSrcLayer*>(layer.get());
-        // receive grad blobs
-      }
       layer->ComputeGradient();
-      if(DisplayDebugInfo(step)&&layer->mutable_grad(nullptr)!=nullptr){
+      /*if(DisplayDebugInfo(step)&&layer->mutable_grad(nullptr)!=nullptr){
         LOG(INFO)<<StringPrintf("Backward layer %10s grad norm1 %13.9f\t",
             layer->name().c_str(), layer->grad(nullptr).asum_data());
         for(shared_ptr<Param> p: layer->GetParams())
@@ -390,24 +341,53 @@ void CDWorker::GradientPhase(shared_ptr<NeuralNet> net, int step){
               value norm1 %13.9f, grad norm1 %13.9f",
               p->id(), p->name().c_str(),
               p->data().asum_data(), p->grad().asum_data());
-      }
+      }*/
+      for(shared_ptr<Param> p: layer->GetParams()){
+          Collect(p, step);
+        }
       for(shared_ptr<Param> p: layer->GetParams()){
         Update(p, step);
       }
-      if(layer->is_bridgedstlayer()){
-        // send grad blobs
-      }
-    }
   }
 }
 
+void CDWorker::LossPhase(shared_ptr<NeuralNet> net, int step, Phase phase){
+  auto& layers=net->layers();
+  if (phase == kTrain){  /*has problem? because has the same naming*/
+      	//clock_t s=clock();
+      	layers[3]->ComputeFeature(kTest);                      
+        layers[2]->ComputeLoss();
+      	//LOG(ERROR)<<layer->name()<<":"<<(clock()-s)*1.0/CLOCKS_PER_SEC;
+      	/*if(training&&DisplayDebugInfo(step)&&layer->mutable_data(nullptr)!=nullptr){
+        	LOG(INFO)<<StringPrintf("Forward layer  %10s data norm1 %13.9f",
+            	layer->name().c_str(), layer->data(nullptr).asum_data());
+      	}*/
+ 	
+  }
+  else if(phase == kTest){  /*test*/
+      //clock_t s=clock();
+      layers[0]->ComputeFeature(kPositive);  
+      layers[1]->ComputeFeature(kPositive);
+      layers[2]->ComputeFeature(kPositive);
+      layers[3]->ComputeFeature(kTest);
+      layers[2]->ComputeLoss();
+      //LOG(ERROR)<<layer->name()<<":"<<(clock()-s)*1.0/CLOCKS_PER_SEC;
+      /*if(training&&DisplayDebugInfo(step)&&layer->mutable_data(nullptr)!=nullptr){
+              LOG(INFO)<<StringPrintf("Forward layer  %10s data norm1 %13.9f",
+              layer->name().c_str(), layer->data(nullptr).asum_data());
+      }*/
+  }
+
+}
+
 void CDWorker::TrainOneBatch(int step){
-  PositivePhase(train_net_, step, true);     // no need to specify training or not in RBM??
+  PositivePhase(train_net_, step);     // no need to specify training or not in RBM??
   NegativePhase(train_net_, step);
-  GradientPhase(train_net_, step);           
+  GradientPhase(train_net_, step);
+  LossPhase(train_net_, step, kTrain);           
 }
 
 void CDWorker::TestOneBatch(shared_ptr<NeuralNet> net,int step, Phase phase){  //I think for RBM, this can be removed
-  PositivePhase(net, step, false);
+  LossPhase(train_net_, step, kTest);
 }
 }  // namespace singa

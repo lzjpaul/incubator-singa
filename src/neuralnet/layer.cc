@@ -193,21 +193,9 @@ void DBMBottomLayer::SetupAfterPartition(const LayerProto& proto,
   DBMBottomproto->set_num_output(shape[1]);  Is this correct? shape[1]*/
   /*Setup(newproto, srclayers);*/
 }
-/*Blob<float>* DBMBottomLayer::mutable_data(const Layer* from){
-    if(kPhase)
-    	return &data_;
-    else
-	return &hidden_data_;
-}
-const Blob<float>& DBMBottomLayer::data(const Layer* from) const {
-    if(kPhase)
-        return data_;
-    else
-        return hidden_data_;
 
-}*/
-void DBMBottomLayer::ComputeFeature(bool positive, const vector<SLayer>& srclayers) { 
-  if (positive){
+void DBMBottomLayer::ComputeFeature(int posnegtest, const vector<SLayer>& srclayers) { 
+  if (posnegtest == 0){ /*positive phase*/
         Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));/*u(n+1)*/
         kPhase = true;
         CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*v*/
@@ -265,6 +253,27 @@ void DBMBottomLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   /*gweight=dot(possrc.T(),data.T()) - dot(negsrc.T(),hidden_data.T());*/ /*need to normalize here???????*/
   gweight=dot(possrc.T(),data.T());
   gweight-=dot(negsrc.T(),hidden_data.T());
+}
+
+void DBMBottomLayer::ComputeLoss(const vector<SLayer>& srclayers){
+	float loss=0;
+	kPhase = true;
+        CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*v*/
+        Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
+         Shape2(batchsize_,vdim_));
+	Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));/*h(n+1),sampling using u(n+1)*/
+        Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
+	Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));
+	Tensor<cpu, 2> reconstruct(Shape2(batchsize_,vdim_));
+	reconstruct=dot(data,weight.T());
+	reconstruct+=repmat(bias, batchsize_); /*the reconstructed one*/
+	recontruct=F<op::sigmoid>(reconstruct);
+	for (int i = 0; i < batchsieze_; i++)
+		for (int j = 0; j < vdim_, j++){
+		loss += -(possrc[i][j]*log(reconstruct[i][j])+(1-possrc[i][j])*log(1-reconstruct[i][j]));
+		}
+	loss/=batchsize_;
+	AllocSpace(reconstruct);
 }
 /**************** Implementation for DBMMiddleLayer********************/
 void DBMMiddleLayer::Setup(const LayerProto& proto,
@@ -420,9 +429,9 @@ virtual const Blob<float>& DBMTopLayer::data(const Layer* from) const {
     else
         return hidden_data_;
 }*/
-void DBMTopLayer::ComputeFeature(bool positive, const vector<SLayer>& srclayers) {
-  if (positive){
-	kPhase = true;
+void DBMTopLayer::ComputeFeature(int posnegtest, const vector<SLayer>& srclayers) {
+  if (posnegtest == 0){  /*postive phase*/
+	kPhase = true; /*the same as wangwei's phase definition*/
         CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*w(n)u(n-1)*/
         Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
          Shape2(batchsize_,vdim_));
@@ -431,7 +440,7 @@ void DBMTopLayer::ComputeFeature(bool positive, const vector<SLayer>& srclayers)
         possrc+=repmat(bias, batchsize_);
         possrc=F<op::sigmoid>(possrc);
   }
-  else{   /*negative compute feature*/
+  else if (posnegtest == 1){   /*negative compute feature*/
         if (is_first_iteration_top){
 		kPhase = true;
 		CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*u(n)*/
@@ -461,6 +470,16 @@ void DBMTopLayer::ComputeFeature(bool positive, const vector<SLayer>& srclayers)
  /*h(n), gibbs sampling!!!!!! I should modify this part: (1)not traverse all the element (2) no realization for k-step persistent*/
 	}
   }
+  else{   /*test phase feature*/
+	kPhase = true;
+	CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*u(n) already*/
+        Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
+         Shape2(batchsize_,vdim_));
+        for (int i = 0; i < batchsize_; i++)  /*the reconstruct vector*/
+        	for (int j = 0; j < vdim_; j++)
+                	possrc[i][j] = (float)((rand() / double(RAND_MAX)) > possrc[i][j] ? 0 : 1);
+
+  } 
 }
 
 void DBMTopLayer::ComputeGradient(const vector<SLayer>& srclayers) {
