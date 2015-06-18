@@ -193,8 +193,10 @@ void DBMBottomLayer::SetupAfterPartition(const LayerProto& proto,
 
 void DBMBottomLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
   /*LOG(ERROR)<<"bottom phase "<<phase;*/
-  float matrix_norm = (weight_->data()).sum_data(); 
+  /*float matrix_norm = (weight_->data()).sum_data();
+  float bias_norm = (bias_->data()).sum_data(); 
   LOG(ERROR)<<"bottom weight matrix norm"<< matrix_norm;
+  LOG(ERROR)<<"bottom bias norm"<< bias_norm;*/
   if (phase == kPositive){ /*positive phase*/
         Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));/*u(n+1)*/
         kPhase = true;
