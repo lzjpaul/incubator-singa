@@ -169,22 +169,9 @@ void Worker::RunOneBatch(int step, Metric* perf){
     CollectAll(test_net_, step);
     Test(modelproto_.test_steps(), kTest, test_net_);
   }
-  TrainOneBatch(step);
+  TrainOneBatch(step, perf);
   //LOG(ERROR)<<"Train "<<step;
   if(perf!=nullptr){
-    auto losslayers=train_net_->losslayers();
-    for(auto layer: losslayers){
-      if(layer->partitionid()==worker_id_){
-        const float * ptr=layer->metric().cpu_data();
-        /*
-        for(int j=0;j<layer->metric().count();j++)
-          perf->AddMetric(std::to_string(j)+"#"+layer->name(), ptr[j]);
-        */
-        // hard code display info
-        perf->AddMetric(std::to_string(0)+"#loss", ptr[0]);
-        perf->AddMetric(std::to_string(1)+"#accuracy", ptr[1]);
-      }
-    }
     perf->Inc();
     if(DisplayNow(step)){
       perf->Avg();
@@ -206,22 +193,9 @@ void Worker::SendBlob(){
 }
 
 void Worker::Test(int nsteps, Phase phase, shared_ptr<NeuralNet> net){
-  const auto& losslayers=net->losslayers();
   Metric perf;
   for(int step=0;step<nsteps;step++){
-    TestOneBatch(step, phase, net);
-    for(auto layer: losslayers){
-      if(layer->partitionid()==worker_id_){
-        const float * ptr=layer->metric().cpu_data();
-        /*
-        for(int j=0;j<layer->metric().count();j++)
-          perf.AddMetric(std::to_string(j)+"#"+layer->name(), ptr[j]);
-        */
-        // hard code display info
-        perf.AddMetric(std::to_string(0)+"#loss", ptr[0]);
-        perf.AddMetric(std::to_string(1)+"#accuracy", ptr[1]);
-      }
-    }
+    TestOneBatch(step, phase, net, &perf);
     perf.Inc();
   }
   perf.Avg();
@@ -313,13 +287,39 @@ void BPWorker::Backward(int step, shared_ptr<NeuralNet> net){
   }
 }
 
-void BPWorker::TrainOneBatch(int step){
+void BPWorker::TrainOneBatch(int step, Metric* perf){
   Forward(step, kTrain, train_net_);
   Backward(step, train_net_);
+  auto losslayers=train_net_->losslayers();
+    for(auto layer: losslayers){
+      if(layer->partitionid()==worker_id_){
+        const float * ptr=layer->metric().cpu_data();
+        /*
+        for(int j=0;j<layer->metric().count();j++)
+          perf->AddMetric(std::to_string(j)+"#"+layer->name(), ptr[j]);
+        */
+        // hard code display info
+        perf->AddMetric(std::to_string(0)+"#loss", ptr[0]);
+        perf->AddMetric(std::to_string(1)+"#accuracy", ptr[1]);
+      }
+    }
 }
 
-void BPWorker::TestOneBatch(int step, Phase phase, shared_ptr<NeuralNet> net){
+void BPWorker::TestOneBatch(int step, Phase phase, shared_ptr<NeuralNet> net, Metric* perf){
   Forward(step, phase, net);
+  const auto& losslayers=net->losslayers();
+  for(auto layer: losslayers){
+      if(layer->partitionid()==worker_id_){
+        const float * ptr=layer->metric().cpu_data();
+        /*
+        for(int j=0;j<layer->metric().count();j++)
+          perf.AddMetric(std::to_string(j)+"#"+layer->name(), ptr[j]);
+        */
+        // hard code display info
+        perf->AddMetric(std::to_string(0)+"#loss", ptr[0]);
+        perf->AddMetric(std::to_string(1)+"#accuracy", ptr[1]);
+      }
+    }
 }
 
 /****************************CDWorker**********************************/
@@ -377,12 +377,12 @@ void CDWorker::GradientPhase(shared_ptr<NeuralNet> net, int step){
   }
 }
 
-void CDWorker::LossPhase(shared_ptr<NeuralNet> net, int step, Phase phase){
+void CDWorker::LossPhase(shared_ptr<NeuralNet> net, int step, Phase phase, Metric* perf){
   auto& layers=net->layers();
   if (phase == kTrain){  /*has problem? because has the same naming*/
       	//clock_t s=clock();
       	layers[3]->ComputeFeature(kTest);                      
-        layers[2]->ComputeLoss();
+        layers[2]->ComputeLoss(perf);
       	//LOG(ERROR)<<layer->name()<<":"<<(clock()-s)*1.0/CLOCKS_PER_SEC;
       	/*if(training&&DisplayDebugInfo(step)&&layer->mutable_data(nullptr)!=nullptr){
         	LOG(INFO)<<StringPrintf("Forward layer  %10s data norm1 %13.9f",
@@ -396,7 +396,7 @@ void CDWorker::LossPhase(shared_ptr<NeuralNet> net, int step, Phase phase){
       layers[1]->ComputeFeature(kPositive);
       layers[2]->ComputeFeature(kPositive);
       layers[3]->ComputeFeature(kTest);
-      layers[2]->ComputeLoss();
+      layers[2]->ComputeLoss(perf);
       //LOG(ERROR)<<layer->name()<<":"<<(clock()-s)*1.0/CLOCKS_PER_SEC;
       /*if(training&&DisplayDebugInfo(step)&&layer->mutable_data(nullptr)!=nullptr){
               LOG(INFO)<<StringPrintf("Forward layer  %10s data norm1 %13.9f",
@@ -406,14 +406,14 @@ void CDWorker::LossPhase(shared_ptr<NeuralNet> net, int step, Phase phase){
 
 }
 
-void CDWorker::TrainOneBatch(int step){
+void CDWorker::TrainOneBatch(int step, Metric* perf){
   PositivePhase(train_net_, step);     // no need to specify training or not in RBM??
   NegativePhase(train_net_, step);
   GradientPhase(train_net_, step);
-  LossPhase(train_net_, step, kTrain);           
+  LossPhase(train_net_, step, kTrain, perf);           
 }
 
-void CDWorker::TestOneBatch(shared_ptr<NeuralNet> net,int step, Phase phase){  //I think for RBM, this can be removed
-  LossPhase(train_net_, step, kTest);
+void CDWorker::TestOneBatch(shared_ptr<NeuralNet> net,int step, Phase phase, Metric* perf){  //I think for RBM, this can be removed
+  LossPhase(train_net_, step, kTest, perf);
 }
 }  // namespace singa

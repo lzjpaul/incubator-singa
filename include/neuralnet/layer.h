@@ -107,7 +107,7 @@ class DBMBottomLayer: public Layer {
 
   virtual void ComputeFeature(Phase phase, const vector<shared_ptr<Layer>>& srclayers);
   virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
-  virtual void ComputeLoss(const vector<shared_ptr<Layer>>& srclayers);
+  virtual void ComputeLoss(const vector<shared_ptr<Layer>>& srclayers, Metric* perf);
   virtual Blob<float>* mutable_data(const Layer* from){
 	if(kPhase)
         	return &data_;
