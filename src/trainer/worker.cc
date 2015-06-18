@@ -377,12 +377,12 @@ void CDWorker::GradientPhase(shared_ptr<NeuralNet> net, int step){
   }
 }
 
-void CDWorker::LossPhase(shared_ptr<NeuralNet> net, int step, Phase phase){
+void CDWorker::LossPhase(shared_ptr<NeuralNet> net, int step, Phase phase, Metric* perf){
   auto& layers=net->layers();
   if (phase == kTrain){  /*has problem? because has the same naming*/
       	//clock_t s=clock();
       	layers[3]->ComputeFeature(kTest);                      
-        layers[2]->ComputeLoss();
+        layers[2]->ComputeLoss(perf);
       	//LOG(ERROR)<<layer->name()<<":"<<(clock()-s)*1.0/CLOCKS_PER_SEC;
       	/*if(training&&DisplayDebugInfo(step)&&layer->mutable_data(nullptr)!=nullptr){
         	LOG(INFO)<<StringPrintf("Forward layer  %10s data norm1 %13.9f",
@@ -396,7 +396,7 @@ void CDWorker::LossPhase(shared_ptr<NeuralNet> net, int step, Phase phase){
       layers[1]->ComputeFeature(kPositive);
       layers[2]->ComputeFeature(kPositive);
       layers[3]->ComputeFeature(kTest);
-      layers[2]->ComputeLoss();
+      layers[2]->ComputeLoss(perf);
       //LOG(ERROR)<<layer->name()<<":"<<(clock()-s)*1.0/CLOCKS_PER_SEC;
       /*if(training&&DisplayDebugInfo(step)&&layer->mutable_data(nullptr)!=nullptr){
               LOG(INFO)<<StringPrintf("Forward layer  %10s data norm1 %13.9f",
@@ -406,14 +406,14 @@ void CDWorker::LossPhase(shared_ptr<NeuralNet> net, int step, Phase phase){
 
 }
 
-void CDWorker::TrainOneBatch(int step){
+void CDWorker::TrainOneBatch(int step, Metric* perf){
   PositivePhase(train_net_, step);     // no need to specify training or not in RBM??
   NegativePhase(train_net_, step);
   GradientPhase(train_net_, step);
-  LossPhase(train_net_, step, kTrain);           
+  LossPhase(train_net_, step, kTrain, perf);           
 }
 
-void CDWorker::TestOneBatch(shared_ptr<NeuralNet> net,int step, Phase phase){  //I think for RBM, this can be removed
-  LossPhase(train_net_, step, kTest);
+void CDWorker::TestOneBatch(shared_ptr<NeuralNet> net,int step, Phase phase, Metric* perf){  //I think for RBM, this can be removed
+  LossPhase(train_net_, step, kTest, perf);
 }
 }  // namespace singa

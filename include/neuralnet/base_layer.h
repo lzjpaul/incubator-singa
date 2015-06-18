@@ -117,7 +117,8 @@ class Layer {
    /**
    * \copybrief ComputeLoss(const vector<SLayer>& srclayers)
    */
-  virtual void ComputeLoss(){};
+  virtual void ComputeLoss(const vector<SLayer>& srclayers, Metric* perf){};
+  virtual void ComputeLoss(Metric* perf){};
   /**
    * Compute gradients for parameters and connecting layers.
    *
