@@ -258,12 +258,12 @@ void DBMBottomLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   gweight*=scale_/(1.0f*batchsize_);
 }
 
-void DBMBottomLayer::ComputeLoss(const vector<SLayer>& srclayers, Metric* perf){
+void DBMBottomLayer::ComputeLoss(Metric* perf){
 	float loss= (0.0f);
 	kPhase = true;
-        CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*v*/
-        Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
-         Shape2(batchsize_,vdim_));
+	CHECK_EQ(srclayers_[0]->data(this).count(), batchsize_*vdim_); /*v*/ 
+        Tensor<cpu, 2> possrc(srclayers_[0]->mutable_data(this)->mutable_cpu_data(),
+         Shape2(batchsize_,vdim_));   /*v*/
 	Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));/*h(n+1),sampling using u(n+1)*/
         Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
 	Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));
@@ -278,8 +278,9 @@ void DBMBottomLayer::ComputeLoss(const vector<SLayer>& srclayers, Metric* perf){
 		}
 	loss/=batchsize_;
 	FreeSpace(reconstruct);
-	perf->AddMetric("reconstruct error", loss);
-	
+	perf->Reset();
+	perf->AddMetric("reconstruct_error", loss);
+	LOG(ERROR)<<"log reconstruction error "<<loss;
 }
 /**************** Implementation for DBMTopLayer********************/
 void DBMTopLayer::Setup(const LayerProto& proto,
