@@ -175,6 +175,7 @@ void DBMBottomLayer::Setup(const LayerProto& proto,
   hidden_data_.Reshape(vector<int>{neg_batchsize_, hdim_});
   scale_ = static_cast<float> (1.0f);
   negsrc_.Reshape(vector<int>{neg_batchsize_, vdim_});                                  /*is not from bottom layer, is a member of DBMBottomLayer*/
+  metric_.Reshape(vector<int>{1});
   Factory<Param>* factory=Singleton<Factory<Param>>::Instance();
   weight_=shared_ptr<Param>(factory->Create("Param"));
   bias_=shared_ptr<Param>(factory->Create("Param"));
@@ -252,8 +253,8 @@ void DBMBottomLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   gbias=sum_rows(possrc);
   gbias-=sum_rows(negsrc);
   /*gweight=dot(possrc.T(),data.T()) - dot(negsrc.T(),hidden_data.T());*/ /*need to normalize here???????*/
-  gweight=dot(possrc.T(),data.T());
-  gweight-=dot(negsrc.T(),hidden_data.T());
+  gweight=dot(possrc.T(),data);
+  gweight-=dot(negsrc.T(),hidden_data);
   gbias*=scale_/(1.0f*batchsize_);
   gweight*=scale_/(1.0f*batchsize_);
 }
@@ -278,6 +279,8 @@ void DBMBottomLayer::ComputeLoss(const vector<SLayer>& srclayers){
 		}
 	loss/=batchsize_;
 	FreeSpace(reconstruct);
+	float *metric=metric_.mutable_cpu_data();
+	metric[0] = loss;
 }
 /**************** Implementation for DBMTopLayer********************/
 void DBMTopLayer::Setup(const LayerProto& proto,
