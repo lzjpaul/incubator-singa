@@ -191,7 +191,10 @@ void DBMBottomLayer::SetupAfterPartition(const LayerProto& proto,
   /*Setup(newproto, srclayers);*/
 }
 
-void DBMBottomLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) { 
+void DBMBottomLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
+  /*LOG(ERROR)<<"bottom phase "<<phase;*/
+  float matrix_norm = (weight_->data()).sum_data(); 
+  LOG(ERROR)<<"bottom weight matrix norm"<< matrix_norm;
   if (phase == kPositive){ /*positive phase*/
         Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));/*u(n+1)*/
         kPhase = true;
@@ -323,6 +326,7 @@ virtual const Blob<float>& DBMTopLayer::data(const Layer* from) const {
         return hidden_data_;
 }*/
 void DBMTopLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
+  /*LOG(ERROR)<<"top phase "<<phase;*/   
   if (phase == kPositive){  /*postive phase*/
 	kPhase = true; /*the same as wangwei's phase definition*/
         CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*w(n)u(n-1)*/
@@ -332,6 +336,9 @@ void DBMTopLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
         // repmat: repeat bias vector into batchsize rows
         possrc+=repmat(bias, batchsize_);
         possrc=F<op::sigmoid>(possrc);
+	/*LOG(ERROR)<<"top layer computefeature"<<"u";
+	for (int i = 0; i < 15; i++)
+		LOG(ERROR)<<"data "<<possrc[0][i];*/
   }
   else if (phase == kNegative){   /*negative compute feature*/
         if (is_first_iteration_top){
@@ -372,10 +379,15 @@ void DBMTopLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
 	CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*u(n) already*/
         Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
          Shape2(batchsize_,vdim_));
+	/*LOG(ERROR)<<"top layer testphase "<<" u";
+        for (int i = 0; i < 15; i++)
+                LOG(ERROR)<<"possrc "<<possrc[0][i];*/
         for (int i = 0; i < batchsize_; i++)  /*the reconstruct vector*/
         	for (int j = 0; j < vdim_; j++)
                 	possrc[i][j] = (float)((rand() / double(RAND_MAX)) > possrc[i][j] ? 0 : 1);
-
+	/*LOG(ERROR)<<"top layer testphase gibbs"<<" h";
+        for (int i = 0; i < 15; i++)
+                LOG(ERROR)<<"possrc "<<possrc[0][i];*/
   } 
 }
 
