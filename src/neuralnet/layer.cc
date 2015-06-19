@@ -211,6 +211,8 @@ void DBMBottomLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers
 	LOG(ERROR)<<"bottom is_first_iteration"<< is_first_iteration_bottom;
         if (is_first_iteration_bottom){
 	    kPhase = true;
+	    Tensor<cpu, 2> hidden_data(hidden_data_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_)); /*h(n+1)*/
+	    Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
             CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*v*/
             Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(), /*v*/
             Shape2(batchsize_,vdim_));
@@ -219,11 +221,12 @@ void DBMBottomLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers
            /* for (int i = 0; i < batchsize_; i++)*/ /*u(n+1)*/
              /*    for (int j = 0; j < vdim_; j++)
                          negsrc[i][j] = possrc[i][j];*/
-	   /* negsrc = possrc;*/
+	    negsrc = possrc;
 	    /*the first iteration using gibbs as well*/
-	    for (int i = 0; i < neg_batchsize_; i++)
+	    /*for (int i = 0; i < neg_batchsize_; i++)
                     for (int j = 0; j < vdim_; j++)
-                            negsrc[i][j] = (float)((rand() / double(RAND_MAX)) > possrc[i][j] ? 0 : 1);
+                            negsrc[i][j] = (float)((rand() / double(RAND_MAX)) > possrc[i][j] ? 0 : 1);*/
+	    hidden_data=dot(negsrc, weight); /*w(n+1)h(n)*/
             is_first_iteration_bottom = false;
         }
         else{
@@ -354,26 +357,22 @@ void DBMTopLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
 		LOG(ERROR)<<"data "<<possrc[0][i];*/
   }
   else if (phase == kNegative){   /*negative compute feature*/
-	LOG(ERROR)<<"top is_first_iteration"<< is_first_iteration_top;
-        if (is_first_iteration_top){
+	/*LOG(ERROR)<<"top is_first_iteration"<< is_first_iteration_top;*/
+       /* if (is_first_iteration_top){
 		kPhase = true;
-		CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*u(n),after this iteration of positive phase*/
-                Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
+		CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_);*/ /*u(n),after this iteration of positive phase*/
+                /*Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
                 Shape2(batchsize_,vdim_));
 		kPhase = false;
-                CHECK_EQ(srclayers[0]->data(this).count(), neg_batchsize_*vdim_); /*hidden_data_(this)*/
-                Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));/*hidden_mutable,h(n)*/
-              /*  for (int i = 0; i < batchsize_; i++) 
-                     for (int j = 0; j < vdim_; j++)
-                             negsrc[i][j] = possrc[i][j];*/
-		/*negsrc = possrc;*/
+                CHECK_EQ(srclayers[0]->data(this).count(), neg_batchsize_*vdim_);*/ /*hidden_data_(this)*/
+                /*Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));*//*hidden_mutable,h(n)*/
 		/*first iteration, using gibbs sampling also*/
-	  	for (int i = 0; i < neg_batchsize_; i++)
+	  	/*for (int i = 0; i < neg_batchsize_; i++)
                     for (int j = 0; j < vdim_; j++)
                             negsrc[i][j] = (float)((rand() / double(RAND_MAX)) > possrc[i][j] ? 0 : 1);
                 is_first_iteration_top = false;
-        }
-	else{
+        }*/
+	/*else{*/
 		kPhase = false;
         	CHECK_EQ(srclayers[0]->data(this).count(), neg_batchsize_*vdim_);  /*hidden_data_(this)*/
         	Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),/*hidden_mutable, w(n)h(n-1)*/
@@ -386,7 +385,7 @@ void DBMTopLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
                 	for (int j = 0; j < vdim_; j++)
                         	negsrc[i][j] = (float)((rand() / double(RAND_MAX)) > negsrc[i][j] ? 0 : 1);
  /*h(n), gibbs sampling!!!!!! I should modify this part: (1)not traverse all the element (2) no realization for k-step persistent*/
-	}
+	/*}*/
   }
   else if (phase == kTest){   /*test phase feature*/
 	kPhase = true;
