@@ -208,8 +208,9 @@ void DBMBottomLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers
         data=dot(possrc, weight); /*to dstlayer*/
   }
   else if (phase == kNegative){   /*negative compute feature*/
-	LOG(ERROR)<<"bottom is_first_iteration"<< is_first_iteration_bottom;
+	/*LOG(ERROR)<<"bottom is_first_iteration"<< is_first_iteration_bottom;*/
         if (is_first_iteration_bottom){
+	    /*LOG(ERROR)<<"bottom "<< "in_first iteration";*/
 	    kPhase = true;
 	    Tensor<cpu, 2> hidden_data(hidden_data_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_)); /*h(n+1)*/
 	    Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
@@ -218,10 +219,10 @@ void DBMBottomLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers
             Shape2(batchsize_,vdim_));
             /*CHECK_EQ(srclayers[0]->hidden_data_(this).count(), neg_batchsize_*vdim_);*/
             Tensor<cpu, 2> negsrc(negsrc_.mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));  /*For this, negsrc (v) is not from src layer, it is a member of bottom layer*/
-           /* for (int i = 0; i < batchsize_; i++)*/ /*u(n+1)*/
-             /*    for (int j = 0; j < vdim_; j++)
-                         negsrc[i][j] = possrc[i][j];*/
-	    negsrc = possrc;
+            for (int i = 0; i < batchsize_; i++) /*u(n+1)*/
+                 for (int j = 0; j < vdim_; j++)
+                         negsrc[i][j] = possrc[i][j];
+	   /* negsrc = possrc;*/
 	    /*the first iteration using gibbs as well*/
 	    /*for (int i = 0; i < neg_batchsize_; i++)
                     for (int j = 0; j < vdim_; j++)
@@ -230,6 +231,7 @@ void DBMBottomLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers
             is_first_iteration_bottom = false;
         }
         else{
+	    /*LOG(ERROR)<<"bottom "<< "not in first iteration";*/
             Tensor<cpu, 2> hidden_data(hidden_data_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_)); /*h(n+1)*/
             Tensor<cpu, 2> negsrc(negsrc_.mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));  /*For this , negsrc is not from src layer, it is a member of bottom layer*/
 	    Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
@@ -267,17 +269,18 @@ void DBMBottomLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   LOG(INFO)<<StringPrintf("zj v \n");
   for (int i = 0; i < vdim_; i++)
          LOG(INFO)<<StringPrintf("vgibbs %f\n", possrc[0][i]);*/
-  gbias=sum_rows(possrc);
-  gbias-=sum_rows(negsrc);
+  gbias=sum_rows(negsrc);
+  gbias-=sum_rows(possrc);
   /*gweight=dot(possrc.T(),data.T()) - dot(negsrc.T(),hidden_data.T());*/ /*need to normalize here???????*/
-  gweight=dot(possrc.T(),data);
-  gweight-=dot(negsrc.T(),hidden_data);
+  gweight=dot(negsrc.T(),data);
+  gweight-=dot(possrc.T(),hidden_data);
   gbias*=scale_/(1.0f*batchsize_);
   gweight*=scale_/(1.0f*batchsize_);
 }
 
 void DBMBottomLayer::ComputeLoss(Metric* perf){
 	float loss= (0.0f);
+	float sqr_loss= (0.0f);
 	kPhase = true;
 	CHECK_EQ(srclayers_[0]->data(this).count(), batchsize_*vdim_); /*v*/ 
         Tensor<cpu, 2> possrc(srclayers_[0]->mutable_data(this)->mutable_cpu_data(),
@@ -285,21 +288,41 @@ void DBMBottomLayer::ComputeLoss(Metric* perf){
 	Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));/*h(n+1),sampling using u(n+1)*/
         Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
 	Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));
+	Tensor<cpu, 2> prereconstruct(Shape2(batchsize_,vdim_));
 	Tensor<cpu, 2> reconstruct(Shape2(batchsize_,vdim_));
+	AllocSpace(prereconstruct);
 	AllocSpace(reconstruct);
 	reconstruct=dot(data,weight.T());
 	reconstruct+=repmat(bias, batchsize_); /*the reconstructed one*/
+	for (int i = 0; i < batchsize_; i++)
+                for (int j = 0; j < vdim_; j++){
+			prereconstruct[i][j] = reconstruct[i][j];
+	}
 	reconstruct=F<op::sigmoid>(reconstruct);
+    /*	LOG(INFO)<<StringPrintf("new round of printing prereconstruct \n");
+        for (int i = 0; i < batchsize_; i++)
+                for (int j = 0; j < vdim_; j++){
+                        LOG(INFO)<<StringPrintf("presigmoidis %f\n", prereconstruct[i][j]);
+			LOG(INFO)<<StringPrintf("sigmoid %f\n", reconstruct[i][j]);
+        }*/
+
 	for (int i = 0; i < batchsize_; i++)
 		for (int j = 0; j < vdim_; j++){
-		loss += -(possrc[i][j]*log(reconstruct[i][j])+(1-possrc[i][j])*log(1-reconstruct[i][j]));
+		/*if ((1-reconstruct[i][j]) == 0 or reconstruct[i][j] == 0)
+			;*/
+			loss += -(possrc[i][j]*log(reconstruct[i][j])+(1-possrc[i][j])*log(1-reconstruct[i][j]));
+		sqr_loss += (possrc[i][j]-reconstruct[i][j])*(possrc[i][j]-reconstruct[i][j]);
 		/*LOG(INFO)<<StringPrintf("possrc %f, reconstruct %f, loss %f, log(1-reconstruct[i][j]) %f\n", possrc[i][j], reconstruct[i][j], loss, log(1-reconstruct[i][j]));*/
 		}
 	loss/=batchsize_;
+	sqr_loss/=batchsize_;
 	FreeSpace(reconstruct);
+	FreeSpace(prereconstruct);
 	perf->Reset();
 	perf->AddMetric("reconstruct_error", loss);
-	LOG(ERROR)<<"log reconstruction error "<<loss;
+	/*perf->AddMetric("sqr_reconstruct_error", sqr_loss);*/
+	/*LOG(ERROR)<<"log reconstruction error "<<loss;
+	LOG(ERROR)<<"log square_reconstruction_error "<<sqr_loss;*/
 }
 /**************** Implementation for DBMTopLayer********************/
 void DBMTopLayer::Setup(const LayerProto& proto,
@@ -415,8 +438,8 @@ void DBMTopLayer::ComputeGradient(const vector<SLayer>& srclayers) {
 	Shape2(neg_batchsize_,vdim_));
   Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(vdim_));
   /*gbias=sum_rows(possrc)-sum_rows(negsrc);*/ /*calculation correct??????????*/
-  gbias=sum_rows(possrc);
-  gbias-=sum_rows(negsrc);
+  gbias=sum_rows(negsrc);
+  gbias-=sum_rows(possrc);
   gbias*=scale_/(1.0f*batchsize_);
 }
 /**************** Implementation for InnerProductLayer********************/
