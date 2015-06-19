@@ -193,9 +193,9 @@ void DBMBottomLayer::SetupAfterPartition(const LayerProto& proto,
 
 void DBMBottomLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
   /*LOG(ERROR)<<"bottom phase "<<phase;*/
-  /*float matrix_norm = (weight_->data()).sum_data();
+  float matrix_norm = (weight_->data()).sum_data();
   float bias_norm = (bias_->data()).sum_data(); 
-  LOG(ERROR)<<"bottom weight matrix norm"<< matrix_norm;
+  /*LOG(ERROR)<<"bottom weight matrix norm"<< matrix_norm;
   LOG(ERROR)<<"bottom bias norm"<< bias_norm;*/
   if (phase == kPositive){ /*positive phase*/
         Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));/*u(n+1)*/
@@ -208,6 +208,7 @@ void DBMBottomLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers
         data=dot(possrc, weight); /*to dstlayer*/
   }
   else if (phase == kNegative){   /*negative compute feature*/
+	LOG(ERROR)<<"bottom is_first_iteration"<< is_first_iteration_bottom;
         if (is_first_iteration_bottom){
 	    kPhase = true;
             CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*v*/
@@ -254,6 +255,15 @@ void DBMBottomLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   Tensor<cpu, 2> gweight(weight_->mutable_cpu_grad(), Shape2(vdim_,hdim_));
   Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(vdim_));
   /*gbias=sum_rows(possrc)-sum_rows(negsrc);*/ /*calculation correct??????????*/
+ /* LOG(INFO)<<StringPrintf("zj h(n+1)gibbs\n");
+  for (int i = 0; i < hdim_; i++)
+	 LOG(INFO)<<StringPrintf("h(n+1)gibbs %f\n", hidden_data[0][i]);
+  LOG(INFO)<<StringPrintf("zj v gibbs\n");
+  for (int i = 0; i < vdim_; i++)
+         LOG(INFO)<<StringPrintf("vgibbs %f\n", negsrc[0][i]);
+  LOG(INFO)<<StringPrintf("zj v \n");
+  for (int i = 0; i < vdim_; i++)
+         LOG(INFO)<<StringPrintf("vgibbs %f\n", possrc[0][i]);*/
   gbias=sum_rows(possrc);
   gbias-=sum_rows(negsrc);
   /*gweight=dot(possrc.T(),data.T()) - dot(negsrc.T(),hidden_data.T());*/ /*need to normalize here???????*/
@@ -280,6 +290,7 @@ void DBMBottomLayer::ComputeLoss(Metric* perf){
 	for (int i = 0; i < batchsize_; i++)
 		for (int j = 0; j < vdim_; j++){
 		loss += -(possrc[i][j]*log(reconstruct[i][j])+(1-possrc[i][j])*log(1-reconstruct[i][j]));
+		/*LOG(INFO)<<StringPrintf("possrc %f, reconstruct %f, loss %f, log(1-reconstruct[i][j]) %f\n", possrc[i][j], reconstruct[i][j], loss, log(1-reconstruct[i][j]));*/
 		}
 	loss/=batchsize_;
 	FreeSpace(reconstruct);
@@ -343,6 +354,7 @@ void DBMTopLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
 		LOG(ERROR)<<"data "<<possrc[0][i];*/
   }
   else if (phase == kNegative){   /*negative compute feature*/
+	LOG(ERROR)<<"top is_first_iteration"<< is_first_iteration_top;
         if (is_first_iteration_top){
 		kPhase = true;
 		CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*u(n),after this iteration of positive phase*/
@@ -686,7 +698,8 @@ void MnistImageLayer::ParseRecords(Phase phase,
     }
     cv::warpAffine(resizeMat, betaMat, warpmat, cv::Size(size, size));
     */
-
+    /*LOG(INFO)<<StringPrintf("norm_a %f\n", norm_a_);
+    LOG(INFO)<<StringPrintf("norm_b %f\n", norm_b_);*/
     for(int i=0;i<size;i++){
       for(int j=0;j<size;j++){
         *dptr=input.at<float>(i,j)/norm_a_-norm_b_;
