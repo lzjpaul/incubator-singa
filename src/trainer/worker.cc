@@ -345,6 +345,7 @@ void CDWorker::PositivePhase(int step, shared_ptr<NeuralNet> net){
 
 void CDWorker::NegativePhase(int step, shared_ptr<NeuralNet> net){
   auto& layers=net->layers();
+  /*for (int i = 0; i < 15; i++){*/
   for(auto& layer: layers){    //what is the difference between forward and backward in terms of traverse all layers (line302)
       layer->ComputeFeature(kNegative);				//I only modified here
       /*if(DisplayDebugInfo(step)&&layer->mutable_grad(nullptr)!=nullptr){
@@ -358,6 +359,7 @@ void CDWorker::NegativePhase(int step, shared_ptr<NeuralNet> net){
       }*/
      /*LOG(ERROR)<<"negative "<<layer->name();*/
   }
+  /*}*/
 }
 
 void CDWorker::GradientPhase(int step, shared_ptr<NeuralNet> net){
