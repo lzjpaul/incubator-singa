@@ -288,16 +288,10 @@ void DBMBottomLayer::ComputeLoss(Metric* perf){
 	Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));/*h(n+1), sampling used u(n+1) in top layer*/
         Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
 	Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));
-	Tensor<cpu, 2> prereconstruct(Shape2(batchsize_,vdim_));
 	Tensor<cpu, 2> reconstruct(Shape2(batchsize_,vdim_));
-	AllocSpace(prereconstruct);
 	AllocSpace(reconstruct);
 	reconstruct=dot(data,weight.T());
 	reconstruct+=repmat(bias, batchsize_); /*the reconstructed one*/
-	for (int i = 0; i < batchsize_; i++)
-                for (int j = 0; j < vdim_; j++){
-			prereconstruct[i][j] = reconstruct[i][j];
-	}
 	reconstruct=F<op::sigmoid>(reconstruct);
     /*	LOG(INFO)<<StringPrintf("new round of printing prereconstruct \n");
         for (int i = 0; i < batchsize_; i++)
@@ -317,7 +311,6 @@ void DBMBottomLayer::ComputeLoss(Metric* perf){
 	loss/=batchsize_;
 	sqr_loss/=batchsize_;
 	FreeSpace(reconstruct);
-	FreeSpace(prereconstruct);
 	perf->Reset();
 	perf->AddMetric("reconstruct_error", loss);
 	/*perf->AddMetric("sqr_reconstruct_error", sqr_loss);*/
