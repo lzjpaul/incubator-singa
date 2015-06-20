@@ -211,9 +211,9 @@ void DBMBottomLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers
 	/*LOG(ERROR)<<"bottom is_first_iteration"<< is_first_iteration_bottom;*/
         if (is_first_iteration_bottom){
 	    /*LOG(ERROR)<<"bottom "<< "in_first iteration";*/
-	    kPhase = true;
 	    Tensor<cpu, 2> hidden_data(hidden_data_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_)); /*h(n+1)*/
 	    Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
+	    kPhase = true;
             CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*v*/
             Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(), /*v*/
             Shape2(batchsize_,vdim_));
@@ -272,8 +272,8 @@ void DBMBottomLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   gbias=sum_rows(negsrc);
   gbias-=sum_rows(possrc);
   /*gweight=dot(possrc.T(),data.T()) - dot(negsrc.T(),hidden_data.T());*/ /*need to normalize here???????*/
-  gweight=dot(negsrc.T(),data);
-  gweight-=dot(possrc.T(),hidden_data);
+  gweight=dot(negsrc.T(),hidden_data);
+  gweight-=dot(possrc.T(),data);
   gbias*=scale_/(1.0f*batchsize_);
   gweight*=scale_/(1.0f*batchsize_);
 }
@@ -285,7 +285,7 @@ void DBMBottomLayer::ComputeLoss(Metric* perf){
 	CHECK_EQ(srclayers_[0]->data(this).count(), batchsize_*vdim_); /*v*/ 
         Tensor<cpu, 2> possrc(srclayers_[0]->mutable_data(this)->mutable_cpu_data(),
          Shape2(batchsize_,vdim_));   /*v*/
-	Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));/*h(n+1),sampling using u(n+1)*/
+	Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));/*h(n+1), sampling used u(n+1) in top layer*/
         Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
 	Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));
 	Tensor<cpu, 2> prereconstruct(Shape2(batchsize_,vdim_));
