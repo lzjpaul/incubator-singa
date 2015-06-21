@@ -8,7 +8,14 @@
 #include "utils/factory.h"
 #include "trainer/worker.h"
 #include "proto/model.pb.h"
+#include <sstream>
+#include <string.h>
+#include "mshadow/tensor.h"
+
+using namespace mshadow;
+using namespace mshadow::expr;
 using std::thread;
+
 namespace singa {
 Worker::Worker(int thread_id, int group_id, int worker_id):
   thread_id_(thread_id), group_id_(group_id), worker_id_(worker_id){
@@ -408,7 +415,31 @@ void CDWorker::LossPhase(int step, Phase phase, shared_ptr<NeuralNet> net, Metri
               layer->name().c_str(), layer->data(nullptr).asum_data());
       }*/
   }
-
+  if (step % 5000 == 0 && step!= 0){ /*print weight, because this has neural net*/
+	BlobProto bp;
+	int rownum;
+	int colnum;
+	/*bp.set_height(p->data().shape()[0]);
+	bp.set_width(p->data().shape()[1]);*/ 
+	for (shared_ptr<Param> p : layers[2]->GetParams()){
+		rownum = p->data().shape()[0];
+        	colnum = p->data().shape()[1];
+		Tensor<cpu, 2> weight(p->mutable_cpu_data(), Shape2(rownum,colnum));
+		for (int i = 0; i < rownum; i++)
+			for (int j = 0; j < colnum; j++)
+				bp.add_data(static_cast<float>(weight[i][j]));
+		break;
+	}
+	bp.set_height(rownum);
+        bp.set_width(colnum);
+	char *n_str = new char[50];
+	const char *str = "examples/mnistDBM/matrixout/";
+	std::string s = std::to_string(step);
+	char* buffer = (char*) s.c_str();
+	strcpy(n_str,str);
+    	strcat(n_str,buffer);
+	WriteProtoToBinaryFile(bp, n_str);
+  } 
 }
 
 void CDWorker::TrainOneBatch(int step, Metric* perf){
