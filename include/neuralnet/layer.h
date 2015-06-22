@@ -21,7 +21,7 @@
  * the transformation of features.
  */
 namespace singa {
-static bool kPhase=true;  /*phase information*/
+static bool kPhase=true;  /*phase information, to determine whether to return positive phase data or negative phase data*/
 /**
  * Convolution layer.
  */
@@ -131,11 +131,14 @@ class DBMBottomLayer: public Layer {
   //! dimension of the visible layer
   int vdim_;
   int batchsize_;
+  // batchsize of negative phase
   int neg_batchsize_;
   bool is_first_iteration_bottom;
   float scale_;
   shared_ptr<Param> weight_, bias_;
+  // data to store variables of negative phase
   Blob<float> hidden_data_;
+  // in order to implement Persistent Contrastive Divergence, we should store the gibbs result in bottom layer 
   Blob<float> negsrc_;
 };
 
@@ -173,6 +176,7 @@ class DBMTopLayer: public Layer {
   //! dimension of the visible layer
   int vdim_;
   int batchsize_;
+  // batchsize of negative phase
   int neg_batchsize_;
   bool is_first_iteration_top;
   float scale_;
