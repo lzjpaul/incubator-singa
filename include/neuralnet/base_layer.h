@@ -115,9 +115,9 @@ class Layer {
    */
   virtual void ComputeFeature(Phase phase);
    /**
-   * \copybrief ComputeLoss(const vector<SLayer>& srclayers)
+   * \copybrief ComputeLoss()
    */
-  virtual void ComputeLoss(Metric* perf){LOG(ERROR)<<"in "<<"head file";};
+  virtual void ComputeLoss(Metric* perf){};
   /**
    * Compute gradients for parameters and connecting layers.
    *
