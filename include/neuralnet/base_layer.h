@@ -267,6 +267,12 @@ class Layer {
   virtual bool is_bridgedstlayer() const {
     return false;
   }
+  virtual bool is_bottomlayer() const {
+    return false;
+  }
+  virtual bool is_toplayer() const {
+    return false;
+  }
 protected:
   string name_;
   Blob<float> data_, grad_;
