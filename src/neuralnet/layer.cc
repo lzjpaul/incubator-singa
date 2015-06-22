@@ -162,116 +162,86 @@ void DropoutLayer::ComputeGradient(const vector<SLayer>& srclayers)  {
 }
 /**************** Implementation for DBMBottomLayer********************/
 void DBMBottomLayer::Setup(const LayerProto& proto,
-      const vector<SLayer>& srclayers){                  /*possrc(vdim): Wu(n-1) data from src layer; data_: u(n+1),from dst layer and w(n+1)u(n-1) to dst layer*/
-  CHECK_EQ(srclayers.size(),1);                                                   /*gibbs_prob: gibbs probability of h; negsrc(vdim): Wh(n-1),from srclayer; hidden_data_(hdim): Wh to next layer and h(n+1)from dst layer*/
+      const vector<SLayer>& srclayers){                  
+  CHECK_EQ(srclayers.size(),1);                                             
   kPhase = true;
-  const auto& possrc=srclayers[0]->data(this);          /*???????????*/
+  const auto& possrc=srclayers[0]->data(this);          
   is_first_iteration_bottom = true;
   batchsize_=possrc.shape()[0];
-  neg_batchsize_ =batchsize_;                   /*gibbs sampling size and input the same size*/
+  neg_batchsize_ =batchsize_;                   /*gibbs sampling size and input have the same size*/
   vdim_=possrc.count()/batchsize_;
-  hdim_=proto.dbm_bottom_param().num_output();  /*bottom protocol??*/
+  hdim_=proto.dbm_bottom_param().num_output();  
   data_.Reshape(vector<int>{batchsize_, hdim_});
   hidden_data_.Reshape(vector<int>{neg_batchsize_, hdim_});
   scale_ = static_cast<float> (1.0f);
-  negsrc_.Reshape(vector<int>{neg_batchsize_, vdim_});                                  /*is not from bottom layer, is a member of DBMBottomLayer*/
+  negsrc_.Reshape(vector<int>{neg_batchsize_, vdim_});                                  
   Factory<Param>* factory=Singleton<Factory<Param>>::Instance();
   weight_=shared_ptr<Param>(factory->Create("Param"));
   bias_=shared_ptr<Param>(factory->Create("Param"));
   weight_->Setup(proto.param(0), vector<int>{vdim_, hdim_}, vdim_*hdim_);
-  bias_->Setup(proto.param(1), vector<int>{vdim_},0);/*here the bias is the visible dimension*/
+  bias_->Setup(proto.param(1), vector<int>{vdim_},0);
   srand((unsigned)time(NULL));
 }
 void DBMBottomLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
       const vector<SLayer>& srclayers){
-/*  LayerProto newproto(proto);
-  DBMBottomProto * DBMBottomproto=newproto.mutable_DBMBottom_param();
-  DBMBottomproto->set_num_output(shape[1]);  Is this correct? shape[1]*/
-  /*Setup(newproto, srclayers);*/
 }
 
 void DBMBottomLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
-  /*LOG(ERROR)<<"bottom phase "<<phase;*/
   float matrix_norm = (weight_->data()).sum_data();
   float bias_norm = (bias_->data()).sum_data(); 
-  /*LOG(ERROR)<<"bottom weight matrix norm"<< matrix_norm;
-  LOG(ERROR)<<"bottom bias norm"<< bias_norm;*/
   if (phase == kPositive){ /*positive phase*/
-        Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));/*u(n+1)*/
+        Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));
         kPhase = true;
-        CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*v*/
+        CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); 
         Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
          Shape2(batchsize_,vdim_));
         Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
-       /* Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));*/
-        data=dot(possrc, weight); /*to dstlayer*/
+        data=dot(possrc, weight); 
   }
-  else if (phase == kNegative){   /*negative compute feature*/
-	/*LOG(ERROR)<<"bottom is_first_iteration"<< is_first_iteration_bottom;*/
+  else if (phase == kNegative){   /*negative phase*/
         if (is_first_iteration_bottom){
-	    /*LOG(ERROR)<<"bottom "<< "in_first iteration";*/
-	    Tensor<cpu, 2> hidden_data(hidden_data_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_)); /*h(n+1)*/
+	    Tensor<cpu, 2> hidden_data(hidden_data_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_)); 
 	    Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
 	    kPhase = true;
-            CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*v*/
-            Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(), /*v*/
+            CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); 
+            Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(), 
             Shape2(batchsize_,vdim_));
-            /*CHECK_EQ(srclayers[0]->hidden_data_(this).count(), neg_batchsize_*vdim_);*/
-            Tensor<cpu, 2> negsrc(negsrc_.mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));  /*For this, negsrc (v) is not from src layer, it is a member of bottom layer*/
-            for (int i = 0; i < batchsize_; i++) /*u(n+1)*/
+            Tensor<cpu, 2> negsrc(negsrc_.mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));  
+            for (int i = 0; i < batchsize_; i++) 
                  for (int j = 0; j < vdim_; j++)
-                         negsrc[i][j] = possrc[i][j];
-	   /* negsrc = possrc;*/
-	    /*the first iteration using gibbs as well*/
-	    /*for (int i = 0; i < neg_batchsize_; i++)
-                    for (int j = 0; j < vdim_; j++)
-                            negsrc[i][j] = (float)((rand() / double(RAND_MAX)) > possrc[i][j] ? 0 : 1);*/
-	    hidden_data=dot(negsrc, weight); /*w(n+1)h(n)*/
+                         negsrc[i][j] = possrc[i][j]; /*Use the input samples for initializing the gibbs chain*/
+	    hidden_data=dot(negsrc, weight); 
             is_first_iteration_bottom = false;
         }
         else{
-	    /*LOG(ERROR)<<"bottom "<< "not in first iteration";*/
-            Tensor<cpu, 2> hidden_data(hidden_data_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_)); /*h(n+1)*/
-            Tensor<cpu, 2> negsrc(negsrc_.mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));  /*For this , negsrc is not from src layer, it is a member of bottom layer*/
+            Tensor<cpu, 2> hidden_data(hidden_data_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_)); 
+            Tensor<cpu, 2> negsrc(negsrc_.mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));  
 	    Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
        	    Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));
             negsrc=dot(hidden_data, weight.T());
-            // repmat: repeat bias vector into batchsize rows
             negsrc+=repmat(bias, neg_batchsize_);
-            negsrc=F<op::sigmoid>(negsrc); /* can it work? refresh it self*/
+            negsrc=F<op::sigmoid>(negsrc); 
             for (int i = 0; i < neg_batchsize_; i++)
                     for (int j = 0; j < vdim_; j++)
-                            negsrc[i][j] = (float)((rand() / double(RAND_MAX)) > negsrc[i][j] ? 0 : 1); /*h(n), gibbs sampling!!!!!! I should modify this part: (1)not traverse all the element (2) no realization for k-step persistent*/
-            hidden_data=dot(negsrc, weight); /*w(n+1)h(n)*/
+                            negsrc[i][j] = (float)((rand() / double(RAND_MAX)) > negsrc[i][j] ? 0 : 1); 
+            hidden_data=dot(negsrc, weight); 
         }
   }
 }
 
 void DBMBottomLayer::ComputeGradient(const vector<SLayer>& srclayers) {
-  Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_)); /*u(n+1)*/
-  Tensor<cpu, 2> hidden_data(hidden_data_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_)); /*h(n+1)*/
+  Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_)); 
+  Tensor<cpu, 2> hidden_data(hidden_data_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_)); 
   kPhase = true;
-  CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*v*/
+  CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); 
   Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
 	Shape2(batchsize_,vdim_));
-/*  CHECK_EQ(srclayers[0]->hiddendata_(this).count(), neg_batchsize_*vdim_);*/
-  Tensor<cpu, 2> negsrc(negsrc_.mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));/*v gibbs*/
+  Tensor<cpu, 2> negsrc(negsrc_.mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));
   Tensor<cpu, 2> gweight(weight_->mutable_cpu_grad(), Shape2(vdim_,hdim_));
   Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(vdim_));
-  /*gbias=sum_rows(possrc)-sum_rows(negsrc);*/ /*calculation correct??????????*/
- /* LOG(INFO)<<StringPrintf("zj h(n+1)gibbs\n");
-  for (int i = 0; i < hdim_; i++)
-	 LOG(INFO)<<StringPrintf("h(n+1)gibbs %f\n", hidden_data[0][i]);
-  LOG(INFO)<<StringPrintf("zj v gibbs\n");
-  for (int i = 0; i < vdim_; i++)
-         LOG(INFO)<<StringPrintf("vgibbs %f\n", negsrc[0][i]);
-  LOG(INFO)<<StringPrintf("zj v \n");
-  for (int i = 0; i < vdim_; i++)
-         LOG(INFO)<<StringPrintf("vgibbs %f\n", possrc[0][i]);*/
   gbias=sum_rows(negsrc);
   gbias-=sum_rows(possrc);
-  /*gweight=dot(possrc.T(),data.T()) - dot(negsrc.T(),hidden_data.T());*/ /*need to normalize here???????*/
   gweight=dot(negsrc.T(),hidden_data);
   gweight-=dot(possrc.T(),data);
   gbias*=scale_/(1.0f*batchsize_);
@@ -279,158 +249,95 @@ void DBMBottomLayer::ComputeGradient(const vector<SLayer>& srclayers) {
 }
 
 void DBMBottomLayer::ComputeLoss(Metric* perf){
-	float loss= (0.0f);
-	float sqr_loss= (0.0f);
-	kPhase = true;
-	CHECK_EQ(srclayers_[0]->data(this).count(), batchsize_*vdim_); /*v*/ 
-        Tensor<cpu, 2> possrc(srclayers_[0]->mutable_data(this)->mutable_cpu_data(),
-         Shape2(batchsize_,vdim_));   /*v*/
-	Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));/*h(n+1), sampling used u(n+1) in top layer*/
-        Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
-	Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));
-	Tensor<cpu, 2> reconstruct(Shape2(batchsize_,vdim_));
-	AllocSpace(reconstruct);
-	reconstruct=dot(data,weight.T());
-	reconstruct+=repmat(bias, batchsize_); /*the reconstructed one*/
-	reconstruct=F<op::sigmoid>(reconstruct);
-    /*	LOG(INFO)<<StringPrintf("new round of printing prereconstruct \n");
-        for (int i = 0; i < batchsize_; i++)
-                for (int j = 0; j < vdim_; j++){
-                        LOG(INFO)<<StringPrintf("presigmoidis %f\n", prereconstruct[i][j]);
-			LOG(INFO)<<StringPrintf("sigmoid %f\n", reconstruct[i][j]);
-        }*/
-
-	for (int i = 0; i < batchsize_; i++)
-		for (int j = 0; j < vdim_; j++){
-		/*if ((1-reconstruct[i][j]) == 0 or reconstruct[i][j] == 0)
-			;*/
-			loss += -(possrc[i][j]*log(reconstruct[i][j])+(1-possrc[i][j])*log(1-reconstruct[i][j]));
-		sqr_loss += (possrc[i][j]-reconstruct[i][j])*(possrc[i][j]-reconstruct[i][j]);
-		/*LOG(INFO)<<StringPrintf("possrc %f, reconstruct %f, loss %f, log(1-reconstruct[i][j]) %f\n", possrc[i][j], reconstruct[i][j], loss, log(1-reconstruct[i][j]));*/
-		}
-	loss/=batchsize_;
-	sqr_loss/=batchsize_;
-	FreeSpace(reconstruct);
-	perf->Reset();
-	perf->AddMetric("reconstruct_error", loss);
-	/*perf->AddMetric("sqr_reconstruct_error", sqr_loss);*/
-	/*LOG(ERROR)<<"log reconstruction error "<<loss;
-	LOG(ERROR)<<"log square_reconstruction_error "<<sqr_loss;*/
+  float loss= (0.0f);
+  kPhase = true;
+  CHECK_EQ(srclayers_[0]->data(this).count(), batchsize_*vdim_);  
+  Tensor<cpu, 2> possrc(srclayers_[0]->mutable_data(this)->mutable_cpu_data(),
+         Shape2(batchsize_,vdim_));   
+  Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));
+  Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
+  Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));
+  Tensor<cpu, 2> reconstruct(Shape2(batchsize_,vdim_)); /*reconstruct error*/
+  AllocSpace(reconstruct);
+  reconstruct=dot(data,weight.T());
+  reconstruct+=repmat(bias, batchsize_); 
+  reconstruct=F<op::sigmoid>(reconstruct);
+  for (int i = 0; i < batchsize_; i++)
+	for (int j = 0; j < vdim_; j++){
+		loss += -(possrc[i][j]*log(reconstruct[i][j])+(1-possrc[i][j])*log(1-reconstruct[i][j]));
+	}
+  loss/=batchsize_;
+  FreeSpace(reconstruct);
+  perf->Reset();
+  perf->AddMetric("reconstruct_error", loss);
 }
 /**************** Implementation for DBMTopLayer********************/
 void DBMTopLayer::Setup(const LayerProto& proto,
-      const vector<SLayer>& srclayers){                  /*possrc(vdim): Wu(n-1) data from src layer*/
-  CHECK_EQ(srclayers.size(),1);                                                     /*gibbs_prob: gibbs probability of h; negsrc(vdim): Wh(n-1),from srclayer; hidden_data_(hdim): Wh to next layer and h(n+1)from dst layer*/
+      const vector<SLayer>& srclayers){                  
+  CHECK_EQ(srclayers.size(),1);                                                     
   kPhase = true;
-  const auto& possrc=srclayers[0]->data(this);          /*???????????*/
+  const auto& possrc=srclayers[0]->data(this);          
   kPhase = false;
-  const auto& negsrc=srclayers[0]->data(this);   /*hiddendata*/ /*what is this used for ? if I want to make a judge for whether it is the first round, will be very troublesome because is_first_iteration is a static variable*/
+  const auto& negsrc=srclayers[0]->data(this);   
   is_first_iteration_top = true;
   scale_ = static_cast<float> (1.0f);
   batchsize_=possrc.shape()[0];
-  neg_batchsize_ =negsrc.shape()[0];                   /*gibbs sampling size*/
+  neg_batchsize_ =negsrc.shape()[0];                  
   vdim_=possrc.count()/batchsize_;
   Factory<Param>* factory=Singleton<Factory<Param>>::Instance();
   bias_=shared_ptr<Param>(factory->Create("Param"));
-  bias_->Setup(proto.param(0), vector<int>{vdim_},0);/*here the bias is the visible dimension*/
+  bias_->Setup(proto.param(0), vector<int>{vdim_},0);
   srand((unsigned)time(NULL));
 }
 
 void DBMTopLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
       const vector<SLayer>& srclayers){
- /* LayerProto newproto(proto);
-  DBMTopProto * DBMTopproto=newproto.mutable_DBMTop_param();  where to set this parameter???????*/
-  /*DBMTopproto->set_num_output(shape[1]);*/  /*Is this correct? shape[1]?????????????????*/
- /* Setup(newproto, srclayers);*/
 }
-/*no need for the top layer*/
-/*Blob<float>* DBMTopLayer::mutable_data(const Layer* from){
-    if(phase)
-        return &data_;
-    else
-        return &hidden_data_;
-}
-virtual const Blob<float>& DBMTopLayer::data(const Layer* from) const {
-    if(phase)
-        return data_;
-    else
-        return hidden_data_;
-}*/
-void DBMTopLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
-  /*LOG(ERROR)<<"top phase "<<phase;*/   
+
+void DBMTopLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {   
   if (phase == kPositive){  /*postive phase*/
-	kPhase = true; /*the same as wangwei's phase definition*/
-        CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*w(n)u(n-1)*/
+	kPhase = true; 
+        CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); 
         Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
          Shape2(batchsize_,vdim_));
         Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));
-        // repmat: repeat bias vector into batchsize rows
         possrc+=repmat(bias, batchsize_);
         possrc=F<op::sigmoid>(possrc);
-	/*LOG(ERROR)<<"top layer computefeature"<<"u";
-	for (int i = 0; i < 15; i++)
-		LOG(ERROR)<<"data "<<possrc[0][i];*/
   }
-  else if (phase == kNegative){   /*negative compute feature*/
-	/*LOG(ERROR)<<"top is_first_iteration"<< is_first_iteration_top;*/
-       /* if (is_first_iteration_top){
-		kPhase = true;
-		CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_);*/ /*u(n),after this iteration of positive phase*/
-                /*Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
-                Shape2(batchsize_,vdim_));
-		kPhase = false;
-                CHECK_EQ(srclayers[0]->data(this).count(), neg_batchsize_*vdim_);*/ /*hidden_data_(this)*/
-                /*Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(), Shape2(neg_batchsize_,vdim_));*//*hidden_mutable,h(n)*/
-		/*first iteration, using gibbs sampling also*/
-	  	/*for (int i = 0; i < neg_batchsize_; i++)
-                    for (int j = 0; j < vdim_; j++)
-                            negsrc[i][j] = (float)((rand() / double(RAND_MAX)) > possrc[i][j] ? 0 : 1);
-                is_first_iteration_top = false;
-        }*/
-	/*else{*/
-		kPhase = false;
-        	CHECK_EQ(srclayers[0]->data(this).count(), neg_batchsize_*vdim_);  /*hidden_data_(this)*/
-        	Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),/*hidden_mutable, w(n)h(n-1)*/
-         	Shape2(neg_batchsize_,vdim_));
-		Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));
-        	// repmat: repeat bias vector into batchsize rows
-        	negsrc+=repmat(bias, neg_batchsize_);
-        	negsrc=F<op::sigmoid>(negsrc); /* can it work? refresh it self*/
-        	for (int i = 0; i < neg_batchsize_; i++)
-                	for (int j = 0; j < vdim_; j++)
-                        	negsrc[i][j] = (float)((rand() / double(RAND_MAX)) > negsrc[i][j] ? 0 : 1);
- /*h(n), gibbs sampling!!!!!! I should modify this part: (1)not traverse all the element (2) no realization for k-step persistent*/
-	/*}*/
+  else if (phase == kNegative){   /*negative phase*/
+	kPhase = false;
+        CHECK_EQ(srclayers[0]->data(this).count(), neg_batchsize_*vdim_);  
+        Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
+         Shape2(neg_batchsize_,vdim_));
+	Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));
+        negsrc+=repmat(bias, neg_batchsize_);
+        negsrc=F<op::sigmoid>(negsrc); 
+        for (int i = 0; i < neg_batchsize_; i++)
+                for (int j = 0; j < vdim_; j++)
+                        negsrc[i][j] = (float)((rand() / double(RAND_MAX)) > negsrc[i][j] ? 0 : 1);
   }
-  else if (phase == kTest){   /*test phase feature*/
+  else if (phase == kTest){   /*test phase*/
 	kPhase = true;
-	CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*u(n) already*/
+	CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); 
         Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
          Shape2(batchsize_,vdim_));
-	/*LOG(ERROR)<<"top layer testphase "<<" u";
-        for (int i = 0; i < 15; i++)
-                LOG(ERROR)<<"possrc "<<possrc[0][i];*/
         for (int i = 0; i < batchsize_; i++)  /*the reconstruct vector*/
         	for (int j = 0; j < vdim_; j++)
                 	possrc[i][j] = (float)((rand() / double(RAND_MAX)) > possrc[i][j] ? 0 : 1);
-	/*LOG(ERROR)<<"top layer testphase gibbs"<<" h";
-        for (int i = 0; i < 15; i++)
-                LOG(ERROR)<<"possrc "<<possrc[0][i];*/
   } 
 }
 
 void DBMTopLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   kPhase = true;
-  CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); /*u(n)*/
+  CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_); 
   Tensor<cpu, 2> possrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
 	Shape2(batchsize_,vdim_));
   kPhase = false;
-  CHECK_EQ(srclayers[0]->data(this).count(), neg_batchsize_*vdim_); /*hidden_data(this)*/
-  Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),/*hidden_mutable, h(n)*/
+  CHECK_EQ(srclayers[0]->data(this).count(), neg_batchsize_*vdim_); 
+  Tensor<cpu, 2> negsrc(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
 	Shape2(neg_batchsize_,vdim_));
   Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(vdim_));
-  /*gbias=sum_rows(possrc)-sum_rows(negsrc);*/ /*calculation correct??????????*/
   gbias=sum_rows(negsrc);
   gbias-=sum_rows(possrc);
   gbias*=scale_/(1.0f*batchsize_);
