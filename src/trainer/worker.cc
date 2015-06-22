@@ -345,9 +345,11 @@ void CDWorker::PositivePhase(int step, shared_ptr<NeuralNet> net){
 
 void CDWorker::NegativePhase(int step, shared_ptr<NeuralNet> net){
   auto& layers=net->layers();
-  for (int i = 0; i < 15; i++){
-	layers[2]->ComputeFeature(kNegative);
-        layers[3]->ComputeFeature(kNegative);
+  for (int i = 0; i < modelproto_.pcd_k(); i++){
+    for(auto& layer: layers){
+	if (layer->is_bottomlayer()||layer->is_toplayer())
+	  layer->ComputeFeature(kNegative);
+    }
   }
 }
 
@@ -365,39 +367,58 @@ void CDWorker::LossPhase(int step, Phase phase, shared_ptr<NeuralNet> net, Metri
   auto& layers=net->layers();
   if (phase == kTrain){  
       	//clock_t s=clock();
-      	layers[3]->ComputeFeature(kTest);                      
-        layers[2]->ComputeLoss(perf);
+    for(auto& layer: layers){
+      if (layer->is_toplayer())
+        layer->ComputeFeature(kTest);
+    }
+    for(auto& layer: layers){
+      if (layer->is_bottomlayer())
+        layer->ComputeLoss(perf);
+    }
   }
   else if(phase == kTest){  
       //clock_t s=clock();
-      layers[0]->ComputeFeature(kPositive);  
-      layers[1]->ComputeFeature(kPositive);
-      layers[2]->ComputeFeature(kPositive);
-      layers[3]->ComputeFeature(kTest);
-      layers[2]->ComputeLoss(perf);
+    for(auto& layer: layers){
+        if (layer->is_datalayer()||layer->is_parserlayer()||layer->is_bottomlayer())
+          layer->ComputeFeature(kPositive);
+    }
+    for(auto& layer: layers){
+      if (layer->is_toplayer())
+        layer->ComputeFeature(kTest);
+    }
+    for(auto& layer: layers){
+      if (layer->is_bottomlayer())
+        layer->ComputeLoss(perf);
+    }
   }
   if (step % 5000 == 0 && step!= 0){ /*print weight matrix*/
-	BlobProto bp;
-	int rownum;
-	int colnum; 
-	for (shared_ptr<Param> p : layers[2]->GetParams()){
-		rownum = p->data().shape()[0];
-        	colnum = p->data().shape()[1];
-		Tensor<cpu, 2> weight(p->mutable_cpu_data(), Shape2(rownum,colnum));
-		for (int i = 0; i < rownum; i++)
-			for (int j = 0; j < colnum; j++)
-				bp.add_data(static_cast<float>(weight[i][j]));
-		break;
-	}
-	bp.set_height(rownum);
+    BlobProto bp;
+    int rownum;
+    int colnum;
+    for(auto& layer: layers){
+      if (layer->is_bottomlayer()){
+	for (shared_ptr<Param> p : layer->GetParams()){
+          rownum = p->data().shape()[0];
+          colnum = p->data().shape()[1];
+          Tensor<cpu, 2> weight(p->mutable_cpu_data(), Shape2(rownum,colnum));
+          for (int i = 0; i < rownum; i++)
+            for (int j = 0; j < colnum; j++)
+              bp.add_data(static_cast<float>(weight[i][j]));
+          break;
+        }
+        bp.set_height(rownum);
         bp.set_width(colnum);
-	char *n_str = new char[50];
-	const char *str = "examples/mnistDBM/matrixout/";
-	std::string s = std::to_string(step);
-	char* buffer = (char*) s.c_str();
-	strcpy(n_str,str);
-    	strcat(n_str,buffer);
-	WriteProtoToBinaryFile(bp, n_str);
+	auto cluster=Cluster::Get();
+        char *n_str = new char[70];
+        //const char *str = cluster->_folder();
+	std::string str = cluster->vis_folder() + "/";
+        std::string s = std::to_string(step);
+        char* buffer = (char*) s.c_str();
+        strcpy(n_str,(char*)str.c_str());
+        strcat(n_str,buffer);
+        WriteProtoToBinaryFile(bp, n_str);
+      }
+    }
   } 
 }
 
