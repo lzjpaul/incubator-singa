@@ -96,7 +96,9 @@ class DBMBottomLayer: public Layer {
 
   virtual void Setup(const LayerProto& proto,
       const vector<SLayer>& srclayers);
-  
+  virtual bool is_bottomlayer() const {
+    return true;
+  } 
   virtual void SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
       const vector<SLayer>& srclayers);
@@ -154,7 +156,9 @@ class DBMTopLayer: public Layer {
 
   virtual void Setup(const LayerProto& proto,
       const vector<SLayer>& srclayers);
-
+  virtual bool is_toplayer() const {
+    return true;
+  }
   virtual void SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
       const vector<SLayer>& srclayers);

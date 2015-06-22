@@ -83,6 +83,7 @@ message ModelProto{
   optional NetProto neuralnet = 40;
   optional bool debug=41 [default=false];
   optional int32 warmup_steps=50 [default=0];
+  optional int32 pcd_k=60 [default=15];
 }
 
 message NetProto{
