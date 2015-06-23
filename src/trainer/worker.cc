@@ -391,7 +391,7 @@ void CDWorker::LossPhase(int step, Phase phase, shared_ptr<NeuralNet> net, Metri
         layer->ComputeLoss(perf);
     }
   }
-  if (step % 5000 == 0 && step!= 0){ /*print weight matrix*/
+  if (step % modelproto_.vis_step() == 0 && step!= 0){ /*print weight matrix*/
     BlobProto bp;
     int rownum;
     int colnum;
