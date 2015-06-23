@@ -1,4 +1,4 @@
-##Apache SINGA try commit
+##Apache SINGA
 
 Distributed deep learning system
 
