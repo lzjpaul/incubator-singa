@@ -140,7 +140,7 @@ def tile_raster_images(X, img_shape, tile_shape, tile_spacing=(0, 0),
 
 import model_pb2 as model
 bp=model.BlobProto()
-fd=open("../../examples/mnistDBM/visualization/5000", "rb")
+fd=open("../../examples/mnistDBM/visualization/3700", "rb")
 bp.ParseFromString(fd.read())
 import numpy as np
 mat=np.array(bp.data).reshape((bp.height, bp.width))
@@ -149,4 +149,4 @@ image = Image.fromarray(tile_raster_images(
         X = mat.T,
         img_shape=(28, 28), tile_shape=(10, 10),
         tile_spacing=(1, 1)))
-image.save('filters_RBM5000-1.png')
+image.save('filters_RBM3700-1.png')
