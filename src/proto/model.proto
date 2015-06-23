@@ -84,7 +84,6 @@ message ModelProto{
   optional bool debug=41 [default=false];
   optional int32 warmup_steps=50 [default=0];
   optional int32 pcd_k=60 [default=15];
-  optional int32 vis_step=61 [default=5000];
 }
 
 message NetProto{

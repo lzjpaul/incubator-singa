@@ -351,6 +351,7 @@ void CDWorker::NegativePhase(int step, shared_ptr<NeuralNet> net){
 	  layer->ComputeFeature(kNegative);
     }
   }
+<<<<<<< HEAD
 }
 
 void CDWorker::GradientPhase(int step, shared_ptr<NeuralNet> net){
@@ -422,6 +423,79 @@ void CDWorker::LossPhase(int step, Phase phase, shared_ptr<NeuralNet> net, Metri
   } 
 }
 
+=======
+}
+
+void CDWorker::GradientPhase(int step, shared_ptr<NeuralNet> net){
+  auto& layers=net->layers();
+  for(auto& layer: layers){
+      layer->ComputeGradient();
+      for(shared_ptr<Param> p: layer->GetParams()){
+        Update(p, step);
+      }
+  }
+}
+
+void CDWorker::LossPhase(int step, Phase phase, shared_ptr<NeuralNet> net, Metric* perf){
+  auto& layers=net->layers();
+  if (phase == kTrain){  
+      	//clock_t s=clock();
+    for(auto& layer: layers){
+      if (layer->is_toplayer())
+        layer->ComputeFeature(kTest);
+    }
+    for(auto& layer: layers){
+      if (layer->is_bottomlayer())
+        layer->ComputeLoss(perf);
+    }
+  }
+  else if(phase == kTest){  
+      //clock_t s=clock();
+    for(auto& layer: layers){
+        if (layer->is_datalayer()||layer->is_parserlayer()||layer->is_bottomlayer())
+          layer->ComputeFeature(kPositive);
+    }
+    for(auto& layer: layers){
+      if (layer->is_toplayer())
+        layer->ComputeFeature(kTest);
+    }
+    for(auto& layer: layers){
+      if (layer->is_bottomlayer())
+        layer->ComputeLoss(perf);
+    }
+  }
+  if (step % 1000 == 0 && step!= 0){ /*print weight matrix*/
+    BlobProto bp;
+    int rownum;
+    int colnum;
+    for(auto& layer: layers){
+      if (layer->is_bottomlayer()){
+	for (shared_ptr<Param> p : layer->GetParams()){
+          rownum = p->data().shape()[0];
+          colnum = p->data().shape()[1];
+          Tensor<cpu, 2> weight(p->mutable_cpu_data(), Shape2(rownum,colnum));
+          for (int i = 0; i < rownum; i++)
+            for (int j = 0; j < colnum; j++)
+              bp.add_data(static_cast<float>(weight[i][j]));
+          break;
+        }
+        bp.set_height(rownum);
+        bp.set_width(colnum);
+	auto cluster=Cluster::Get();
+        char *n_str = new char[70];
+        //const char *str = cluster->_folder();
+	std::string str = cluster->vis_folder() + "/";
+        std::string s = std::to_string(step);
+        char* buffer = (char*) s.c_str();
+        strcpy(n_str,(char*)str.c_str());
+        strcat(n_str,buffer);
+        WriteProtoToBinaryFile(bp, n_str);
+      }
+    }
+  } 
+}
+
+>>>>>>> 61ece9cb5910b7fa49e48c3b727ea75db95fc623
 void CDWorker::TrainOneBatch(int step, Metric* perf){
   PositivePhase(step, train_net_);     
   NegativePhase(step, train_net_);
