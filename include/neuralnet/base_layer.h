@@ -117,7 +117,7 @@ class Layer {
    /**
    * \copybrief ComputeLoss()
    */
-  virtual void ComputeLoss(Metric* perf){};
+  virtual void ComputeLoss(Metric* perf) {}
   /**
    * Compute gradients for parameters and connecting layers.
    *

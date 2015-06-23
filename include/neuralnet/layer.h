@@ -98,7 +98,7 @@ class DBMBottomLayer: public Layer {
       const vector<SLayer>& srclayers);
   virtual bool is_bottomlayer() const {
     return true;
-  } 
+  }
   virtual void SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
       const vector<SLayer>& srclayers);
@@ -107,22 +107,23 @@ class DBMBottomLayer: public Layer {
     return kOneToAll;
   }
 
-  virtual void ComputeFeature(Phase phase, const vector<shared_ptr<Layer>>& srclayers);
+  virtual void ComputeFeature(Phase phase,
+     const vector<shared_ptr<Layer>>& srclayers);
   virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
   virtual void ComputeLoss(Metric* perf);
-  virtual Blob<float>* mutable_data(const Layer* from){
-	if(kPhase)
-        	return &data_;
-    	else
-        	return &hidden_data_;
+  virtual Blob<float>* mutable_data(const Layer* from) {
+    if (kPhase)
+      return &data_;
+    else
+      return &hidden_data_;
   }
-  virtual const Blob<float>& data(const Layer* from) const{
-	if(kPhase)
-        	return data_;
-    	else
-        	return hidden_data_;
-  } 
-  //virtual void ToProto(LayerProto *layer_proto, bool copyData);
+  virtual const Blob<float>& data(const Layer* from) const {
+    if (kPhase)
+      return data_;
+    else
+      return hidden_data_;
+  }
+  // virtual void ToProto(LayerProto *layer_proto, bool copyData);
   virtual vector<shared_ptr<Param>> GetParams() {
     return vector<shared_ptr<Param>>{weight_, bias_};
   }
@@ -140,7 +141,8 @@ class DBMBottomLayer: public Layer {
   shared_ptr<Param> weight_, bias_;
   // data to store variables of negative phase
   Blob<float> hidden_data_;
-  // in order to implement Persistent Contrastive Divergence, we should store the gibbs result in bottom layer 
+  // in order to implement Persistent Contrastive Divergence,
+  // we should store the gibbs result in bottom layer
   Blob<float> negsrc_;
 };
 
@@ -167,11 +169,12 @@ class DBMTopLayer: public Layer {
     return kOneToAll;
   }
 
-  virtual void ComputeFeature(Phase phase, const vector<shared_ptr<Layer>>& srclayers);
+  virtual void ComputeFeature(Phase phase,
+     const vector<shared_ptr<Layer>>& srclayers);
   virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
   /*virtual Blob<float>* mutable_data(const Layer* from);*/
   /*virtual const Blob<float>& data(const Layer* from) const;*/
-  //virtual void ToProto(LayerProto *layer_proto, bool copyData);
+  // virtual void ToProto(LayerProto *layer_proto, bool copyData);
   virtual vector<shared_ptr<Param>> GetParams() {
     return vector<shared_ptr<Param>>{bias_};
   }
