@@ -21,7 +21,8 @@
  * the transformation of features.
  */
 namespace singa {
-static bool kPhase=true;  /*phase information, to determine whether to return positive phase data or negative phase data*/
+ static bool kPhase = true;
+/*phase information, to determine whether to return positive phase data or negative phase data*/
 /**
  * Convolution layer.
  */
