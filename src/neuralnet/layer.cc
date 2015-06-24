@@ -233,8 +233,8 @@ void DBMBottomLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers
             negsrc+=repmat(bias, neg_batchsize_);
             negsrc = F<op::sigmoid>(negsrc);
             for (int i = 0; i < neg_batchsize_; i++)
-                    for (int j = 0; j < vdim_; j++)
-                            negsrc[i][j] = (float)((rand() / double(RAND_MAX)) > negsrc[i][j] ? 0 : 1);
+              for (int j = 0; j < vdim_; j++)
+                negsrc[i][j] = static_cast<float>((rand() / static_cast<double>(RAND_MAX)) > negsrc[i][j] ? 0 : 1);
             hidden_data = dot(negsrc, weight);
         }
   }
@@ -293,7 +293,7 @@ void DBMTopLayer::Setup(const LayerProto& proto,
   const auto& negsrc = srclayers[0]->data(this);
   is_first_iteration_top = true;
   scale_ = static_cast<float> (1.0f);
-  batchsize_= possrc.shape()[0];
+  batchsize_ = possrc.shape()[0];
   neg_batchsize_ = negsrc.shape()[0];
   vdim_ = possrc.count()/batchsize_;
   Factory<Param>* factory = Singleton<Factory<Param>>::Instance();
@@ -327,7 +327,7 @@ void DBMTopLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
     negsrc = F<op::sigmoid>(negsrc);
     for (int i = 0; i < neg_batchsize_; i++)
       for (int j = 0; j < vdim_; j++)
-        negsrc[i][j] = (float)((rand() / double(RAND_MAX)) > negsrc[i][j] ? 0 : 1);
+        negsrc[i][j] = static_cast<float>((rand() / static_cast<double>(RAND_MAX)) > negsrc[i][j] ? 0 : 1);
   }
   else if (phase == kTest) {   /*test phase*/
      kPhase = true;
@@ -336,7 +336,7 @@ void DBMTopLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
          Shape2(batchsize_, vdim_));
      for (int i = 0; i < batchsize_; i++)  /*the reconstruct vector*/
        for (int j = 0; j < vdim_; j++)
-         possrc[i][j] = (float)((rand() / double(RAND_MAX)) > possrc[i][j] ? 0 : 1);
+         possrc[i][j] = static_cast<float>((rand() / static_cast<double>(RAND_MAX)) > possrc[i][j] ? 0 : 1);
   }
 }
 
