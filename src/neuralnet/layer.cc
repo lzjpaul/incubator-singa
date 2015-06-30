@@ -231,11 +231,11 @@ void LabelLayer::ParseRecords(bool training, const vector<Record>& records,
   float *label= blob->mutable_cpu_data() ;
   for(const Record& record: records){
     label[rid++]=record.image().label();
-   /* LOG(INFO)<<StringPrintf("label_num_records: %d label: %d\n", rid, static_cast<int>(record.image().label()));
-    LOG(INFO)<<StringPrintf("float label_num_records: %d label: %f\n", rid, label[rid-1]);*/
+    //LOG(INFO)<<StringPrintf("label_num_records: %d label: %d\n", rid, static_cast<int>(record.image().label()));
+    /*LOG(INFO)<<StringPrintf("float label_num_records: %d label: %f\n", rid, label[rid-1]);*/
  //   CHECK_LT(record.image().label(),10);
   }
- /* LOG(INFO)<<StringPrintf("label_num_records: %d\n", rid);*/ 
+  //LOG(INFO)<<StringPrintf("label_num_records: %d\n", rid);
   CHECK_EQ(rid, blob->shape()[0]);
 }
 
@@ -487,7 +487,7 @@ void ReadmissionDataLayer::ParseRecords(bool training,
   int ndim=records.at(0).image().shape_size();
   int rows =records.at(0).image().shape(ndim-2);  //rows and columns
   int cols =records.at(0).image().shape(ndim-1);
-  LOG(INFO)<<StringPrintf("zj: ndim %d rows %d cols %d \n", ndim, rows, cols);
+  //LOG(INFO)<<StringPrintf("zj: ndim %d rows %d cols %d \n", ndim, rows, cols);
   
   float* dptr=blob->mutable_cpu_data();
   int num_records = 0;
@@ -505,10 +505,10 @@ void ReadmissionDataLayer::ParseRecords(bool training,
           // NOTE!!! must cast pixel to uint8_t then to float!!! waste a lot of
           // time to debug this
           *dptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
-	/*  LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *dptr);*/
+	  //LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *dptr);
 	  dptr++;
          }
-	/* LOG(INFO)<<StringPrintf("One Record Done! label: %d\n", (int)record.image().label());*/	
+	 //LOG(INFO)<<StringPrintf("One Record Done! label: %d\n", static_cast<uint8_t>(record.image().label()));	
     }else{
       for(int i=0,k=0;i<rows;i++)
         for(int j=0;j<cols;j++){
@@ -516,9 +516,9 @@ void ReadmissionDataLayer::ParseRecords(bool training,
 	   dptr++;
 	}
     }
- /* LOG(INFO)<<StringPrintf("num_records: %d\n", num_records);*/
+  //LOG(INFO)<<StringPrintf("num_records: %d\n", num_records);
   }
- /* LOG(INFO)<<StringPrintf("num_records: %d\n", num_records);*/
+  //LOG(INFO)<<StringPrintf("sum: num_records: %d\n", num_records);
   CHECK_EQ(dptr, blob->mutable_cpu_data()+blob->count());
 }
 void ReadmissionDataLayer::Setup(const LayerProto& proto,
@@ -546,7 +546,7 @@ void ReadmissionDataLayer::Setup(const LayerProto& proto,
     int rows=sample.image().shape(ndim-2);
     int cols=sample.image().shape(ndim-1);
     data_.Reshape(vector<int>{batchsize, rows, cols });
-    LOG(INFO)<<StringPrintf("zj: rows %d cols %d\n", rows,cols);
+    /*LOG(INFO)<<StringPrintf("zj: rows %d cols %d\n", rows,cols);*/
   }
 }
 
@@ -839,8 +839,9 @@ void SoftmaxLossLayer::ComputeFeature(bool training, const vector<SLayer>& srcla
         probvec.begin(), probvec.begin() + topk_,
         probvec.end(), std::greater<std::pair<float, int> >());
     // check if true label is in top k predictions
+    //LOG(INFO)<<StringPrintf("batchno %d, probvec[0].second %d, probvec[1].second %d, true label %d", n, probvec[0].second, probvec[1].second,static_cast<int>(label[n]));
     for (int k = 0; k < topk_; k++) {
-      LOG(INFO)<<StringPrintf("probvec[k].second %d\n", probvec[k].second);
+      /*LOG(INFO)<<StringPrintf("probvec[k].second %d\n", probvec[k].second);*/
       if (probvec[k].second == static_cast<int>(label[n])) {
         precision++;
         break;
@@ -854,14 +855,29 @@ void SoftmaxLossLayer::ComputeFeature(bool training, const vector<SLayer>& srcla
       predict_1++;
 
     probptr+=dim_;
+    //LOG(INFO)<<StringPrintf("precision: %f precision_1: %d true_1: %d predict_1: %d\n", precision, precision_1, true_1, predict_1);
   }
-  LOG(INFO)<<StringPrintf("precision: %f precision_1: %d true_1: %d predict_1: %d\n", precision, precision_1, true_1, predict_1);  
+  //LOG(INFO)<<StringPrintf("batch summary precision: %f precision_1: %d true_1: %d predict_1: %d\n", precision, precision_1, true_1, predict_1);
+  //LOG(INFO)<<StringPrintf("batch summary pos_precision: %f pos_recall: %f\n", (float)((float)precision_1/(float)predict_1),(float) ((float)precision_1/(float)true_1));
+
 
  
   CHECK_EQ(probptr, prob.dptr+prob.shape.Size());
   float *metric=metric_.mutable_cpu_data();
-  metric[0]=loss*scale_/(1.0f*batchsize_);
-  metric[1]=precision*scale_/(1.0f*batchsize_);
+  /*if (predict_1 != 0){
+    metric[0] = static_cast<float>(precision_1/predict_1);
+  }
+  else metric[0] = 0.0f;
+  if (true_1 != 0){
+    metric[1] = static_cast<float>(precision_1/true_1);
+  }
+  else
+  metric[1] = 0.0f;*/
+  metric[0] = static_cast<float>(precision_1);
+  metric[1] = static_cast<float>(predict_1);
+  LOG(INFO)<<StringPrintf("batch summary precision_1: %d predict_1: %d true_1: %d\n", precision_1, predict_1, true_1);
+  /*metric[0] = loss*scale_/(1.0f*batchsize_);
+  metric[1] = precision*scale_/(1.0f*batchsize_);*/
 }
 
 void SoftmaxLossLayer::ComputeGradient(const vector<SLayer>& srclayers) {
