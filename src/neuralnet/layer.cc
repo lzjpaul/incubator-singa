@@ -825,12 +825,18 @@ void SoftmaxLossLayer::ComputeFeature(bool training, const vector<SLayer>& srcla
   int precision_1 = 0;
   int true_1 = 0;
   int predict_1 = 0;
+  int predict_0 = 0;
   for(int n=0;n<batchsize_;n++){
     int ilabel=static_cast<int>(label[n]);
     CHECK_LT(ilabel,10);
     CHECK_GE(ilabel,0);
     float prob_of_truth=probptr[ilabel];
+    /*if (ilabel == 1)
+      loss-=log(std::max(prob_of_truth, FLT_MIN));
+    else
+      loss-=log(std::max(prob_of_truth, FLT_MIN));*/
     loss-=log(std::max(prob_of_truth, FLT_MIN));
+    //LOG(INFO)<<StringPrintf("batchno %d, loss %f, truelabel %d, probptr[ilabel] %f", n, static_cast<float>(loss), ilabel, prob_of_truth);
     vector<std::pair<float, int> > probvec;
     for (int j = 0; j < dim_; ++j) {
       probvec.push_back(std::make_pair(probptr[j], j));
@@ -839,9 +845,11 @@ void SoftmaxLossLayer::ComputeFeature(bool training, const vector<SLayer>& srcla
         probvec.begin(), probvec.begin() + topk_,
         probvec.end(), std::greater<std::pair<float, int> >());
     // check if true label is in top k predictions
-    //LOG(INFO)<<StringPrintf("batchno %d, probvec[0].second %d, probvec[1].second %d, true label %d", n, probvec[0].second, probvec[1].second,static_cast<int>(label[n]));
+    /*if (n % 1000 == 0 && n != 0){
+    LOG(INFO)<<StringPrintf("batchno %d, dim %d, probptr[0] %f, probptr[1] %f, true label %d", n, dim_, static_cast<float>(probptr[0]), static_cast<float>(probptr[1]), static_cast<int>(label[n]));
+    LOG(INFO)<<StringPrintf(" probvec[0].ele %d, probvec[0].prob %f, probvec[1].ele %d, probvec[1].prob %f", probvec[0].second, static_cast<float>(probvec[0].first), probvec[1].second, static_cast<float>(probvec[1].first));
+    }*/
     for (int k = 0; k < topk_; k++) {
-      /*LOG(INFO)<<StringPrintf("probvec[k].second %d\n", probvec[k].second);*/
       if (probvec[k].second == static_cast<int>(label[n])) {
         precision++;
         break;
@@ -853,7 +861,8 @@ void SoftmaxLossLayer::ComputeFeature(bool training, const vector<SLayer>& srcla
       true_1++;
     if (probvec[0].second == 1)
       predict_1++;
-
+    if (probvec[0].second == 0)
+      predict_0++;
     probptr+=dim_;
     //LOG(INFO)<<StringPrintf("precision: %f precision_1: %d true_1: %d predict_1: %d\n", precision, precision_1, true_1, predict_1);
   }
@@ -864,18 +873,13 @@ void SoftmaxLossLayer::ComputeFeature(bool training, const vector<SLayer>& srcla
  
   CHECK_EQ(probptr, prob.dptr+prob.shape.Size());
   float *metric=metric_.mutable_cpu_data();
-  /*if (predict_1 != 0){
-    metric[0] = static_cast<float>(precision_1/predict_1);
-  }
-  else metric[0] = 0.0f;
-  if (true_1 != 0){
-    metric[1] = static_cast<float>(precision_1/true_1);
-  }
-  else
-  metric[1] = 0.0f;*/
-  metric[0] = static_cast<float>(precision_1);
-  metric[1] = static_cast<float>(predict_1);
-  LOG(INFO)<<StringPrintf("batch summary precision_1: %d predict_1: %d true_1: %d\n", precision_1, predict_1, true_1);
+
+  /*metric[0] = static_cast<float>(precision_1);
+  metric[1] = static_cast<float>(predict_1);*/
+  metric[0] = loss*scale_/(1.0f*batchsize_);
+  metric[1] = precision*scale_/(1.0f*batchsize_);
+  //LOG(INFO)<<StringPrintf("batch summary precision_1: %d predict_1: %d true_1: %d\n", precision_1, predict_1, true_1);
+  //LOG(ERROR)<<"loss: "<<loss<<" precision_1: "<<precision_1<<" predict_1: "<<predict_1<<" predict_0: "<<predict_0<<" true_1: "<<true_1;
   /*metric[0] = loss*scale_/(1.0f*batchsize_);
   metric[1] = precision*scale_/(1.0f*batchsize_);*/
 }
@@ -888,6 +892,14 @@ void SoftmaxLossLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   for(int n=0;n<batchsize_;n++){
     gsrcptr[n*dim_+static_cast<int>(label[n])]-=1.0f;
   }
+  /*for(int n=0;n<batchsize_;n++){
+    if (static_cast<int>(label[n]) == 1){
+      gsrcptr[n*dim_+static_cast<int>(label[n])]-=1.0f;
+      gsrcptr[n*dim_+static_cast<int>(label[n])]*=7;
+    }
+    else 
+      gsrcptr[n*dim_+static_cast<int>(label[n])]-=1.0f;
+  }*/
   Tensor<cpu, 1> gsrc(gsrcptr, Shape1(gsrcblob->count()));
   gsrc*=scale_/(1.0f*batchsize_);
 }

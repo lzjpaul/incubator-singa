@@ -274,11 +274,10 @@ void BPWorker::Backward(shared_ptr<NeuralNet> net, int step){
       }
       layer->ComputeGradient();
       if(DisplayDebugInfo(step)&&layer->mutable_grad(nullptr)!=nullptr){
-        LOG(INFO)<<StringPrintf("Backward layer %10s grad norm1 %13.9f\t",
+        LOG(INFO)<<StringPrintf("Backward layer %10s grad norm1 %13.9f",
             layer->name().c_str(), layer->grad(nullptr).asum_data());
         for(shared_ptr<Param> p: layer->GetParams())
-          LOG(INFO)<<StringPrintf("param id %2d, name %10s,\
-              value norm1 %13.9f, grad norm1 %13.9f",
+          LOG(INFO)<<StringPrintf("param id %2d, name %10s, value norm1 %13.9f, grad norm1 %13.9f",
               p->id(), p->name().c_str(),
               p->data().asum_data(), p->grad().asum_data());
       }
@@ -299,53 +298,69 @@ void BPWorker::TrainOneBatch(int step){
 
 void BPWorker::TestOneBatch(shared_ptr<NeuralNet> net,int step, Phase phase){
   Forward(net, step, false);
-  int rownum;
-  int columnnum;
-  int param_index = 0;
-  int i,j;
-  if (step % 120 == 0 && step!= 0){
-	LOG(INFO)<<StringPrintf("step %d \n", step);
-	auto& layers=net->layers();
-  	for(auto& layer: layers){
-		for(shared_ptr<Param> p: layer->GetParams()){
-			if(param_index == 0){  /*weight*/
-       				LOG(INFO)<<StringPrintf("param id %2d, name %10s,\
-              			value norm1 %13.9f, grad norm1 %13.9f",
-              			p->id(), p->name().c_str(),
-              			p->data().asum_data(), p->grad().asum_data());
-				rownum = p->data().shape()[0];
+  //int rownum;
+  //int columnnum;
+  /*int param_index = 0;
+  int i,j;*/
+  //if (step % 120 == 0 && step!= 0){
+
+
+
+   /*LOG(INFO)<<StringPrintf("step %d \n", step);
+   auto& layers=net->layers();
+   for(auto& layer: layers){
+     for(shared_ptr<Param> p: layer->GetParams()){
+       if(param_index == 0){*/  /*weight*/
+         /*LOG(INFO)<<StringPrintf("layer name %10s, param id %2d, name %10s, value norm1 %13.9f, grad norm1 %13.9f", 
+         layer->name().c_str(),
+         p->id(), p->name().c_str(),
+         p->data().asum_data(), p->grad().asum_data());
+         LOG(INFO)<<StringPrintf("param id %2d, name %10s, value sum_norm %13.9f, grad sum_norm %13.9f",
+         p->id(), p->name().c_str(),
+         p->data().sum_data(), p->grad().sum_data());*/
+
+
+
+         //rownum = p->data().shape()[0];
 /*p is a shared_ptr<param>, p->data(), is the float data blob in the param class, shape() return the shape vector of the data blob*/
-				columnnum = p->data().shape()[1];
-				Tensor<cpu, 2> weight(p->mutable_cpu_data(), Shape2(rownum,columnnum)); 
+         /* columnnum = p->data().shape()[1];
+         Tensor<cpu, 2> weight(p->mutable_cpu_data(), Shape2(rownum,columnnum));*/ 
 /*mutable_cpu_data() returns float pointer, row num and column is to give tensor shape*/
-				for (i = 0; i < rownum; i++){
-					LOG(INFO)<<StringPrintf("rownum %d\n", i);
-					for (j = 0; j < columnnum; j++)
-						LOG(INFO)<<StringPrintf("%f ", weight[rownum][columnnum]);
-					LOG(INFO)<<StringPrintf("\n");
-				}			 
-				/*FreeSpace(weight);*/
-				param_index++;
-			}
-			else{         /*bias*/
-				LOG(INFO)<<StringPrintf("param id %2d, name %10s,\
-                                value norm1 %13.9f, grad norm1 %13.9f",
-                                p->id(), p->name().c_str(),
-                                p->data().asum_data(), p->grad().asum_data());
-                                rownum = p->data().shape()[0]; 
+         /*for (i = 0; i < rownum; i++){
+           LOG(INFO)<<StringPrintf("rownum %d\n", i);
+           for (j = 0; j < columnnum; j++)
+             LOG(INFO)<<StringPrintf("%f ", weight[rownum][columnnum]);
+           LOG(INFO)<<StringPrintf("\n");
+         }*/
+         /*FreeSpace(weight);*/
+
+
+         /*param_index++;
+       }
+       else{*/         /*bias*/
+         /*LOG(INFO)<<StringPrintf("layer name %10s, param id %2d, name %10s,value norm1 %13.9f, grad norm1 %13.9f", 
+         layer->name().c_str(),
+         p->id(), p->name().c_str(),
+         p->data().asum_data(), p->grad().asum_data());
+         LOG(INFO)<<StringPrintf("param id %2d, name %10s,value sum_norm %13.9f, grad sum_norm %13.9f",
+         p->id(), p->name().c_str(),
+         p->data().sum_data(), p->grad().sum_data());*/
+
+
+
+         //rownum = p->data().shape()[0]; 
 /*p is a shared_ptr<param>, p->data(), is the float data blob in the param class, shape() return the shape vector of the data blob*/
-                                Tensor<cpu, 1> bias(p->mutable_cpu_data(), Shape1(rownum)); 
+         //Tensor<cpu, 1> bias(p->mutable_cpu_data(), Shape1(rownum)); 
 /*mutable_cpu_data() returns float pointer, row num and column is to give tensor shape*/
-                                for (i = 0; i < rownum; i++){
-                                         LOG(INFO)<<StringPrintf("%f ", bias[rownum]);
-				}
-                                LOG(INFO)<<StringPrintf("\n");
-                              /*  FreeSpace(bias);*/
-			}		
-     		 }
-	}	
-	 
-  }
+         /*for (i = 0; i < rownum; i++){
+           LOG(INFO)<<StringPrintf("%f ", bias[rownum]);
+         }*/
+         //LOG(INFO)<<StringPrintf("\n");
+         /*  FreeSpace(bias);*/
+       /*}		
+     } 
+   }*/
+  //}
 }
 
 }  // namespace singa
