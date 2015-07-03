@@ -474,6 +474,101 @@ void MnistLayer::Setup(const LayerProto& proto,
   }
 }
 
+/**************** Implementation for NUHMultisrcDataLayer******************/
+
+void NUHMultisrcDataLayer::ParseRecords(bool training,
+    const vector<Record>& records, Blob<float>* blob){
+  LOG_IF(ERROR, records.size()==0)<<"Empty records to parse";
+  int ndim=records.at(0).image().shape_size();
+  int rows =records.at(0).image().shape(ndim-2);  //rows and columns
+  int cols =records.at(0).image().shape(ndim-1);
+  //LOG(INFO)<<StringPrintf("zj: ndim %d rows %d cols %d \n", ndim, rows, cols);
+  
+  float* diagdptr=diag_data_.mutable_cpu_data();
+  float* labdptr=lab_data_.mutable_cpu_data();
+  float* raddptr=rad_data_.mutable_cpu_data();
+  float* meddptr=med_data_.mutable_cpu_data();
+  float* procdptr=proc_data_.mutable_cpu_data();
+  float* demodptr=demo_data_.mutable_cpu_data(); 
+  int diag_dim = modelproto_.diag_dim();
+  int lab_dim = modelproto_.lab_dim();
+  int rad_dim = modelproto_.rad_dim();
+  int med_dim = modelproto_.med_dim();
+  int proc_dim = modelproto_.proc_dim();
+  int demo_dim = modelproto_.demo_dim();
+  int num_records = 0;
+  for(const Record& record: records){
+    num_records ++;
+    // copy from record to cv::Mat
+  //  cv::Mat input(rows, cols, CV_32FC1);      //not perfect rectangular, so rows and columns
+    const SingleLabelImageRecord& imagerecord=record.image();
+    if(imagerecord.pixel().size()){
+      string pixel=imagerecord.pixel();
+     /* LOG(INFO)<<StringPrintf("pixel string: %s\n", pixel);*/
+     /* LOG(INFO)<< pixel;*/
+      for(int i=0,k=0;i<rows;i++)
+        for(int j=0;j<cols;j++){
+          // NOTE!!! must cast pixel to uint8_t then to float!!! waste a lot of
+          if (j >= 0 && j < diag_dim){
+            *diagdptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
+	    //LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *diagdptr);
+	    diagdptr++;
+          }
+          else if (j >= diag_dim && j < (diag_dim + lab_dim)){
+            *labdptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
+            //LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *labdptr);
+            labdptr++;
+          }
+          else if (j >= (diag_dim + lab_dim) && j < (diag_dim + lab_dim + rad_dim)){
+            *raddptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
+            //LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *raddptr);
+            raddptr++;
+          }
+          else if (j >= (diag_dim + lab_dim + rad_dim) && j < (diag_dim + lab_dim + rad_dim + med_dim)){
+            *meddptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
+            //LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *meddptr);
+            meddptr++;
+          }
+          else if (j >= (diag_dim + lab_dim + rad_dim + med_dim) && j < (diag_dim + lab_dim + rad_dim + med_dim + proc_dim)){
+            *procdptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
+            //LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *procdptr);
+            procdptr++;
+          }
+          else if (j >= (diag_dim + lab_dim + rad_dim + med_dim + proc_dim) && j < (diag_dim + lab_dim + rad_dim + med_dim + proc_dim + demo_dim)){
+            *demodptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
+            //LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *demodptr);
+            demodptr++;
+          }
+        }
+	 //LOG(INFO)<<StringPrintf("One Record Done! label: %d\n", static_cast<uint8_t>(record.image().label()));	
+    }else{
+      for(int i=0,k=0;i<rows;i++)
+        for(int j=0;j<cols;j++){
+          *dptr=imagerecord.data(k++);
+	   dptr++;
+	}
+    }
+  //LOG(INFO)<<StringPrintf("num_records: %d\n", num_records);
+  }
+  //LOG(INFO)<<StringPrintf("sum: num_records: %d\n", num_records);
+  CHECK_EQ(demodptr, blob->mutable_cpu_data()+blob->count());
+}
+void NUHMultisrcDataLayer::Setup(const LayerProto& proto,
+    const vector<SLayer>& srclayers){
+  CHECK_EQ(srclayers.size(),1);
+  int batchsize=static_cast<DataLayer*>(srclayers[0].get())->batchsize();
+  Record sample=static_cast<DataLayer*>(srclayers[0].get())->sample();
+
+  int ndim=sample.image().shape_size();
+  CHECK_GE(ndim,2);
+  //int s=sample.image().shape(ndim-1);
+  //CHECK_EQ(s,sample.image().shape(ndim-2));
+  int rows=sample.image().shape(ndim-2);
+  int cols=sample.image().shape(ndim-1);
+  //data_.Reshape(vector<int>{batchsize, rows, cols });
+  /*LOG(INFO)<<StringPrintf("zj: rows %d cols %d\n", rows,cols);*/
+}
+
 /******************** Implementation for PoolingLayer******************/
 void PoolingLayer::Setup(const LayerProto& proto,
       const vector<SLayer>& srclayers){
@@ -721,6 +816,41 @@ void TanhLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   Tensor<cpu, 1> gsrc(srclayers[0]->mutable_grad(this)->mutable_cpu_data(),
       Shape1(data_.count()));
   gsrc=F<op::stanh_grad>(data)*grad;
+}
+/********** * Implementation for SoftmaxProbLayer*************************/
+void SoftmaxProbLayer::Setup(const LayerProto& proto,
+    const vector<SLayer>& srclayers){
+  CHECK_EQ(srclayers.size(),1); //no label
+  data_.Reshape(srclayers[0]->data(this).shape()); 
+  batchsize_=data_.shape()[0];
+  dim_=data_.count()/batchsize_; /*dim_ is 1*/
+}
+void SoftmaxProbLayer::SetupAfterPartition(const LayerProto& proto,
+      const vector<int> &shape,
+      const vector<SLayer>& srclayers){
+  Setup(proto, srclayers);
+}
+void SoftmaxProbLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
+  Shape<2> s=Shape2(batchsize_, dim_);
+  Tensor<cpu, 2> prob(data_.mutable_cpu_data(), s);
+  Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(), s);
+  Softmax(prob, src); //compute probability
+}
+
+void SoftmaxProbLayer::ComputeGradient(const vector<SLayer>& srclayers) {
+  Blob<float>* gsrcblob=srclayers[0]->mutable_grad(this);
+  float* gsrcptr=gsrcblob->mutable_cpu_data();
+  float* dsrcptr = srclayers[0]->mutable_data(this)->mutable_cpu_data(); 
+  //innerproduct result of srclayer
+  for(int n=0;n<batchsize_;n++){
+    float inner_product_0 = gsrcptr[n*dim_+0];
+    float inner_product_1 = gsrcptr[n*dim_+1];
+    gsrcptr[n*dim_+0]-=1.0f;
+    gsrcptr[n*dim_+1]-=1.0f;
+  }
+  Tensor<cpu, 1> gsrc(gsrcptr, Shape1(gsrcblob->count()));
+  gsrc*=scale_/(1.0f*batchsize_); 
+  //remember to scale batchsize in logistic loss layer!!!!!!!!!!!
 }
 /********** * Implementation for SoftmaxLossLayer*************************/
 void SoftmaxLossLayer::Setup(const LayerProto& proto,

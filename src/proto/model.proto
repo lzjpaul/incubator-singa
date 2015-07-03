@@ -7,6 +7,18 @@ enum Phase {
   kPositive = 3;
   // negative phase for contrastive divergence algorithm
   kNegative = 4;
+  // diagnosis phase
+  kDiagnosis = 5;
+  // lab test phase
+  kLabtest = 6;
+  // radiology phase
+  kRadiology = 7;
+  // medication phase
+  kMedication = 8;
+  // procedure phase
+  kProcedure = 9;
+  // demographics phase
+  kDemographics = 10;
 }
 
 message ModelProto {
@@ -40,6 +52,20 @@ message ModelProto {
   optional int32 checkpoint_frequency = 34 [default = 0];
   // send parameters to servers after training for this num of steps
   optional int32 warmup_steps = 35 [default = 0];
+  // diagnosis dimension
+  optional int32 diag_dim = 37 [default = 0];
+  // lab test dimension
+  optional int32 lab_dim = 38 [default = 0];
+  // radiology dimension
+  optional int32 rad_dim = 39 [default = 0];
+  // medication dimension
+  optional int32 med_dim = 40 [default = 0];
+  // procedure dimension
+  optional int32 proc_dim = 41 [default = 0];
+  // demographics dimension
+  optional int32 demo_dim = 42 [default = 0];
+
+
 
    // start display after this num steps
   optional int32 display_after_steps =  60[default = 0];
