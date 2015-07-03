@@ -85,6 +85,47 @@ class DropoutLayer: public Layer {
 };
 
 /**
+  * multi-source but each src single element, output single element layer
+  */
+class MultiSrcSingleLayer: public Layer {
+ public:
+  using Layer::Setup;
+  using Layer::SetupAfterPartition;
+  using Layer::ComputeFeature;
+  using Layer::ComputeGradient;
+
+  virtual void Setup(const LayerProto& proto,
+      const vector<SLayer>& srclayers);
+
+  /**
+   * need to reset weight matrix in case of LayerPartition
+   */
+  virtual void SetupAfterPartition(const LayerProto& proto,
+      const vector<int> &shape,
+      const vector<SLayer>& srclayers);
+  virtual ConnectionType connection_type(int k) const {
+    CHECK_LT(k, srclayers_.size());
+    return kOneToAll;
+  }
+
+  virtual void ComputeFeature(Phase phase, const vector<shared_ptr<Layer>>& srclayers);
+  virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
+  //virtual void ToProto(LayerProto *layer_proto, bool copyData);
+  virtual vector<shared_ptr<Param>> GetParams() {
+    return vector<shared_ptr<Param>>{weight_, bias_};
+  }
+
+ private:
+  //! dimension of the hidden layer
+  int hdim_;
+  //! dimension of the visible layer
+  int vdim_;
+  int srclayer_num_;
+  int batchsize_;
+  shared_ptr<Param> weight_, bias_;
+};
+
+/**
   * fully connected layer
   */
 class InnerProductLayer: public Layer {
@@ -317,6 +358,42 @@ class SoftmaxProbLayer: public Layer {
  private:
   int batchsize_;
   int dim_;
+};
+
+class LogisticLossLayer: public LossLayer {
+  /*
+   * connected from the label layer and the last fc layer
+   */
+ public:
+  using Layer::Setup;
+  using Layer::SetupAfterPartition;
+  using Layer::ComputeFeature;
+  using Layer::ComputeGradient;
+
+  virtual void Setup(const LayerProto& proto,
+      const vector<SLayer>& srclayers);
+
+  virtual void SetupAfterPartition(const LayerProto& proto,
+      const vector<int> &shape,
+      const vector<SLayer>& srclayers);
+
+  virtual PartitionType partition_type() const {
+    if(layer_proto_.partition_type()==kLayerPartition)
+      return kNone;
+    else
+      return layer_proto_.partition_type();
+  }
+  virtual ConnectionType connection_type(int k) const {
+    CHECK_LT(k, srclayers_.size());
+    return kOneToAll;
+  }
+
+  virtual void ComputeFeature(Phase phase, const vector<shared_ptr<Layer>>& srclayers);
+  virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
+ private:
+  int batchsize_;
+  int dim_;
+  float scale_;
 };
 
 class SoftmaxLossLayer: public LossLayer {
