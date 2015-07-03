@@ -281,6 +281,12 @@ class NUHMultisrcDataLayer: public ParserLayer {
   Blob<float> med_data_;
   Blob<float> proc_data_;
   Blob<float> demo_data_;
+  int diag_dim_;
+  int lab_dim_;
+  int rad_dim_;
+  int med_dim_;
+  int proc_dim_;
+  int demo_dim_;
   int resize_;
 };
 

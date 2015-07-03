@@ -169,7 +169,7 @@ void MultiSrcSingleLayer::Setup(const LayerProto& proto,
   vdim_ = srclayer_num_; //each src one element
   const auto& src=srclayers[0]->data(this);
   batchsize_=src.shape()[0];
-  hdim_=proto.multisrcinnerproduct_conf().num_output();
+  hdim_=proto.multisrcsingle_conf().num_output();
   data_.Reshape(vector<int>{batchsize_, hdim_});
   grad_.ReshapeLike(data_);
   Factory<Param>* factory=Singleton<Factory<Param>>::Instance();
@@ -571,12 +571,6 @@ void NUHMultisrcDataLayer::ParseRecords(bool training,
   float* meddptr=med_data_.mutable_cpu_data();
   float* procdptr=proc_data_.mutable_cpu_data();
   float* demodptr=demo_data_.mutable_cpu_data(); 
-  int diag_dim = modelproto_.diag_dim();
-  int lab_dim = modelproto_.lab_dim();
-  int rad_dim = modelproto_.rad_dim();
-  int med_dim = modelproto_.med_dim();
-  int proc_dim = modelproto_.proc_dim();
-  int demo_dim = modelproto_.demo_dim();
   int num_records = 0;
   for(const Record& record: records){
     num_records ++;
@@ -590,32 +584,32 @@ void NUHMultisrcDataLayer::ParseRecords(bool training,
       for(int i=0,k=0;i<rows;i++)
         for(int j=0;j<cols;j++){
           // NOTE!!! must cast pixel to uint8_t then to float!!! waste a lot of
-          if (j >= 0 && j < diag_dim){
+          if (j >= 0 && j < diag_dim_){
             *diagdptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
 	    //LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *diagdptr);
 	    diagdptr++;
           }
-          else if (j >= diag_dim && j < (diag_dim + lab_dim)){
+          else if (j >= diag_dim_ && j < (diag_dim_ + lab_dim_)){
             *labdptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
             //LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *labdptr);
             labdptr++;
           }
-          else if (j >= (diag_dim + lab_dim) && j < (diag_dim + lab_dim + rad_dim)){
+          else if (j >= (diag_dim_ + lab_dim_) && j < (diag_dim_ + lab_dim_ + rad_dim_)){
             *raddptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
             //LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *raddptr);
             raddptr++;
           }
-          else if (j >= (diag_dim + lab_dim + rad_dim) && j < (diag_dim + lab_dim + rad_dim + med_dim)){
+          else if (j >= (diag_dim_ + lab_dim_ + rad_dim_) && j < (diag_dim_ + lab_dim_ + rad_dim_ + med_dim_)){
             *meddptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
             //LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *meddptr);
             meddptr++;
           }
-          else if (j >= (diag_dim + lab_dim + rad_dim + med_dim) && j < (diag_dim + lab_dim + rad_dim + med_dim + proc_dim)){
+          else if (j >= (diag_dim_ + lab_dim_ + rad_dim_ + med_dim_) && j < (diag_dim_ + lab_dim_ + rad_dim_ + med_dim_ + proc_dim_)){
             *procdptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
             //LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *procdptr);
             procdptr++;
           }
-          else if (j >= (diag_dim + lab_dim + rad_dim + med_dim + proc_dim) && j < (diag_dim + lab_dim + rad_dim + med_dim + proc_dim + demo_dim)){
+          else if (j >= (diag_dim_ + lab_dim_ + rad_dim_ + med_dim_ + proc_dim_) && j < (diag_dim_ + lab_dim_ + rad_dim_ + med_dim_ + proc_dim_ + demo_dim_)){
             *demodptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
             //LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *demodptr);
             demodptr++;
@@ -646,6 +640,12 @@ void NUHMultisrcDataLayer::Setup(const LayerProto& proto,
   //CHECK_EQ(s,sample.image().shape(ndim-2));
   int rows=sample.image().shape(ndim-2);
   int cols=sample.image().shape(ndim-1);
+  diag_dim_ = proto.nuhmultisrcdata_conf().diag_dim();
+  lab_dim_ = proto.nuhmultisrcdata_conf().lab_dim();
+  rad_dim_ = proto.nuhmultisrcdata_conf().rad_dim();
+  med_dim_ = proto.nuhmultisrcdata_conf().med_dim();
+  proc_dim_ = proto.nuhmultisrcdata_conf().proc_dim();
+  demo_dim_ = proto.nuhmultisrcdata_conf().demo_dim();
   //data_.Reshape(vector<int>{batchsize, rows, cols });
   /*LOG(INFO)<<StringPrintf("zj: rows %d cols %d\n", rows,cols);*/
 }

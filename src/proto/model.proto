@@ -52,18 +52,6 @@ message ModelProto {
   optional int32 checkpoint_frequency = 34 [default = 0];
   // send parameters to servers after training for this num of steps
   optional int32 warmup_steps = 35 [default = 0];
-  // diagnosis dimension
-  optional int32 diag_dim = 37 [default = 0];
-  // lab test dimension
-  optional int32 lab_dim = 38 [default = 0];
-  // radiology dimension
-  optional int32 rad_dim = 39 [default = 0];
-  // medication dimension
-  optional int32 med_dim = 40 [default = 0];
-  // procedure dimension
-  optional int32 proc_dim = 41 [default = 0];
-  // demographics dimension
-  optional int32 demo_dim = 42 [default = 0];
 
 
 
@@ -168,6 +156,10 @@ message LayerProto {
     kSlice = 12;
     kSplit = 13;
     kTanh = 14;
+    kNUHMultisrcData = 21;
+    kSoftmaxProb = 22;
+    kMultiSrcSingle = 23;
+    kLogisticLoss = 24;
   }
   // source layer names
   repeated string srclayers = 3;
@@ -187,6 +179,14 @@ message LayerProto {
   optional DropoutProto dropout_conf = 33;
   // configuration for inner product layer
   optional InnerProductProto innerproduct_conf = 34;
+  // configuration for NUHMultisrcDataLayer
+  optional NUHMultisrcDataProto nuhmultisrcdata_conf = 46;
+  // configuration for SoftmaxProbLayer
+  optional SoftmaxProbProto softmaxeprob_conf = 47;
+  // configuration for MultiSrcSingleLayer
+  optional MultiSrcSingleProto multisrcsingle_conf = 48;
+  // configuration for LogisticLossLayer
+  optional LogisticLossProto logisticloss_conf = 49;
   // configuration for local response normalization layer
   optional DataProto lmdbdata_conf = 35;
   // configuration for local response normalization layer
@@ -256,6 +256,11 @@ message SoftmaxLossProto {
   optional float scale= 30 [default = 1];
 }
 
+message LogisticLossProto {
+  // loss scale factor
+  optional float scale= 30 [default = 1];
+}
+
 message ConvolutionProto {
   // The number of outputs for the layer
   required int32 num_filters = 1;
@@ -305,6 +310,23 @@ message MnistProto {
   optional int32 elastic_freq = 36 [default = 0];
 }
 
+message NUHMultisrcDataProto {
+  // diagnosis dimension
+  optional int32 diag_dim = 1 [default = 0];
+  // lab test dimension
+  optional int32 lab_dim = 2 [default = 0];
+  // radiology dimension
+  optional int32 rad_dim = 3 [default = 0];
+  // medication dimension
+  optional int32 med_dim = 4 [default = 0];
+  // procedure dimension
+  optional int32 proc_dim = 5 [default = 0];
+  // demographics dimension
+  optional int32 demo_dim = 6 [default = 0];
+  optional int32 resize = 7 [default = 0] ;
+}
+
+
 // Message that stores parameters used by DropoutLayer
 message DropoutProto {
   // dropout ratio
@@ -318,6 +340,21 @@ message InnerProductProto {
   // use bias vector or not
   optional bool bias_term = 30 [default = true];
 }
+
+message SoftmaxProbProto {
+  // number of outputs for the layer
+  required int32 num_output = 1;
+  // use bias vector or not
+  optional bool bias_term = 30 [default = true];
+}
+
+message MultiSrcSingleProto {
+  // number of outputs for the layer
+  required int32 num_output = 1;
+  // use bias vector or not
+  optional bool bias_term = 30 [default = true];
+}
+
 
 message LRNProto {
   // local response size
