@@ -822,6 +822,7 @@ void SoftmaxProbLayer::Setup(const LayerProto& proto,
     const vector<SLayer>& srclayers){
   CHECK_EQ(srclayers.size(),1); //no label
   data_.Reshape(srclayers[0]->data(this).shape()); 
+  grad_.Reshape(vector<int>{batchsize_, 1});
   batchsize_=data_.shape()[0];
   dim_=data_.count()/batchsize_; /*dim_ is 1*/
 }
@@ -839,17 +840,17 @@ void SoftmaxProbLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclaye
 
 void SoftmaxProbLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   Blob<float>* gsrcblob=srclayers[0]->mutable_grad(this);
-  float* gsrcptr=gsrcblob->mutable_cpu_data();
-  float* dsrcptr = srclayers[0]->mutable_data(this)->mutable_cpu_data(); 
+  float* gsrcptr = gsrcblob->mutable_cpu_data();
+  float* dsrcptr = srclayers[0]->mutable_data(this)->mutable_cpu_data();
+  float* gradptr = grad_.mutable_cpu_data();
   //innerproduct result of srclayer
   for(int n=0;n<batchsize_;n++){
-    float inner_product_0 = gsrcptr[n*dim_+0];
-    float inner_product_1 = gsrcptr[n*dim_+1];
-    gsrcptr[n*dim_+0]-=1.0f;
-    gsrcptr[n*dim_+1]-=1.0f;
-  }
-  Tensor<cpu, 1> gsrc(gsrcptr, Shape1(gsrcblob->count()));
-  gsrc*=scale_/(1.0f*batchsize_); 
+    float a0 = dsrcptr[n*dim_+0]; //inner_product_0
+    float a1 = dsrcptr[n*dim_+1]; //inner_product_1
+    float gradval = gradptr[n];
+    gsrcptr[n*dim_+0] = -gradval*expf(a0-a1)/((expf(a0-a1)+1) * (expf(a0-a1)+1));
+    gsrcptr[n*dim_+1] = gradval*expf(a0-a1)/((expf(a0-a1)+1) * (expf(a0-a1)+1));
+  } 
   //remember to scale batchsize in logistic loss layer!!!!!!!!!!!
 }
 /********** * Implementation for SoftmaxLossLayer*************************/

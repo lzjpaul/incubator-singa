@@ -194,7 +194,38 @@ class NUHMultisrcDataLayer: public ParserLayer {
   virtual void Setup(const LayerProto& proto, const vector<SLayer>& srclayers);
   virtual void ParseRecords(bool training, const vector<Record>& records,
       Blob<float>* blob);
-
+  virtual Blob<float>* mutable_data(const Layer* from, Phase phase) {
+    if (strcmp((from->name()).c_str(), "Diagnosis") == 0) //any other better solutions?
+      return &diag_data_;
+    else if (strcmp ((from->name()).c_str(), "LabTest") == 0)
+      return &lab_data_;
+    else if (strcmp((from->name()).c_str(), "Radiology") == 0)
+      return &rad_data_;
+    else if (strcmp((from->name()).c_str(), "Medication") == 0)
+      return &med_data_;
+    else if (strcmp((from->name()).c_str(), "Procedure") == 0)
+      return &proc_data_;
+    else if (strcmp((from->name()).c_str(), "Demographics") == 0)
+      return &demo_data_;
+    else
+      LOG(ERROR)<<"no mutable_data returned in the MultiSrcDatalayer ";
+  }
+  virtual const Blob<float>& data(const Layer* from, Phase phase) const {
+    if (strcmp((from->name()).c_str(), "Diagnosis") == 0) //any other better solutions?
+      return diag_data_;
+    else if (strcmp ((from->name()).c_str(), "LabTest") == 0)
+      return lab_data_;
+    else if (strcmp((from->name()).c_str(), "Radiology") == 0)
+      return rad_data_;
+    else if (strcmp((from->name()).c_str(), "Medication") == 0)
+      return med_data_;
+    else if (strcmp((from->name()).c_str(), "Procedure") == 0)
+      return proc_data_;
+    else if (strcmp((from->name()).c_str(), "Demographics") == 0)
+      return demo_data_;
+    else
+      LOG(ERROR)<<"no data returned in the MultiSrcDatalayer ";
+  }
  protected:
   // height and width of the image after deformation
   // kernel size for elastic distortion
@@ -250,7 +281,7 @@ class ReLULayer: public Layer {
   virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
 };
 
-class SoftmaxProbLayer: public LossLayer {
+class SoftmaxProbLayer: public Layer {
   /*
    * connected from the label layer and the last fc layer
    */

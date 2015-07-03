@@ -8,17 +8,17 @@ enum Phase {
   // negative phase for contrastive divergence algorithm
   kNegative = 4;
   // diagnosis phase
-  kDiagnosis = 5;
+  //kDiagnosis = 5;
   // lab test phase
-  kLabtest = 6;
+  //kLabtest = 6;
   // radiology phase
-  kRadiology = 7;
+  //kRadiology = 7;
   // medication phase
-  kMedication = 8;
+  //kMedication = 8;
   // procedure phase
-  kProcedure = 9;
+  //kProcedure = 9;
   // demographics phase
-  kDemographics = 10;
+  //kDemographics = 10;
 }
 
 message ModelProto {
