@@ -23,7 +23,7 @@ void NeuralNet::RegisterLayers(){
   RegisterLayer(factory, Concate);
   RegisterLayer(factory, Dropout);
   RegisterLayer(factory, InnerProduct);
-  RegisterLayer(factory, NUHMultisrcData);
+  RegisterLayer(factory, MultiSrcData);
   RegisterLayer(factory, SoftmaxProb);
   RegisterLayer(factory, MultiSrcSingle);
   RegisterLayer(factory, LogisticLoss);

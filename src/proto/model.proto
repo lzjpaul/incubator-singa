@@ -156,7 +156,7 @@ message LayerProto {
     kSlice = 12;
     kSplit = 13;
     kTanh = 14;
-    kNUHMultisrcData = 21;
+    kMultiSrcData = 21;
     kSoftmaxProb = 22;
     kMultiSrcSingle = 23;
     kLogisticLoss = 24;
@@ -179,8 +179,8 @@ message LayerProto {
   optional DropoutProto dropout_conf = 33;
   // configuration for inner product layer
   optional InnerProductProto innerproduct_conf = 34;
-  // configuration for NUHMultisrcDataLayer
-  optional NUHMultisrcDataProto nuhmultisrcdata_conf = 46;
+  // configuration for MultiSrcDataLayer
+  optional MultiSrcDataProto multisrcdata_conf = 46;
   // configuration for SoftmaxProbLayer
   optional SoftmaxProbProto softmaxeprob_conf = 47;
   // configuration for MultiSrcSingleLayer
@@ -310,22 +310,6 @@ message MnistProto {
   optional int32 elastic_freq = 36 [default = 0];
 }
 
-message NUHMultisrcDataProto {
-  // diagnosis dimension
-  optional int32 diag_dim = 1 [default = 0];
-  // lab test dimension
-  optional int32 lab_dim = 2 [default = 0];
-  // radiology dimension
-  optional int32 rad_dim = 3 [default = 0];
-  // medication dimension
-  optional int32 med_dim = 4 [default = 0];
-  // procedure dimension
-  optional int32 proc_dim = 5 [default = 0];
-  // demographics dimension
-  optional int32 demo_dim = 6 [default = 0];
-  optional int32 resize = 7 [default = 0] ;
-}
-
 
 // Message that stores parameters used by DropoutLayer
 message DropoutProto {
@@ -339,6 +323,22 @@ message InnerProductProto {
   required int32 num_output = 1;
   // use bias vector or not
   optional bool bias_term = 30 [default = true];
+}
+
+message MultiSrcDataProto {
+  // diagnosis dimension
+  optional int32 diag_dim = 1 [default = 0];
+  // lab test dimension
+  optional int32 lab_dim = 2 [default = 0];
+  // radiology dimension
+  optional int32 rad_dim = 3 [default = 0];
+  // medication dimension
+  optional int32 med_dim = 4 [default = 0];
+  // procedure dimension
+  optional int32 proc_dim = 5 [default = 0];
+  // demographics dimension
+  optional int32 demo_dim = 6 [default = 0];
+  optional int32 resize = 7 [default = 0] ;
 }
 
 message SoftmaxProbProto {

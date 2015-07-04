@@ -219,9 +219,11 @@ void MultiSrcSingleLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
   Tensor<cpu, 2> gweight(weight_->mutable_cpu_grad(), Shape2(vdim_,hdim_));//3*1
   Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(hdim_));
-  graddptr = grad.dptr;
-  weightdptr = weight.dptr;
-  gweightdptr = gweight.dptr;
+  float* graddptr = grad.dptr;
+  float* weightdptr = weight.dptr;
+  float* gweightdptr = gweight.dptr;
+  float* srcdptr;
+  float* gsrcdptr;
   gbias=sum_rows(grad);
   //gweight=dot(src.T(), grad);
   for (int i = 0; i < vdim_; i++){  //traverse all sources
@@ -231,9 +233,9 @@ void MultiSrcSingleLayer::ComputeGradient(const vector<SLayer>& srclayers) {
       gweightdptr[i] += srcdptr[1 + 2*j] * graddptr[j];
   }
   
-  // gsrc=dot(grad, weight.T());
+  // gsrc=dot(grad, weight.T()); can refer to tanh layer gsrc=F<op::stanh_grad>(data)*grad;
   for (int i = 0; i < vdim_; i++){  //traverse all sources
-    Tensor<cpu, 2> gsrc(srclayers[i]->mutable_grad(this)->mutable_cpu_data(),
+    Tensor<cpu, 2> gsrc(srclayers[i]->mutable_grad(this)->mutable_cpu_data(),//no need for the tensor?
         Shape2(batchsize_,1));
     gsrcdptr = gsrc.dptr; //each src grad one by one
     for (int j = 0; j < batchsize_; j++)
@@ -555,9 +557,9 @@ void MnistLayer::Setup(const LayerProto& proto,
   }
 }
 
-/**************** Implementation for NUHMultisrcDataLayer******************/
+/**************** Implementation for MultisrcDataLayer******************/
 
-void NUHMultisrcDataLayer::ParseRecords(bool training,
+void MultiSrcDataLayer::ParseRecords(Phase phase,
     const vector<Record>& records, Blob<float>* blob){
   LOG_IF(ERROR, records.size()==0)<<"Empty records to parse";
   int ndim=records.at(0).image().shape_size();
@@ -617,18 +619,14 @@ void NUHMultisrcDataLayer::ParseRecords(bool training,
         }
 	 //LOG(INFO)<<StringPrintf("One Record Done! label: %d\n", static_cast<uint8_t>(record.image().label()));	
     }else{
-      for(int i=0,k=0;i<rows;i++)
-        for(int j=0;j<cols;j++){
-          *dptr=imagerecord.data(k++);
-	   dptr++;
-	}
+       LOG(ERROR)<<"MultiSrcDataLayer: not fetch image record ";
     }
   //LOG(INFO)<<StringPrintf("num_records: %d\n", num_records);
   }
   //LOG(INFO)<<StringPrintf("sum: num_records: %d\n", num_records);
   CHECK_EQ(demodptr, blob->mutable_cpu_data()+blob->count());
 }
-void NUHMultisrcDataLayer::Setup(const LayerProto& proto,
+void MultiSrcDataLayer::Setup(const LayerProto& proto,
     const vector<SLayer>& srclayers){
   CHECK_EQ(srclayers.size(),1);
   int batchsize=static_cast<DataLayer*>(srclayers[0].get())->batchsize();
@@ -640,12 +638,12 @@ void NUHMultisrcDataLayer::Setup(const LayerProto& proto,
   //CHECK_EQ(s,sample.image().shape(ndim-2));
   int rows=sample.image().shape(ndim-2);
   int cols=sample.image().shape(ndim-1);
-  diag_dim_ = proto.nuhmultisrcdata_conf().diag_dim();
-  lab_dim_ = proto.nuhmultisrcdata_conf().lab_dim();
-  rad_dim_ = proto.nuhmultisrcdata_conf().rad_dim();
-  med_dim_ = proto.nuhmultisrcdata_conf().med_dim();
-  proc_dim_ = proto.nuhmultisrcdata_conf().proc_dim();
-  demo_dim_ = proto.nuhmultisrcdata_conf().demo_dim();
+  diag_dim_ = proto.multisrcdata_conf().diag_dim();
+  lab_dim_ = proto.multisrcdata_conf().lab_dim();
+  rad_dim_ = proto.multisrcdata_conf().rad_dim();
+  med_dim_ = proto.multisrcdata_conf().med_dim();
+  proc_dim_ = proto.multisrcdata_conf().proc_dim();
+  demo_dim_ = proto.multisrcdata_conf().demo_dim();
   //data_.Reshape(vector<int>{batchsize, rows, cols });
   /*LOG(INFO)<<StringPrintf("zj: rows %d cols %d\n", rows,cols);*/
 }
@@ -962,20 +960,16 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
     int ilabel=static_cast<int>(label[n]);
     CHECK_LT(ilabel,10);
     CHECK_GE(ilabel,0);
-    loss += -ilabel*log(probptr[0])-(1-ilabel)*(1-probptr[0]);
-    vector<std::pair<float, int> > probvec;
-    for (int j = 0; j < dim_; ++j) {
-      probvec.push_back(std::make_pair(probptr[j], j));
-    }
+    loss += -ilabel*log(probptr[0])-(1-ilabel)*(1-probptr[0]);//is this correct? 
 
     if (ilabel == 0)
-      if (probptr < 0.5f) 
+      if (probptr[0] < 0.5f) 
         precision++;
     else if (ilabel ==1)
-      if (probptr >= 0.5f)
+      if (probptr[0] >= 0.5f)
         precision++;
     
-    probptr+=dim_;
+    probptr+=dim_; //!!!!!!!!!!!!add 1 to next sample!!!
   }
   CHECK_EQ(probptr, prob.dptr+prob.shape.Size());
   float *metric=metric_.mutable_cpu_data();
@@ -987,7 +981,7 @@ void LogisticLossLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   Blob<float>* gsrcblob=srclayers[0]->mutable_grad(this); //dim is 1
   float* gsrcptr=gsrcblob->mutable_cpu_data();
   Tensor<cpu, 1> gsrc(gsrcptr, Shape1(gsrcblob->count()));
-  Tensor<cpu, 2> prob(data_.mutable_cpu_data(), Shape2(batchsize_, dim_));
+  Tensor<cpu, 1> prob(data_.mutable_cpu_data(), Shape1(batchsize_));//have problem? or shape is just shape, data is data
   gsrc=F<op::sigmoid_grad>(prob); //sigmoid deriviation
   gsrc*=scale_/(1.0f*batchsize_);
 }

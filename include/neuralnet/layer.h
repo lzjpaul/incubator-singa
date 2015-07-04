@@ -228,12 +228,12 @@ class MnistLayer: public ParserLayer {
   int resize_, elastic_freq_;
 };
 
-class NUHMultisrcDataLayer: public ParserLayer {
+class MultiSrcDataLayer: public ParserLayer {
  public:
   using Layer::Setup;
 
   virtual void Setup(const LayerProto& proto, const vector<SLayer>& srclayers);
-  virtual void ParseRecords(bool training, const vector<Record>& records,
+  virtual void ParseRecords(Phase phase, const vector<Record>& records,
       Blob<float>* blob);
   virtual Blob<float>* mutable_data(const Layer* from, Phase phase) {
     if (strcmp((from->name()).c_str(), "Diagnosis") == 0) //any other better solutions?
