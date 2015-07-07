@@ -1,5 +1,8 @@
 #include <algorithm>
 #include <queue>
+#include <vector>
+#include <string>
+#include <unordered_set>
 #include "utils/graph.h"
 
 const string Graph::ToString() const {
@@ -90,6 +93,8 @@ void Graph::Sort() {
   }
   int n=nodes_.size();
   std::queue<SNode> tmp;
+  std::unordered_set<SNode> pushed;
+  pushed.insert(start);
   tmp.push(start);
   nodes_.clear();
   while(!tmp.empty()){
@@ -106,11 +111,17 @@ void Graph::Sort() {
       visited[node->name()]=true;
       for(auto dst: node->dstnodes()){
         CHECK(visited.find(dst->name())!=visited.end())<<dst->name();
-        if(visited[dst->name()]==false){
-          tmp.push(dst);
+        if(pushed.find(dst) == pushed.end()){
+            pushed.insert(dst);
+            tmp.push(dst);
         }
       }
     }
+    else
+      tmp.push(node);
+  }
+  for(auto node: nodes_){
+    LOG(ERROR)<<"nodes: "<<node->name();
   }
   CHECK_EQ(nodes_.size(), n);
 }
