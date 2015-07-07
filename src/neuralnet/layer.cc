@@ -165,7 +165,7 @@ void DropoutLayer::ComputeGradient(const vector<SLayer>& srclayers)  {
 //only assume there is single element from each src, output is single element
 void MultiSrcSingleLayer::Setup(const LayerProto& proto,
       const vector<SLayer>& srclayers){
-  LOG(ERROR)<<"MultiSrcSingle setup begins";
+  //LOG(ERROR)<<"MultiSrcSingle setup begins";
   srclayer_num_ = srclayers.size();
   vdim_ = srclayer_num_; //each src one element
   const auto& src=srclayers[0]->data(this);
@@ -178,7 +178,7 @@ void MultiSrcSingleLayer::Setup(const LayerProto& proto,
   bias_=shared_ptr<Param>(factory->Create("Param"));
   weight_->Setup(proto.param(0), vector<int>{vdim_, hdim_});
   bias_->Setup(proto.param(1), vector<int>{hdim_});
-  LOG(ERROR)<<"MultiSrcSingle setup ends";
+  //LOG(ERROR)<<"MultiSrcSingle setup ends";
 }
 void MultiSrcSingleLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
@@ -245,26 +245,26 @@ void MultiSrcSingleLayer::ComputeGradient(const vector<SLayer>& srclayers) {
 /**************** Implementation for InnerProductLayer********************/
 void InnerProductLayer::Setup(const LayerProto& proto,
       const vector<SLayer>& srclayers){
-  LOG(ERROR)<<"inner setup begin ";
+  //LOG(ERROR)<<"inner setup begin ";
   CHECK_EQ(srclayers.size(),1);
-  LOG(ERROR)<<"layer name from inner product layer"<<(this->name());
+  //LOG(ERROR)<<"layer name from inner product layer"<<(this->name());
   const auto& src=srclayers[0]->data(this);
-  LOG(ERROR)<<"fetch data ends ";
+  //LOG(ERROR)<<"fetch data ends ";
   batchsize_=src.shape()[0];
-  LOG(ERROR)<<"batchsize "<<batchsize_;
+  //LOG(ERROR)<<"batchsize "<<batchsize_;
   vdim_=src.count()/batchsize_;
-  LOG(ERROR)<<"vdim_ "<<vdim_;
+  //LOG(ERROR)<<"vdim_ "<<vdim_;
   hdim_=proto.innerproduct_conf().num_output();
-  LOG(ERROR)<<"hdim "<<hdim_;
+  //LOG(ERROR)<<"hdim "<<hdim_;
   data_.Reshape(vector<int>{batchsize_, hdim_});
   grad_.ReshapeLike(data_);
-  LOG(ERROR)<<"data_ and grad_ ";
+  //LOG(ERROR)<<"data_ and grad_ ";
   Factory<Param>* factory=Singleton<Factory<Param>>::Instance();
   weight_=shared_ptr<Param>(factory->Create("Param"));
   bias_=shared_ptr<Param>(factory->Create("Param"));
   weight_->Setup(proto.param(0), vector<int>{vdim_, hdim_});
   bias_->Setup(proto.param(1), vector<int>{hdim_});
-  LOG(ERROR)<<"inner setup end ";
+  //LOG(ERROR)<<"inner setup end ";
 }
 void InnerProductLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
@@ -683,7 +683,7 @@ void MultiSrcDataLayer::Setup(const LayerProto& proto,
   med_dim_ = proto.multisrcdata_conf().med_dim();
   proc_dim_ = proto.multisrcdata_conf().proc_dim();
   demo_dim_ = proto.multisrcdata_conf().demo_dim();
-  LOG(ERROR)<<"rows:"<<rows<<"cols: "<<cols<<"diag_dim"<<diag_dim_<<" lab_dim"<<lab_dim_<<" rad_dim_"<<rad_dim_<<" med_dim_"<<med_dim_<<" proc_dim_"<<proc_dim_<<" demo_dim_"<<demo_dim_;
+  //LOG(ERROR)<<"rows:"<<rows<<"cols: "<<cols<<"diag_dim"<<diag_dim_<<" lab_dim"<<lab_dim_<<" rad_dim_"<<rad_dim_<<" med_dim_"<<med_dim_<<" proc_dim_"<<proc_dim_<<" demo_dim_"<<demo_dim_;
   //LOG(ERROR)<<"data_ reshape begins";
   data_.Reshape(vector<int>{batchsize, rows, cols});
   //LOG(ERROR)<<"data_ size: "<<data_.shape().size();
@@ -893,7 +893,7 @@ void RGBImageLayer::Setup(const LayerProto& proto,
 
 /***************Implementation for ShardDataLayer**************************/
 void ShardDataLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers){
-  LOG(ERROR)<<"shard data begins ";
+  //LOG(ERROR)<<"shard data begins ";
   if(random_skip_){
     int nskip=rand()%random_skip_;
     LOG(INFO)<<"Random Skip "<<nskip<<" records, there are "<<shard_->Count()
@@ -923,7 +923,7 @@ void ShardDataLayer::Setup(const LayerProto& proto,
 
   records_.resize(batchsize_);
   random_skip_=proto.sharddata_conf().random_skip();
-  LOG(ERROR)<<"shard data set up ends ";
+  //LOG(ERROR)<<"shard data set up ends ";
 }
 /*******************Implementation of TanLayer***************************/
 void TanhLayer::Setup(const LayerProto& proto,
@@ -957,13 +957,13 @@ void TanhLayer::ComputeGradient(const vector<SLayer>& srclayers) {
 void SoftmaxProbLayer::Setup(const LayerProto& proto,
     const vector<SLayer>& srclayers){
   CHECK_EQ(srclayers.size(),1); //no label
-  LOG(ERROR)<<"layer name: "<<(this->name())<<"softmax Prob setup begins";
+  //LOG(ERROR)<<"layer name: "<<(this->name())<<"softmax Prob setup begins";
   data_.Reshape(srclayers[0]->data(this).shape());
   batchsize_=data_.shape()[0];
-  LOG(ERROR)<<"batchsize_ "<<batchsize_; 
+  //LOG(ERROR)<<"batchsize_ "<<batchsize_; 
   grad_.Reshape(vector<int>{batchsize_, 1}); /*grad is 1, only the y1*/
   dim_=data_.count()/batchsize_; /*dim_ is 2, becuase prob remains 2*/
-  LOG(ERROR)<<"layer name: "<<(this->name())<<"softmax Prob setup ends";
+  //LOG(ERROR)<<"layer name: "<<(this->name())<<"softmax Prob setup ends";
 }
 void SoftmaxProbLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
@@ -995,14 +995,14 @@ void SoftmaxProbLayer::ComputeGradient(const vector<SLayer>& srclayers) {
 /********** * Implementation for LogisticLossLayer*************************/
 void LogisticLossLayer::Setup(const LayerProto& proto,
     const vector<SLayer>& srclayers){
-  LOG(ERROR)<<"Logistic layer set up begins ";
+  //LOG(ERROR)<<"Logistic layer set up begins ";
   CHECK_EQ(srclayers.size(),2);
   data_.Reshape(srclayers[0]->data(this).shape());
   batchsize_=data_.shape()[0];
   dim_=data_.count()/batchsize_; 
   metric_.Reshape(vector<int>{2});
   scale_=proto.logisticloss_conf().scale();
-  LOG(ERROR)<<"Logistic layer set up ends ";
+  //LOG(ERROR)<<"Logistic layer set up ends ";
 }
 void LogisticLossLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
@@ -1017,20 +1017,20 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
   prob=F<op::sigmoid>(src);
   const float* label=srclayers[1]->data(this).cpu_data();
   const float* probptr=prob.dptr;
-  float loss=0, precision=0;
+  float loss=0.0f, precision=0.0f;
   for(int n=0;n<batchsize_;n++){
     int ilabel=static_cast<int>(label[n]);
     CHECK_LT(ilabel,10);
     CHECK_GE(ilabel,0);
     loss += -ilabel*log(probptr[0])-(1-ilabel)*(1-probptr[0]);//is this correct? 
-
+    //LOG(INFO)<<"ilabel "<<ilabel<<"predict prob "<<probptr[0];
     if (ilabel == 0)
-      if (probptr[0] < 0.5f) 
+      if (static_cast<float>(probptr[0]) < 0.5f) 
         precision++;
     else if (ilabel ==1)
-      if (probptr[0] >= 0.5f)
+      if (static_cast<float>(probptr[0]) >= 0.5f)
         precision++;
-    
+    //LOG(INFO)<<"precision "<<precision;
     probptr+=dim_; //!!!!!!!!!!!!add 1 to next sample!!!
   }
   CHECK_EQ(probptr, prob.dptr+prob.shape.Size());

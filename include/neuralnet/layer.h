@@ -256,7 +256,7 @@ class MultiSrcDataLayer: public ParserLayer {
       }
     }
     else{
-      LOG(ERROR)<<"nullptr";
+      //LOG(ERROR)<<"nullptr";
       return &data_;
     }
   }
@@ -281,7 +281,7 @@ class MultiSrcDataLayer: public ParserLayer {
       }
     }
     else{
-      LOG(ERROR)<<"nullptr";
+      //LOG(ERROR)<<"nullptr";
       return data_;
     }
   }

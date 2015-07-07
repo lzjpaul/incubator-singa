@@ -117,10 +117,10 @@ void Graph::Sort() {
     else
       tmp.push(node);
   }
-  for(auto node: nodes_){
+  /*for(auto node: nodes_){
     LOG(ERROR)<<"nodes: "<<node->name();
-  }
-  LOG(ERROR)<<"finish printing nodes ";
+  }*/
+  //LOG(ERROR)<<"finish printing nodes ";
   CHECK_EQ(nodes_.size(), n);
 }
 
