@@ -153,11 +153,15 @@ vector<shared_ptr<Server>> Trainer::CreateServers(int nthreads,
 
 vector<shared_ptr<Worker>> Trainer::CreateWorkers(int nthreads,
     const ModelProto& mproto, vector<int> *slice_size){
+  //LOG(ERROR)<<"create workers begin";
   auto cluster=Cluster::Get();
+  //LOG(ERROR)<<"after Cluster::Get()";
   auto net=NeuralNet::SetupNeuralNet(mproto.neuralnet(), kTrain,
       cluster->nworkers_per_group());
+  //LOG(ERROR)<<"after SetupNeuralNet";
   int lcm=LeastCommonMultiple(cluster->nserver_groups(), cluster->nservers_per_group());
   auto paramid2slices=SliceParams(lcm, net->params()); // sliceid, size
+  //LOG(ERROR)<<"before get params";
   for(auto param: net->params()){
     if(param->id()==param->owner())
       for(auto entry: paramid2slices[param->id()])
@@ -214,6 +218,7 @@ vector<shared_ptr<Worker>> Trainer::CreateWorkers(int nthreads,
       }
     }
     // create ServerShard for the workers
+    //LOG(ERROR)<<"before create ServerShard ";
     auto shard=make_shared<WorkerShard>();
     worker_shards_[gid]=shard;
     for(auto layer: train_net->layers()){
@@ -233,15 +238,21 @@ vector<shared_ptr<Worker>> Trainer::CreateWorkers(int nthreads,
     }
     for(int wid=wstart;wid<wend;wid++){
       shared_ptr<Worker> worker=nullptr;
-      if(mproto.alg()==ModelProto_GradCalcAlg_kBackPropagation)
+      if(mproto.alg()==ModelProto_GradCalcAlg_kBackPropagation){
         worker=make_shared<BPWorker>(nthreads++,gid, wid);
+         //LOG(ERROR)<<"BP worker done";
+      }
       else{
         // TODO add CDWorker
       }
       worker->Setup(mproto, train_net);
+      //LOG(ERROR)<<"set up done";
       worker->set_test_net(test_net);
+      //LOG(ERROR)<<"set up test done";
       worker->set_validation_net(validation_net);
+      //LOG(ERROR)<<"set up validation done";
       workers.push_back(worker);
+      //LOG(ERROR)<<"push back done";
     }
   }
   return workers;
@@ -266,12 +277,15 @@ void Trainer::Start(const ModelProto& mproto, const ClusterProto& cproto,
   procs_id_ = cluster->procs_id();
   int nthreads=1;
   // create workers
+  //LOG(ERROR)<<"before create workers ";
   vector<int> slices;
   vector<shared_ptr<Worker>> workers=CreateWorkers(nthreads, mproto, &slices);
+  //LOG(ERROR)<<"after create workers ";
   if(cluster->nserver_groups()&&cluster->nservers_per_group())
     slice2server_=PartitionSlice(cluster->nservers_per_group(), slices);
   nthreads+=workers.size();
   // create servers
+  LOG(ERROR)<<"before create servers ";
   vector<HandleContext*> ctx;
   vector<shared_ptr<Server>> servers=CreateServers(nthreads, mproto, slices,
       &ctx);

@@ -47,9 +47,10 @@ int main(int argc, char **argv) {
 
   LOG(INFO) << "The cluster config is\n" << cluster.DebugString();
   LOG(INFO) << "The model config is\n" << model.DebugString();
-
+  //LOG(ERROR)<<"before register ";
   RegisterClasses(model);
   singa::Trainer trainer;
+  //LOG(ERROR)<<"before train start ";
   trainer.Start(model, cluster, FLAGS_procsID);
   return 0;
 }

@@ -1,7 +1,5 @@
 #include <algorithm>
 #include <queue>
-#include <vector>
-#include <string>
 #include <unordered_set>
 #include "utils/graph.h"
 
@@ -110,7 +108,6 @@ void Graph::Sort() {
       nodes_.push_back(node);
       visited[node->name()]=true;
       for(auto dst: node->dstnodes()){
-        CHECK(visited.find(dst->name())!=visited.end())<<dst->name();
         if(pushed.find(dst) == pushed.end()){
             pushed.insert(dst);
             tmp.push(dst);
@@ -123,6 +120,7 @@ void Graph::Sort() {
   for(auto node: nodes_){
     LOG(ERROR)<<"nodes: "<<node->name();
   }
+  LOG(ERROR)<<"finish printing nodes ";
   CHECK_EQ(nodes_.size(), n);
 }
 

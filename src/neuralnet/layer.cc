@@ -165,6 +165,7 @@ void DropoutLayer::ComputeGradient(const vector<SLayer>& srclayers)  {
 //only assume there is single element from each src, output is single element
 void MultiSrcSingleLayer::Setup(const LayerProto& proto,
       const vector<SLayer>& srclayers){
+  LOG(ERROR)<<"MultiSrcSingle setup begins";
   srclayer_num_ = srclayers.size();
   vdim_ = srclayer_num_; //each src one element
   const auto& src=srclayers[0]->data(this);
@@ -177,21 +178,19 @@ void MultiSrcSingleLayer::Setup(const LayerProto& proto,
   bias_=shared_ptr<Param>(factory->Create("Param"));
   weight_->Setup(proto.param(0), vector<int>{vdim_, hdim_});
   bias_->Setup(proto.param(1), vector<int>{hdim_});
+  LOG(ERROR)<<"MultiSrcSingle setup ends";
 }
 void MultiSrcSingleLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
       const vector<SLayer>& srclayers){
-  LayerProto newproto(proto);
-  InnerProductProto * innerproto=newproto.mutable_innerproduct_conf();
-  innerproto->set_num_output(shape[1]);
-  Setup(newproto, srclayers);
+  LOG(ERROR)<<"No partition after setup ";
 }
 
 void MultiSrcSingleLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
   float* srcdptr;
   float* concat_srcdptr;
   Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));
-  CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_);
+  //CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_);
   /*Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
       Shape2(batchsize_,vdim_));*/
   Tensor<cpu, 2> concat_src(Shape2(batchsize_, vdim_));
@@ -246,18 +245,26 @@ void MultiSrcSingleLayer::ComputeGradient(const vector<SLayer>& srclayers) {
 /**************** Implementation for InnerProductLayer********************/
 void InnerProductLayer::Setup(const LayerProto& proto,
       const vector<SLayer>& srclayers){
+  LOG(ERROR)<<"inner setup begin ";
   CHECK_EQ(srclayers.size(),1);
+  LOG(ERROR)<<"layer name from inner product layer"<<(this->name());
   const auto& src=srclayers[0]->data(this);
+  LOG(ERROR)<<"fetch data ends ";
   batchsize_=src.shape()[0];
+  LOG(ERROR)<<"batchsize "<<batchsize_;
   vdim_=src.count()/batchsize_;
+  LOG(ERROR)<<"vdim_ "<<vdim_;
   hdim_=proto.innerproduct_conf().num_output();
+  LOG(ERROR)<<"hdim "<<hdim_;
   data_.Reshape(vector<int>{batchsize_, hdim_});
   grad_.ReshapeLike(data_);
+  LOG(ERROR)<<"data_ and grad_ ";
   Factory<Param>* factory=Singleton<Factory<Param>>::Instance();
   weight_=shared_ptr<Param>(factory->Create("Param"));
   bias_=shared_ptr<Param>(factory->Create("Param"));
   weight_->Setup(proto.param(0), vector<int>{vdim_, hdim_});
   bias_->Setup(proto.param(1), vector<int>{hdim_});
+  LOG(ERROR)<<"inner setup end ";
 }
 void InnerProductLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
@@ -562,18 +569,46 @@ void MnistLayer::Setup(const LayerProto& proto,
 void MultiSrcDataLayer::ParseRecords(Phase phase,
     const vector<Record>& records, Blob<float>* blob){
   LOG_IF(ERROR, records.size()==0)<<"Empty records to parse";
+  //LOG(ERROR)<<"Multisrcdata parse records begins ";
   int ndim=records.at(0).image().shape_size();
   int rows =records.at(0).image().shape(ndim-2);  //rows and columns
   int cols =records.at(0).image().shape(ndim-1);
-  //LOG(INFO)<<StringPrintf("zj: ndim %d rows %d cols %d \n", ndim, rows, cols);
-  
-  float* diagdptr=diag_data_.mutable_cpu_data();
-  float* labdptr=lab_data_.mutable_cpu_data();
-  float* raddptr=rad_data_.mutable_cpu_data();
-  float* meddptr=med_data_.mutable_cpu_data();
-  float* procdptr=proc_data_.mutable_cpu_data();
-  float* demodptr=demo_data_.mutable_cpu_data(); 
+  //LOG(ERROR)<<"ndim "<<ndim<<"rows "<<rows<<"cols "<<cols;
+  float* diagdptr;
+  float* labdptr;
+  float* raddptr;
+  float* meddptr;
+  float* procdptr;
+  float* demodptr;
+ 
+  float* dptr=blob->mutable_cpu_data();
+  //LOG(ERROR)<<"dptr over"; 
+  if (diag_dim_ != 0){
+    diagdptr=diag_data_.mutable_cpu_data();
+    //LOG(ERROR)<<"diagdptr over";
+  }
+  if (lab_dim_ != 0){
+    labdptr=lab_data_.mutable_cpu_data();
+    LOG(ERROR)<<"labdptr over";
+  }
+  if (rad_dim_ != 0){
+    raddptr=rad_data_.mutable_cpu_data();
+    LOG(ERROR)<<"raddptr over";
+  }
+  if (med_dim_ != 0){
+    meddptr=med_data_.mutable_cpu_data();
+    //LOG(ERROR)<<"meddptr over";
+  }
+  if (proc_dim_ != 0){
+    procdptr=proc_data_.mutable_cpu_data();
+    LOG(ERROR)<<"procdptr over";
+  }
+  if (demo_dim_ != 0){
+    demodptr=demo_data_.mutable_cpu_data(); 
+    //LOG(ERROR)<<"demodptr over";
+  }
   int num_records = 0;
+  //LOG(ERROR)<<"Multisrcdata declaration over";
   for(const Record& record: records){
     num_records ++;
     // copy from record to cv::Mat
@@ -581,10 +616,12 @@ void MultiSrcDataLayer::ParseRecords(Phase phase,
     const SingleLabelImageRecord& imagerecord=record.image();
     if(imagerecord.pixel().size()){
       string pixel=imagerecord.pixel();
-     /* LOG(INFO)<<StringPrintf("pixel string: %s\n", pixel);*/
-     /* LOG(INFO)<< pixel;*/
       for(int i=0,k=0;i<rows;i++)
         for(int j=0;j<cols;j++){
+          // time to debug this
+          *dptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
+	  //LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *dptr);
+	  dptr++;
           // NOTE!!! must cast pixel to uint8_t then to float!!! waste a lot of
           if (j >= 0 && j < diag_dim_){
             *diagdptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
@@ -624,7 +661,8 @@ void MultiSrcDataLayer::ParseRecords(Phase phase,
   //LOG(INFO)<<StringPrintf("num_records: %d\n", num_records);
   }
   //LOG(INFO)<<StringPrintf("sum: num_records: %d\n", num_records);
-  CHECK_EQ(demodptr, blob->mutable_cpu_data()+blob->count());
+  //CHECK_EQ(demodptr, blob->mutable_cpu_data()+blob->count());
+  //LOG(ERROR)<<"parse records ends ";
 }
 void MultiSrcDataLayer::Setup(const LayerProto& proto,
     const vector<SLayer>& srclayers){
@@ -634,6 +672,7 @@ void MultiSrcDataLayer::Setup(const LayerProto& proto,
 
   int ndim=sample.image().shape_size();
   CHECK_GE(ndim,2);
+  //LOG(ERROR)<<"parse set up";
   //int s=sample.image().shape(ndim-1);
   //CHECK_EQ(s,sample.image().shape(ndim-2));
   int rows=sample.image().shape(ndim-2);
@@ -644,7 +683,23 @@ void MultiSrcDataLayer::Setup(const LayerProto& proto,
   med_dim_ = proto.multisrcdata_conf().med_dim();
   proc_dim_ = proto.multisrcdata_conf().proc_dim();
   demo_dim_ = proto.multisrcdata_conf().demo_dim();
-  //data_.Reshape(vector<int>{batchsize, rows, cols });
+  LOG(ERROR)<<"rows:"<<rows<<"cols: "<<cols<<"diag_dim"<<diag_dim_<<" lab_dim"<<lab_dim_<<" rad_dim_"<<rad_dim_<<" med_dim_"<<med_dim_<<" proc_dim_"<<proc_dim_<<" demo_dim_"<<demo_dim_;
+  //LOG(ERROR)<<"data_ reshape begins";
+  data_.Reshape(vector<int>{batchsize, rows, cols});
+  //LOG(ERROR)<<"data_ size: "<<data_.shape().size();
+  //LOG(ERROR)<<"data_ reshape ends";
+  if (diag_dim_ != 0)
+    diag_data_.Reshape(vector<int>{batchsize, rows, diag_dim_});
+  if (lab_dim_ != 0)
+    lab_data_.Reshape(vector<int>{batchsize, rows, lab_dim_});
+  if (rad_dim_ != 0)
+    rad_data_.Reshape(vector<int>{batchsize, rows, rad_dim_});
+  if (med_dim_ != 0)
+    med_data_.Reshape(vector<int>{batchsize, rows, med_dim_});
+  if (proc_dim_ != 0)
+    proc_data_.Reshape(vector<int>{batchsize, rows, proc_dim_});
+  if (demo_dim_ != 0)
+    demo_data_.Reshape(vector<int>{batchsize, rows, demo_dim_});
   /*LOG(INFO)<<StringPrintf("zj: rows %d cols %d\n", rows,cols);*/
 }
 
@@ -838,6 +893,7 @@ void RGBImageLayer::Setup(const LayerProto& proto,
 
 /***************Implementation for ShardDataLayer**************************/
 void ShardDataLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers){
+  LOG(ERROR)<<"shard data begins ";
   if(random_skip_){
     int nskip=rand()%random_skip_;
     LOG(INFO)<<"Random Skip "<<nskip<<" records, there are "<<shard_->Count()
@@ -867,6 +923,7 @@ void ShardDataLayer::Setup(const LayerProto& proto,
 
   records_.resize(batchsize_);
   random_skip_=proto.sharddata_conf().random_skip();
+  LOG(ERROR)<<"shard data set up ends ";
 }
 /*******************Implementation of TanLayer***************************/
 void TanhLayer::Setup(const LayerProto& proto,
@@ -900,15 +957,18 @@ void TanhLayer::ComputeGradient(const vector<SLayer>& srclayers) {
 void SoftmaxProbLayer::Setup(const LayerProto& proto,
     const vector<SLayer>& srclayers){
   CHECK_EQ(srclayers.size(),1); //no label
-  data_.Reshape(srclayers[0]->data(this).shape()); 
-  grad_.Reshape(vector<int>{batchsize_, 1}); /*grad is 1, only the y1*/
+  LOG(ERROR)<<"layer name: "<<(this->name())<<"softmax Prob setup begins";
+  data_.Reshape(srclayers[0]->data(this).shape());
   batchsize_=data_.shape()[0];
+  LOG(ERROR)<<"batchsize_ "<<batchsize_; 
+  grad_.Reshape(vector<int>{batchsize_, 1}); /*grad is 1, only the y1*/
   dim_=data_.count()/batchsize_; /*dim_ is 2, becuase prob remains 2*/
+  LOG(ERROR)<<"layer name: "<<(this->name())<<"softmax Prob setup ends";
 }
 void SoftmaxProbLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
       const vector<SLayer>& srclayers){
-  Setup(proto, srclayers);
+  LOG(ERROR)<<"No partition after set up";
 }
 void SoftmaxProbLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
   Shape<2> s=Shape2(batchsize_, dim_);
@@ -935,21 +995,23 @@ void SoftmaxProbLayer::ComputeGradient(const vector<SLayer>& srclayers) {
 /********** * Implementation for LogisticLossLayer*************************/
 void LogisticLossLayer::Setup(const LayerProto& proto,
     const vector<SLayer>& srclayers){
+  LOG(ERROR)<<"Logistic layer set up begins ";
   CHECK_EQ(srclayers.size(),2);
   data_.Reshape(srclayers[0]->data(this).shape());
   batchsize_=data_.shape()[0];
   dim_=data_.count()/batchsize_; 
   metric_.Reshape(vector<int>{2});
   scale_=proto.logisticloss_conf().scale();
+  LOG(ERROR)<<"Logistic layer set up ends ";
 }
 void LogisticLossLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
       const vector<SLayer>& srclayers){
-  Setup(proto, srclayers);
+  LOG(ERROR)<<"No partition after set up";
 }
 void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
   Shape<2> s=Shape2(batchsize_, dim_);
-  LOG(ERROR)<<"logistic dimension "<<dim_; //dimension should be 1
+  //LOG(ERROR)<<"logistic dimension "<<dim_; //dimension should be 1
   Tensor<cpu, 2> prob(data_.mutable_cpu_data(), s);
   Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(), s);
   prob=F<op::sigmoid>(src);

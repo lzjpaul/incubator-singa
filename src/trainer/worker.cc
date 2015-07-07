@@ -177,7 +177,7 @@ void Worker::RunOneBatch(int step, Metric* perf){
     Test(modelproto_.validation_steps(),kValidation, validation_net_);
   }
   if(TestNow(step)){
-    //LOG(ERROR)<<"Test at step "<<step;
+    LOG(ERROR)<<"Test at step "<<step;
     CollectAll(test_net_, step);
     Test(modelproto_.test_steps(), kTest, test_net_);
   }
@@ -249,6 +249,7 @@ void BPWorker::Forward(int step, Phase phase, shared_ptr<NeuralNet> net){
         }
       }
       //clock_t s=clock();
+      //LOG(ERROR)<<"Forward layer name: "<<layer->name();
       layer->ComputeFeature(phase);
       //LOG(ERROR)<<layer->name()<<":"<<(clock()-s)*1.0/CLOCKS_PER_SEC;
       if(layer->is_bridgesrclayer()){

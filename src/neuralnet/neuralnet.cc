@@ -58,9 +58,11 @@ shared_ptr<NeuralNet> NeuralNet::SetupNeuralNet(const NetProto& np, Phase phase,
     }
   }
   LOG(INFO)<<"NeuralNet config is "<<proto.DebugString();
+  //LOG(ERROR)<<"NeuralNet config can print ";
   return make_shared<NeuralNet>(proto, group_size);
 }
 NeuralNet::NeuralNet(NetProto net_proto, int group_size) {
+  //LOG(ERROR)<<"NeuralNet begins ";
   group_size_=group_size;
   for(int i=0;i<net_proto.layer_size();i++){
     LayerProto * layer_proto=net_proto.mutable_layer(i);
@@ -68,8 +70,10 @@ NeuralNet::NeuralNet(NetProto net_proto, int group_size) {
       layer_proto->set_partition_type(net_proto.partition_type());
   }
 
+  //LOG(ERROR)<<"Construct Neural Net... ";
   LOG(INFO)<<"Construct Neural Net...";
   ConstructNeuralNet(net_proto);
+  //LOG(ERROR)<<"After ConstructNet ";
   {
     string vis_folder=Cluster::Get()->vis_folder();
     std::ofstream fout(vis_folder+"/nopartition.json", std::ofstream::out);
@@ -122,10 +126,11 @@ void NeuralNet::ConstructNeuralNet(const NetProto& net_proto){
   for(SNode node: graph_.nodes()){
     shared_ptr<Layer> layer(factory->Create(protos[node->name()].type()));
     layer->Init(protos[node->name()]);
+    //LOG(ERROR)<<"layername  "<<layer->name();
     name2layer_[node->name()]=layer;
     layers_.push_back(layer);
   }
-
+  //LOG(ERROR)<<"before connect layers";
   // connect Layers.
   for(SNode node: graph_.nodes()){
     auto layer=name2layer_[node->name()];
@@ -136,11 +141,15 @@ void NeuralNet::ConstructNeuralNet(const NetProto& net_proto){
   }
   // setup layer properties, e.g., shapes
   int paramid=0;
+//LOG(ERROR)<<"num of layers "<<layers_.size();
   for(auto& layer: layers_){
       layer->Setup();
+      //LOG(ERROR)<<"layer set up finishes "<<layer->name();
       for(auto param: layer->GetParams())
         param->set_id(paramid++);
+      //LOG(ERROR)<<"layer param finishes "<<layer->name();
   }
+  //LOG(ERROR)<<"network graph witout partition\n";
   LOG(INFO)<<"network graph witout partition\n"<<ToString();
 }
 
@@ -379,7 +388,10 @@ Graph NeuralNet::CreatePartitonedGraph(const vector<shared_ptr<Layer>>& layers,
 std::string NeuralNet::ToString(){
   map<string, string> info;
   for(auto layer: layers_){
+    //LOG(ERROR)<<"shape of "<<layer->name();
+    //LOG(ERROR)<<"shape size of layer"<<layer->shape(nullptr).size();
     info[layer->name()]=IntVecToString(layer->shape(nullptr));
+    //LOG(ERROR)<<"shape after "<<layer->name();
   }
   return graph_.ToString(info);
 }

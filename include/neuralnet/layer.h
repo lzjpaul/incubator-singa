@@ -235,37 +235,55 @@ class MultiSrcDataLayer: public ParserLayer {
   virtual void Setup(const LayerProto& proto, const vector<SLayer>& srclayers);
   virtual void ParseRecords(Phase phase, const vector<Record>& records,
       Blob<float>* blob);
-  virtual Blob<float>* mutable_data(const Layer* from, Phase phase) {
-    if (strcmp((from->name()).c_str(), "Diagnosis") == 0) //any other better solutions?
-      return &diag_data_;
-    else if (strcmp ((from->name()).c_str(), "LabTest") == 0)
-      return &lab_data_;
-    else if (strcmp((from->name()).c_str(), "Radiology") == 0)
-      return &rad_data_;
-    else if (strcmp((from->name()).c_str(), "Medication") == 0)
-      return &med_data_;
-    else if (strcmp((from->name()).c_str(), "Procedure") == 0)
-      return &proc_data_;
-    else if (strcmp((from->name()).c_str(), "Demographics") == 0)
-      return &demo_data_;
-    else
-      LOG(ERROR)<<"no mutable_data returned in the MultiSrcDatalayer ";
+  virtual Blob<float>* mutable_data(const Layer* from) {
+    if (from != nullptr){
+      //LOG(ERROR)<<"not nullptr";
+      if (strcmp((from->name()).c_str(), "Diagnosis") == 0) //any other better solutions?
+        return &diag_data_;
+      else if (strcmp ((from->name()).c_str(), "LabTest") == 0)
+        return &lab_data_;
+      else if (strcmp((from->name()).c_str(), "Radiology") == 0)
+        return &rad_data_;
+      else if (strcmp((from->name()).c_str(), "Medication") == 0)
+        return &med_data_;
+      else if (strcmp((from->name()).c_str(), "Procedure") == 0)
+        return &proc_data_;
+      else if (strcmp((from->name()).c_str(), "Demographics") == 0)
+        return &demo_data_;
+      else{
+        LOG(ERROR)<<"no mutable_data returned in the MultiSrcDatalayer return &data_";
+        return &data_;
+      }
+    }
+    else{
+      LOG(ERROR)<<"nullptr";
+      return &data_;
+    }
   }
-  virtual const Blob<float>& data(const Layer* from, Phase phase) const {
-    if (strcmp((from->name()).c_str(), "Diagnosis") == 0) //any other better solutions?
-      return diag_data_;
-    else if (strcmp ((from->name()).c_str(), "LabTest") == 0)
-      return lab_data_;
-    else if (strcmp((from->name()).c_str(), "Radiology") == 0)
-      return rad_data_;
-    else if (strcmp((from->name()).c_str(), "Medication") == 0)
-      return med_data_;
-    else if (strcmp((from->name()).c_str(), "Procedure") == 0)
-      return proc_data_;
-    else if (strcmp((from->name()).c_str(), "Demographics") == 0)
-      return demo_data_;
-    else
-      LOG(ERROR)<<"no data returned in the MultiSrcDatalayer ";
+  virtual const Blob<float>& data(const Layer* from) const {
+    if (from != nullptr){
+      //LOG(ERROR)<<"not nullptr";
+      if (strcmp((from->name()).c_str(), "Diagnosis") == 0) //any other better solutions?
+        return diag_data_;
+      else if (strcmp ((from->name()).c_str(), "LabTest") == 0)
+        return lab_data_;
+      else if (strcmp((from->name()).c_str(), "Radiology") == 0)
+        return rad_data_;
+      else if (strcmp((from->name()).c_str(), "Medication") == 0)
+        return med_data_;
+      else if (strcmp((from->name()).c_str(), "Procedure") == 0)
+        return proc_data_;
+      else if (strcmp((from->name()).c_str(), "Demographics") == 0)
+        return demo_data_;
+      else{
+        LOG(ERROR)<<"no data returned in the MultiSrcDatalayer return data_";
+        return data_;
+      }
+    }
+    else{
+      LOG(ERROR)<<"nullptr";
+      return data_;
+    }
   }
  protected:
   // height and width of the image after deformation
@@ -275,19 +293,8 @@ class MultiSrcDataLayer: public ParserLayer {
   // gauss kernel values, displacements, column image and tmp buffer
   //float* gauss_, *displacementx_, *displacementy_, *colimg_, *tmpimg_;
   //float  gamma_, beta_, sigma_, kernel_, alpha_, norm_a_, norm_b_;
-  Blob<float> diag_data_;
-  Blob<float> lab_data_;
-  Blob<float> rad_data_;
-  Blob<float> med_data_;
-  Blob<float> proc_data_;
-  Blob<float> demo_data_;
-  int diag_dim_;
-  int lab_dim_;
-  int rad_dim_;
-  int med_dim_;
-  int proc_dim_;
-  int demo_dim_;
-  int resize_;
+  Blob<float> diag_data_, lab_data_, rad_data_, med_data_, proc_data_, demo_data_;
+  int diag_dim_, lab_dim_, rad_dim_, med_dim_, proc_dim_, demo_dim_, resize_;
 };
 
 class PoolingLayer: public Layer {
