@@ -126,6 +126,52 @@ class MultiSrcSingleLayer: public Layer {
 };
 
 /**
+  * multiple source fully connected layer
+  */
+class MultiSrcInnerProductLayer: public Layer {
+ public:
+  using Layer::Setup;
+  using Layer::SetupAfterPartition;
+  using Layer::ComputeFeature;
+  using Layer::ComputeGradient;
+
+  virtual void Setup(const LayerProto& proto,
+      const vector<SLayer>& srclayers);
+
+  /**
+   * need to reset weight matrix in case of LayerPartition
+   */
+  virtual void SetupAfterPartition(const LayerProto& proto,
+      const vector<int> &shape,
+      const vector<SLayer>& srclayers);
+  virtual ConnectionType connection_type(int k) const {
+    CHECK_LT(k, srclayers_.size());
+    return kOneToAll;
+  }
+
+  virtual void ComputeFeature(Phase phase, const vector<shared_ptr<Layer>>& srclayers);
+  virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
+  //virtual void ToProto(LayerProto *layer_proto, bool copyData);
+  virtual vector<shared_ptr<Param>> GetParams() {
+    vector<shared_ptr<Param>> Params;
+    for (int i = 0; i < weight_.size(); i++)
+      Params.push_back (weight_.at(i));
+    Params.push_back(bias_);
+    return Params;
+  }
+
+ private:
+  //! dimension of the hidden layer
+  int hdim_;
+  //! dimension of the visible layer
+  int vdim_;
+  int batchsize_;
+  int srclayer_num_;
+  shared_ptr<Param> bias_;
+  vector<shared_ptr<Param>> weight_;
+};
+
+/**
   * fully connected layer
   */
 class InnerProductLayer: public Layer {
@@ -235,20 +281,20 @@ class MultiSrcDataLayer: public ParserLayer {
   virtual void Setup(const LayerProto& proto, const vector<SLayer>& srclayers);
   virtual void ParseRecords(Phase phase, const vector<Record>& records,
       Blob<float>* blob);
-  virtual Blob<float>* mutable_data(const Layer* from) {
+  virtual Blob<float>* mutable_data(const Layer* from, Phase phase) {
     if (from != nullptr){
       //LOG(ERROR)<<"not nullptr";
-      if (strcmp((from->name()).c_str(), "Diagnosis") == 0) //any other better solutions?
+      if ( strcmp((from->name()).c_str(), "Diagnosis") == 0 ) //any other better solutions?
         return &diag_data_;
-      else if (strcmp ((from->name()).c_str(), "LabTest") == 0)
+      else if ( strcmp ((from->name()).c_str(), "LabTest") == 0 )
         return &lab_data_;
-      else if (strcmp((from->name()).c_str(), "Radiology") == 0)
+      else if ( strcmp((from->name()).c_str(), "Radiology") == 0 )
         return &rad_data_;
-      else if (strcmp((from->name()).c_str(), "Medication") == 0)
+      else if ( strcmp((from->name()).c_str(), "Medication") == 0 || strcmp((from->name()).c_str(), "Medand") == 0 )
         return &med_data_;
-      else if (strcmp((from->name()).c_str(), "Procedure") == 0)
+      else if ( strcmp((from->name()).c_str(), "Procedure") == 0 )
         return &proc_data_;
-      else if (strcmp((from->name()).c_str(), "Demographics") == 0)
+      else if ( strcmp((from->name()).c_str(), "Demographics") == 0 || strcmp((from->name()).c_str(), "Demoand") == 0)
         return &demo_data_;
       else{
         LOG(ERROR)<<"no mutable_data returned in the MultiSrcDatalayer return &data_";
@@ -260,20 +306,20 @@ class MultiSrcDataLayer: public ParserLayer {
       return &data_;
     }
   }
-  virtual const Blob<float>& data(const Layer* from) const {
+  virtual const Blob<float>& data(const Layer* from, Phase phase) const {
     if (from != nullptr){
       //LOG(ERROR)<<"not nullptr";
-      if (strcmp((from->name()).c_str(), "Diagnosis") == 0) //any other better solutions?
+      if ( strcmp((from->name()).c_str(), "Diagnosis") == 0 ) //any other better solutions?
         return diag_data_;
-      else if (strcmp ((from->name()).c_str(), "LabTest") == 0)
+      else if ( strcmp ((from->name()).c_str(), "LabTest") == 0 )
         return lab_data_;
-      else if (strcmp((from->name()).c_str(), "Radiology") == 0)
+      else if ( strcmp((from->name()).c_str(), "Radiology") == 0 )
         return rad_data_;
-      else if (strcmp((from->name()).c_str(), "Medication") == 0)
+      else if ( strcmp((from->name()).c_str(), "Medication") == 0 || strcmp((from->name()).c_str(), "Medand") == 0 )
         return med_data_;
-      else if (strcmp((from->name()).c_str(), "Procedure") == 0)
+      else if ( strcmp((from->name()).c_str(), "Procedure") == 0 )
         return proc_data_;
-      else if (strcmp((from->name()).c_str(), "Demographics") == 0)
+      else if ( strcmp((from->name()).c_str(), "Demographics") == 0 || strcmp((from->name()).c_str(), "Demoand") == 0)
         return demo_data_;
       else{
         LOG(ERROR)<<"no data returned in the MultiSrcDatalayer return data_";

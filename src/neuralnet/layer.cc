@@ -303,6 +303,83 @@ void InnerProductLayer::ComputeGradient(const vector<SLayer>& srclayers) {
     gsrc=dot(grad, weight.T());
   }
 }
+/**************** Implementation for MultiSrcInnerProductLayer********************/
+void MultiSrcInnerProductLayer::Setup(const LayerProto& proto,
+      const vector<SLayer>& srclayers){
+  srclayer_num_ = srclayers.size();
+  batchsize_=(srclayers[0]->data(this)).shape()[0];
+  LOG(ERROR)<<"(srclayers[0]->data(this)).shape()[0] batchsize_"<<batchsize_;
+  vdim_ = 0;
+  int srcvdim;
+  for (int i = 0; i < srclayer_num_; i++){
+    srcvdim = ((srclayers[i]->data(this)).count())/batchsize_;
+    vdim_ += srcvdim; 
+  //assume batchsize the same for different srclayers
+  }
+  LOG(ERROR)<<"vdim all: "<<vdim_;
+  hdim_=proto.multisrcinnerproduct_conf().num_output();
+  LOG(ERROR)<<"hdim: "<<hdim_;
+  data_.Reshape(vector<int>{batchsize_, hdim_});
+  LOG(ERROR)<<"data_";
+  grad_.ReshapeLike(data_);
+  LOG(ERROR)<<"grad_";
+  LOG(ERROR)<<"Param begins";
+  Factory<Param>* factory=Singleton<Factory<Param>>::Instance();
+  for (int i = 0; i < srclayer_num_; i++){
+    srcvdim = (((srclayers[i]->data(this)).count())/batchsize_);
+    LOG(ERROR)<<"num of vdim_"<<srcvdim;
+    weight_.push_back(shared_ptr<Param>(factory->Create("Param")));
+    weight_.at(i)->Setup(proto.param(i), vector<int>{srcvdim, hdim_});
+  }
+  LOG(ERROR)<<"Weight ends";
+  bias_=shared_ptr<Param>(factory->Create("Param"));
+  bias_->Setup(proto.param(srclayer_num_), vector<int>{hdim_});
+  LOG(ERROR)<<"MultiSrcInnerProduct setup done ";
+}
+void MultiSrcInnerProductLayer::SetupAfterPartition(const LayerProto& proto,
+      const vector<int> &shape,
+      const vector<SLayer>& srclayers){
+  LOG(ERROR)<<"No partition after setup";
+}
+
+void MultiSrcInnerProductLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
+  Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));
+  //CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_);
+  int srcvdim = (((srclayers[0]->data(this)).count())/batchsize_);
+  Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
+      Shape2(batchsize_,srcvdim));
+  Tensor<cpu, 2> weight(weight_.at(0)->mutable_cpu_data(), Shape2(srcvdim, hdim_));
+  data=dot(src, weight);
+  for (int i = 1; i < srclayer_num_; i++){
+    srcvdim = (((srclayers[i]->data(this)).count())/batchsize_);
+    Tensor<cpu, 2> src1(srclayers[i]->mutable_data(this)->mutable_cpu_data(),
+      Shape2(batchsize_,srcvdim));
+    Tensor<cpu, 2> weight1(weight_.at(i)->mutable_cpu_data(), Shape2(srcvdim, hdim_));
+    data += dot(src1, weight1);
+  }
+  // repmat: repeat bias vector into batchsize rows
+  Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(hdim_));
+  data += repmat(bias, batchsize_);
+}
+
+void MultiSrcInnerProductLayer::ComputeGradient(const vector<SLayer>& srclayers) {
+  Tensor<cpu, 2> grad(grad_.mutable_cpu_data(),Shape2(batchsize_,hdim_));
+  Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(hdim_));
+  gbias=sum_rows(grad);
+  for (int i = 0; i < srclayer_num_; i++){
+    int srcvdim = ((srclayers[i]->data(this)).count())/batchsize_;
+    Tensor<cpu, 2> src(srclayers[i]->mutable_data(this)->mutable_cpu_data(),
+        Shape2(batchsize_,srcvdim));
+    Tensor<cpu, 2> weight(weight_.at(i)->mutable_cpu_data(), Shape2(srcvdim, hdim_));
+    Tensor<cpu, 2> gweight(weight_.at(i)->mutable_cpu_grad(), Shape2(srcvdim, hdim_));
+    gweight=dot(src.T(), grad);
+    if(srclayers[i]->mutable_grad(this)!=nullptr){
+      Tensor<cpu, 2> gsrc(srclayers[i]->mutable_grad(this)->mutable_cpu_data(),
+          Shape2(batchsize_, srcvdim));
+      gsrc=dot(grad, weight.T());
+    }
+  }
+}
 /*****************************************************************************
  * Implementation for LabelLayer
  *****************************************************************************/

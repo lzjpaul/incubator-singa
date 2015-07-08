@@ -8,17 +8,17 @@ enum Phase {
   // negative phase for contrastive divergence algorithm
   kNegative = 4;
   // diagnosis phase
-  //kDiagnosis = 5;
+  kDiagnosis = 5;
   // lab test phase
-  //kLabtest = 6;
+  kLabtest = 6;
   // radiology phase
-  //kRadiology = 7;
+  kRadiology = 7;
   // medication phase
-  //kMedication = 8;
+  kMedication = 8;
   // procedure phase
-  //kProcedure = 9;
+  kProcedure = 9;
   // demographics phase
-  //kDemographics = 10;
+  kDemographics = 10;
 }
 
 message ModelProto {
@@ -160,6 +160,7 @@ message LayerProto {
     kSoftmaxProb = 22;
     kMultiSrcSingle = 23;
     kLogisticLoss = 24;
+    kMultiSrcInnerProduct = 25;
   }
   // source layer names
   repeated string srclayers = 3;
@@ -187,6 +188,8 @@ message LayerProto {
   optional MultiSrcSingleProto multisrcsingle_conf = 48;
   // configuration for LogisticLossLayer
   optional LogisticLossProto logisticloss_conf = 49;
+  // configuration for MultiSrcInnerProductLayer
+  optional MultiSrcInnerProductProto multisrcinnerproduct_conf = 50;
   // configuration for local response normalization layer
   optional DataProto lmdbdata_conf = 35;
   // configuration for local response normalization layer
@@ -319,6 +322,14 @@ message DropoutProto {
 
 // Message that stores parameters used by InnerProductLayer
 message InnerProductProto {
+  // number of outputs for the layer
+  required int32 num_output = 1;
+  // use bias vector or not
+  optional bool bias_term = 30 [default = true];
+}
+
+// Message that stores parameters used by MultiSrcInnerProductLayer
+message MultiSrcInnerProductProto {
   // number of outputs for the layer
   required int32 num_output = 1;
   // use bias vector or not
