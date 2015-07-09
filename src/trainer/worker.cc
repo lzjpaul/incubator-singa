@@ -224,6 +224,7 @@ BPWorker::BPWorker(int thread_id, int group_id, int worker_id):
 }
 
 void BPWorker::Forward(int step, Phase phase, shared_ptr<NeuralNet> net){
+  //LOG(ERROR)<<"Forward begins";
   auto& layers=net->layers();
   for(auto& layer: layers){
     if(layer->partitionid()==worker_id_){
@@ -269,6 +270,7 @@ void BPWorker::Forward(int step, Phase phase, shared_ptr<NeuralNet> net){
       }
     }
   }
+  //LOG(ERROR)<<"Forward ends";
 }
 
 void BPWorker::Backward(int step, shared_ptr<NeuralNet> net){

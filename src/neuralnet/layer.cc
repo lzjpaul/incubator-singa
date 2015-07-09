@@ -208,6 +208,26 @@ void MultiSrcSingleLayer::ComputeFeature(Phase phase, const vector<SLayer>& srcl
   data=dot(concat_src, weight);
   // repmat: repeat bias vector into batchsize rows
   data+=repmat(bias, batchsize_);
+  float* weighttest = weight.dptr;
+  float* concattest = concat_src.dptr;
+  float* biastest = bias.dptr;
+  float* datatest = data.dptr;
+  LOG(INFO)<<"weight: "<<weighttest[0];
+  /*LOG(INFO)<<"weight: "<<weighttest[0]<<" "<<weighttest[1]<<" "<<weighttest[2];*/
+  LOG(INFO)<<"hdim_: "<<hdim_<<" vdim_: "<<vdim_;
+  LOG(INFO)<<"bias: "<<biastest[0];
+  /*for (int i = 0; i < 10; i++){
+    LOG(INFO)<<"concattest: "<<concattest[0]<<" "<<concattest[1]<<" "<<concattest[2];
+    concattest+=vdim_;
+    LOG(INFO)<<"datatest: "<<datatest[0];
+    datatest+=hdim_;
+  }*/
+  for (int i = 0; i < 10; i++){
+    LOG(INFO)<<"concattest: "<<concattest[0];
+    concattest+=vdim_;
+    LOG(INFO)<<"datatest: "<<datatest[0];
+    datatest+=hdim_;
+  }
   FreeSpace(concat_src);
 }
 
@@ -311,9 +331,11 @@ void MultiSrcInnerProductLayer::Setup(const LayerProto& proto,
   LOG(ERROR)<<"(srclayers[0]->data(this)).shape()[0] batchsize_"<<batchsize_;
   vdim_ = 0;
   int srcvdim;
+  LOG(ERROR)<<"layer name from multi src inner product layer"<<(this->name());
   for (int i = 0; i < srclayer_num_; i++){
     srcvdim = ((srclayers[i]->data(this)).count())/batchsize_;
     vdim_ += srcvdim; 
+    LOG(ERROR)<<"layer num: "<<i<<" srcvdim: "<<srcvdim;
   //assume batchsize the same for different srclayers
   }
   LOG(ERROR)<<"vdim all: "<<vdim_;
@@ -693,10 +715,10 @@ void MultiSrcDataLayer::ParseRecords(Phase phase,
     const SingleLabelImageRecord& imagerecord=record.image();
     if(imagerecord.pixel().size()){
       string pixel=imagerecord.pixel();
-      for(int i=0,k=0;i<rows;i++)
+      for(int i=0,k=0,l=0;i<rows;i++)
         for(int j=0;j<cols;j++){
           // time to debug this
-          *dptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
+          *dptr=static_cast<float>(static_cast<uint8_t>(pixel[l++]));
 	  //LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *dptr);
 	  dptr++;
           // NOTE!!! must cast pixel to uint8_t then to float!!! waste a lot of
@@ -1049,9 +1071,15 @@ void SoftmaxProbLayer::SetupAfterPartition(const LayerProto& proto,
 }
 void SoftmaxProbLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
   Shape<2> s=Shape2(batchsize_, dim_);
+  //LOG(ERROR)<<"softmaxprob dimension: "<<dim_;
   Tensor<cpu, 2> prob(data_.mutable_cpu_data(), s);
   Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(), s);
   Softmax(prob, src); //compute probability
+  float* probdptr = prob.dptr;
+  for (int i = 0; i < 10; i++){
+    LOG(INFO)<<this->name()<<" "<<i<<": prob_1: "<<probdptr[1]<<" prob_0: "<<probdptr[0];
+    probdptr+=dim_;
+  }
 }
 
 void SoftmaxProbLayer::ComputeGradient(const vector<SLayer>& srclayers) {
@@ -1091,24 +1119,40 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
   //LOG(ERROR)<<"logistic dimension "<<dim_; //dimension should be 1
   Tensor<cpu, 2> prob(data_.mutable_cpu_data(), s);
   Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(), s);
+  float* srcdptr_presigmoid = src.dptr;
+  for (int n =0; n<batchsize_;n++ ){
+    if (n < 10)
+      LOG(INFO)<<"before -0.5 "<<srcdptr_presigmoid[0];
+    srcdptr_presigmoid[0] -= 0.5f;
+    if (n < 10)
+      LOG(INFO)<<"after -0.5 "<<srcdptr_presigmoid[0];
+    srcdptr_presigmoid+=dim_;
+  }
   prob=F<op::sigmoid>(src);
   const float* label=srclayers[1]->data(this).cpu_data();
   const float* probptr=prob.dptr;
+  const float* srcdptr=src.dptr;
   float loss=0.0f, precision=0.0f;
   for(int n=0;n<batchsize_;n++){
     int ilabel=static_cast<int>(label[n]);
     CHECK_LT(ilabel,10);
     CHECK_GE(ilabel,0);
     loss += -ilabel*log(probptr[0])-(1-ilabel)*(1-probptr[0]);//is this correct? 
-    //LOG(INFO)<<"ilabel "<<ilabel<<"predict prob "<<probptr[0];
-    if (ilabel == 0)
-      if (static_cast<float>(probptr[0]) < 0.5f) 
+    if (n < 10)
+      LOG(INFO)<<"ilabel "<<ilabel<<" predict prob-1 "<<probptr[0]<<"src pre-sigmoid"<<srcdptr[0];
+    if (ilabel == 0){
+      if (static_cast<float>(probptr[0]) < (1.0f - static_cast<float>(probptr[0]))) 
         precision++;
-    else if (ilabel ==1)
-      if (static_cast<float>(probptr[0]) >= 0.5f)
+      //LOG(INFO)<<"ilabel 0"<<" prob_1: "<<static_cast<float>(probptr[0])<<" prob_0: "<<(1.0f - static_cast<float>(probptr[0]));
+    }
+    else if (ilabel ==1){
+      if (static_cast<float>(probptr[0]) >= (1.0f - static_cast<float>(probptr[0])))
         precision++;
+      //LOG(INFO)<<"ilabel 1"<<" prob_1: "<<static_cast<float>(probptr[0])<<" prob_0: "<<(1.0f - static_cast<float>(probptr[0]));
+    }
     //LOG(INFO)<<"precision "<<precision;
     probptr+=dim_; //!!!!!!!!!!!!add 1 to next sample!!!
+    srcdptr+=dim_;
   }
   CHECK_EQ(probptr, prob.dptr+prob.shape.Size());
   float *metric=metric_.mutable_cpu_data();

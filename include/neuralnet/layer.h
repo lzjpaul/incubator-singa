@@ -319,8 +319,10 @@ class MultiSrcDataLayer: public ParserLayer {
         return med_data_;
       else if ( strcmp((from->name()).c_str(), "Procedure") == 0 )
         return proc_data_;
-      else if ( strcmp((from->name()).c_str(), "Demographics") == 0 || strcmp((from->name()).c_str(), "Demoand") == 0)
+      else if ( strcmp((from->name()).c_str(), "Demographics") == 0 || strcmp((from->name()).c_str(), "Demoand") == 0){
+        //LOG(INFO)<<"return demographics data now";
         return demo_data_;
+      }
       else{
         LOG(ERROR)<<"no data returned in the MultiSrcDatalayer return data_";
         return data_;
