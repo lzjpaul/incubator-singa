@@ -212,18 +212,12 @@ void MultiSrcSingleLayer::ComputeFeature(Phase phase, const vector<SLayer>& srcl
   float* concattest = concat_src.dptr;
   float* biastest = bias.dptr;
   float* datatest = data.dptr;
-  LOG(INFO)<<"weight: "<<weighttest[0];
-  /*LOG(INFO)<<"weight: "<<weighttest[0]<<" "<<weighttest[1]<<" "<<weighttest[2];*/
+  //LOG(INFO)<<"weight: "<<weighttest[0];
+  LOG(INFO)<<"weight: "<<weighttest[0]<<" "<<weighttest[1]<<" "<<weighttest[2];
   LOG(INFO)<<"hdim_: "<<hdim_<<" vdim_: "<<vdim_;
   LOG(INFO)<<"bias: "<<biastest[0];
-  /*for (int i = 0; i < 10; i++){
-    LOG(INFO)<<"concattest: "<<concattest[0]<<" "<<concattest[1]<<" "<<concattest[2];
-    concattest+=vdim_;
-    LOG(INFO)<<"datatest: "<<datatest[0];
-    datatest+=hdim_;
-  }*/
   for (int i = 0; i < 10; i++){
-    LOG(INFO)<<"concattest: "<<concattest[0];
+    LOG(INFO)<<"concattest: "<<concattest[0]<<" "<<concattest[1]<<" "<<concattest[2];
     concattest+=vdim_;
     LOG(INFO)<<"datatest: "<<datatest[0];
     datatest+=hdim_;
@@ -298,6 +292,12 @@ void InnerProductLayer::SetupAfterPartition(const LayerProto& proto,
 void InnerProductLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
   Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));
   CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_);
+  LOG(ERROR)<<" layer name: "<< (this->name());
+  float* datadptr = data.dptr;
+  if (strcmp((this->name()).c_str(), "Medication") == 0){
+    for (int i = 0; i < 20; i++)
+      LOG(ERROR)<<"data: "<<datadptr[i];
+  }
   Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
       Shape2(batchsize_,vdim_));
   Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
@@ -1121,11 +1121,11 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
   Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(), s);
   float* srcdptr_presigmoid = src.dptr;
   for (int n =0; n<batchsize_;n++ ){
-    if (n < 10)
-      LOG(INFO)<<"before -0.5 "<<srcdptr_presigmoid[0];
+   /* if (n < 10)
+      LOG(INFO)<<"before -0.5 "<<srcdptr_presigmoid[0];*/
     srcdptr_presigmoid[0] -= 0.5f;
-    if (n < 10)
-      LOG(INFO)<<"after -0.5 "<<srcdptr_presigmoid[0];
+    /*if (n < 10)
+      LOG(INFO)<<"after -0.5 "<<srcdptr_presigmoid[0];*/
     srcdptr_presigmoid+=dim_;
   }
   prob=F<op::sigmoid>(src);
@@ -1161,11 +1161,15 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
 }
 
 void LogisticLossLayer::ComputeGradient(const vector<SLayer>& srclayers) {
+  const float* label=srclayers[1]->data(this).cpu_data();
   Blob<float>* gsrcblob=srclayers[0]->mutable_grad(this); //dim is 1
   float* gsrcptr=gsrcblob->mutable_cpu_data();
   Tensor<cpu, 1> gsrc(gsrcptr, Shape1(gsrcblob->count()));
   Tensor<cpu, 1> prob(data_.mutable_cpu_data(), Shape1(batchsize_));//have problem? or shape is just shape, data is data
-  gsrc=F<op::sigmoid_grad>(prob); //sigmoid deriviation
+  float* probdptr = prob.dptr; //after sigmoid
+  for (int n = 0; n < batchsize_; n++){
+    gsrcptr[n] = -label[n]*(1-probdptr[n]) + (1-label[n])*probdptr[n];
+  }
   gsrc*=scale_/(1.0f*batchsize_);
 }
 /********** * Implementation for SoftmaxLossLayer*************************/
@@ -1197,6 +1201,9 @@ void SoftmaxLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclaye
     CHECK_LT(ilabel,10);
     CHECK_GE(ilabel,0);
     float prob_of_truth=probptr[ilabel];
+
+    //LOG(ERROR)<<"n: "<<n<<" dim_: "<<dim_<<" prob of 1: "<<probptr[1];
+
     loss-=log(std::max(prob_of_truth, FLT_MIN));
     vector<std::pair<float, int> > probvec;
     for (int j = 0; j < dim_; ++j) {
