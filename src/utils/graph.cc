@@ -80,6 +80,7 @@ void Graph::topology_sort_inner(SNode node,
 
 // sort to make `bottom' nodes be placed in the front positions
 void Graph::Sort() {
+  LOG(ERROR)<<"begin sorting graph ";
   SNode start=nullptr;
   map<string, bool> visited;
   for(auto node: nodes_){

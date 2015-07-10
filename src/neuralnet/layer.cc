@@ -292,14 +292,14 @@ void InnerProductLayer::SetupAfterPartition(const LayerProto& proto,
 void InnerProductLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
   Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));
   CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_);
-  LOG(ERROR)<<" layer name: "<< (this->name());
-  float* datadptr = data.dptr;
-  if (strcmp((this->name()).c_str(), "Medication") == 0){
-    for (int i = 0; i < 20; i++)
-      LOG(ERROR)<<"data: "<<datadptr[i];
-  }
+  //LOG(ERROR)<<" layer name: "<< (this->name());
   Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
       Shape2(batchsize_,vdim_));
+  float* srcdptr = src.dptr;
+  /*if (strcmp((this->name()).c_str(), "Medication") == 0 || strcmp((this->name()).c_str(), "Demographics") == 0){
+    for (int i = 0; i < 20; i++)
+      LOG(ERROR)<<"src: "<<srcdptr[i];
+  }*/
   Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
   Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(hdim_));
   data=dot(src, weight);
@@ -739,7 +739,7 @@ void MultiSrcDataLayer::ParseRecords(Phase phase,
           }
           else if (j >= (diag_dim_ + lab_dim_ + rad_dim_) && j < (diag_dim_ + lab_dim_ + rad_dim_ + med_dim_)){
             *meddptr=static_cast<float>(static_cast<uint8_t>(pixel[k++]));
-            //LOG(INFO)<<StringPrintf("zj if pixel().size(): data %f\n", *meddptr);
+            //LOG(INFO)<<StringPrintf("zj if pixel().size(): med data %f\n", *meddptr);
             meddptr++;
           }
           else if (j >= (diag_dim_ + lab_dim_ + rad_dim_ + med_dim_) && j < (diag_dim_ + lab_dim_ + rad_dim_ + med_dim_ + proc_dim_)){
@@ -762,6 +762,13 @@ void MultiSrcDataLayer::ParseRecords(Phase phase,
   //LOG(INFO)<<StringPrintf("sum: num_records: %d\n", num_records);
   //CHECK_EQ(demodptr, blob->mutable_cpu_data()+blob->count());
   //LOG(ERROR)<<"parse records ends ";
+  /*float* medtest=med_data_.mutable_cpu_data();
+  for (int n = 0; n < num_records; n++)
+    for (int j = 0; j < med_dim_; j++){
+      LOG(INFO)<<"data after parser: "<<medtest[0];
+      medtest++;
+    }*/
+
 }
 void MultiSrcDataLayer::Setup(const LayerProto& proto,
     const vector<SLayer>& srclayers){
@@ -1201,8 +1208,9 @@ void SoftmaxLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclaye
     CHECK_LT(ilabel,10);
     CHECK_GE(ilabel,0);
     float prob_of_truth=probptr[ilabel];
-
-    //LOG(ERROR)<<"n: "<<n<<" dim_: "<<dim_<<" prob of 1: "<<probptr[1];
+    
+    if (n < 15)
+      LOG(INFO)<<"n: "<<n<<" dim_: "<<dim_<<" prob of 1: "<<probptr[1];
 
     loss-=log(std::max(prob_of_truth, FLT_MIN));
     vector<std::pair<float, int> > probvec;
