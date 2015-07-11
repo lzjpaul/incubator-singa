@@ -179,6 +179,11 @@ void MultiSrcSingleLayer::Setup(const LayerProto& proto,
   weight_->Setup(proto.param(0), vector<int>{vdim_, hdim_});
   bias_->Setup(proto.param(1), vector<int>{hdim_});
   //LOG(ERROR)<<"MultiSrcSingle setup ends";
+  /*Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
+  float* weighttest = weight.dptr;
+  weighttest[0] = 0.33;
+  weighttest[1] = 0.33;
+  weighttest[2] = 0.33;*/
 }
 void MultiSrcSingleLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
@@ -198,30 +203,53 @@ void MultiSrcSingleLayer::ComputeFeature(Phase phase, const vector<SLayer>& srcl
   concat_srcdptr = concat_src.dptr;
   for (int i = 0; i < vdim_; i++){  //traverse all sources
     srcdptr = srclayers[i]->mutable_data(this)->mutable_cpu_data(); //can pass data up?
-    for (int j = 0; j < batchsize_; j++)
-      concat_srcdptr[i + vdim_ * j] = srcdptr[1 + 2*j]; 
+    for (int j = 0; j < batchsize_; j++){
+      concat_srcdptr[i + vdim_ * j] = srcdptr[1 + 2*j];
+      /*if (j < 10)
+        LOG(INFO)<<"srcno: "<<i<<" src data: "<<srcdptr[1 + 2*j];*/
+    }
       //only fetch the y1 from srclayer!!!!!!!!!!!!!!!!!!!!!
   }
       
+
   Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
   Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(hdim_));
-  data=dot(concat_src, weight);
-  // repmat: repeat bias vector into batchsize rows
-  data+=repmat(bias, batchsize_);
   float* weighttest = weight.dptr;
-  float* concattest = concat_src.dptr;
   float* biastest = bias.dptr;
-  float* datatest = data.dptr;
-  //LOG(INFO)<<"weight: "<<weighttest[0];
   LOG(INFO)<<"weight: "<<weighttest[0]<<" "<<weighttest[1]<<" "<<weighttest[2];
   LOG(INFO)<<"hdim_: "<<hdim_<<" vdim_: "<<vdim_;
   LOG(INFO)<<"bias: "<<biastest[0];
-  for (int i = 0; i < 10; i++){
+  float* datatest = data.dptr;
+  float* concattest = concat_src.dptr;
+  /*for (int i = 0; i < 10; i++){
     LOG(INFO)<<"concattest: "<<concattest[0]<<" "<<concattest[1]<<" "<<concattest[2];
     concattest+=vdim_;
-    LOG(INFO)<<"datatest: "<<datatest[0];
-    datatest+=hdim_;
+  }*/
+  //LOG(INFO)<<"batchsize: "<<batchsize_;
+  concat_srcdptr = concat_src.dptr;
+  float* datadptr = data.dptr;
+  float* weightdptr = weight.dptr;
+  for (int i = 0; i < batchsize_; i++){
+    datadptr[i] = 0.0f;
+    for (int j = 0; j < vdim_; j++)
+      datadptr[i] += concat_srcdptr[i * vdim_ + j] * weightdptr[j];
   }
+  //data=dot(concat_src, weight);
+  // repmat: repeat bias vector into batchsize rows
+  /*for (int i = 0; i < 10; i++){
+    LOG(INFO)<<"before repmat datatest: "<<data[i][0];
+    //datatest+=hdim_;
+  }*/
+  data+=repmat(bias, batchsize_);
+  //LOG(INFO)<<"weight: "<<weighttest[0];
+  concattest = concat_src.dptr;
+  datatest = data.dptr;
+  /*for (int i = 0; i < 30; i++){
+    LOG(INFO)<<"concattest: "<<concattest[0]<<" "<<concattest[1]<<" "<<concattest[2];
+    concattest+=vdim_;
+    LOG(INFO)<<"after repmat datatest: "<<datatest[i];
+    //datatest+=hdim_;
+  }*/
   FreeSpace(concat_src);
 }
 
@@ -241,9 +269,13 @@ void MultiSrcSingleLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   //gweight=dot(src.T(), grad);
   for (int i = 0; i < vdim_; i++){  //traverse all sources
     srcdptr = srclayers[i]->mutable_data(this)->mutable_cpu_data();
-    gweightdptr[i] == 0.0f; 
-    for (int j = 0; j < batchsize_; j++)
+    gweightdptr[i] = 0.0f; 
+    for (int j = 0; j < batchsize_; j++){
       gweightdptr[i] += srcdptr[1 + 2*j] * graddptr[j];
+      /*if (j < 20){
+        LOG(INFO)<<"MultiSrcSingle gradient srcno"<<i<<"src data: "<<srcdptr[1 + 2*j]<<" grad: "<<graddptr[j]<<" gweight: "<<gweightdptr[i];
+      }*/
+    }
   }
   
   // gsrc=dot(grad, weight.T()); can refer to tanh layer gsrc=F<op::stanh_grad>(data)*grad;
@@ -251,8 +283,11 @@ void MultiSrcSingleLayer::ComputeGradient(const vector<SLayer>& srclayers) {
     Tensor<cpu, 2> gsrc(srclayers[i]->mutable_grad(this)->mutable_cpu_data(),//no need for the tensor?
         Shape2(batchsize_,1));
     gsrcdptr = gsrc.dptr; //each src grad one by one
-    for (int j = 0; j < batchsize_; j++)
+    for (int j = 0; j < batchsize_; j++){
       gsrcdptr[j] = graddptr[j] * weightdptr[i];
+      /*if (j < 10)
+        LOG(INFO)<<"srcno: "<<i<<" gsrc: "<<gsrcdptr[j];*/
+    }
   }
 }
 
@@ -296,10 +331,10 @@ void InnerProductLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
   Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
       Shape2(batchsize_,vdim_));
   float* srcdptr = src.dptr;
-  /*if (strcmp((this->name()).c_str(), "Medication") == 0 || strcmp((this->name()).c_str(), "Demographics") == 0){
-    for (int i = 0; i < 20; i++)
-      LOG(ERROR)<<"src: "<<srcdptr[i];
-  }*/
+  if (strcmp((this->name()).c_str(), "Medication") == 0 || strcmp((this->name()).c_str(), "Demographics") == 0){
+    for (int i = 0; i < 10; i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
+  }
   Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
   Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(hdim_));
   data=dot(src, weight);
@@ -679,7 +714,7 @@ void MultiSrcDataLayer::ParseRecords(Phase phase,
   float* meddptr;
   float* procdptr;
   float* demodptr;
- 
+
   float* dptr=blob->mutable_cpu_data();
   //LOG(ERROR)<<"dptr over"; 
   if (diag_dim_ != 0){
@@ -1069,7 +1104,7 @@ void SoftmaxProbLayer::Setup(const LayerProto& proto,
   //LOG(ERROR)<<"batchsize_ "<<batchsize_; 
   grad_.Reshape(vector<int>{batchsize_, 1}); /*grad is 1, only the y1*/
   dim_=data_.count()/batchsize_; /*dim_ is 2, becuase prob remains 2*/
-  //LOG(ERROR)<<"layer name: "<<(this->name())<<"softmax Prob setup ends";
+  //LOG(INFO)<<"layer name: "<<(this->name())<<"dim_: "<<dim_;
 }
 void SoftmaxProbLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
@@ -1078,15 +1113,18 @@ void SoftmaxProbLayer::SetupAfterPartition(const LayerProto& proto,
 }
 void SoftmaxProbLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
   Shape<2> s=Shape2(batchsize_, dim_);
-  //LOG(ERROR)<<"softmaxprob dimension: "<<dim_;
+  LOG(INFO)<<"softmaxprob dimension: "<<dim_;
   Tensor<cpu, 2> prob(data_.mutable_cpu_data(), s);
   Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(), s);
   Softmax(prob, src); //compute probability
   float* probdptr = prob.dptr;
-  for (int i = 0; i < 10; i++){
+  float* srcdptr = src.dptr;
+  /*for (int i = 0; i < 50; i++){
     LOG(INFO)<<this->name()<<" "<<i<<": prob_1: "<<probdptr[1]<<" prob_0: "<<probdptr[0];
+    //LOG(INFO)<<this->name()<<" "<<i<<": src_1: "<<srcdptr[1]<<" src_0: "<<srcdptr[0];
     probdptr+=dim_;
-  }
+    srcdptr+=dim_;
+  }*/
 }
 
 void SoftmaxProbLayer::ComputeGradient(const vector<SLayer>& srclayers) {
@@ -1101,6 +1139,8 @@ void SoftmaxProbLayer::ComputeGradient(const vector<SLayer>& srclayers) {
     float gradval = gradptr[n];
     gsrcptr[n*dim_+0] = -gradval*exp(a0-a1)/((exp(a0-a1)+1) * (exp(a0-a1)+1));
     gsrcptr[n*dim_+1] = gradval*exp(a0-a1)/((exp(a0-a1)+1) * (exp(a0-a1)+1));
+    if (n < 10)
+      LOG(INFO)<<"a0: "<<a0<<" a1: "<<a1<<" gradval: "<<gradval<<" gsrc0: "<<gsrcptr[n*dim_+0]<<" gsrc1: "<<gsrcptr[n*dim_+1];
   } 
   //remember to scale batchsize in logistic loss layer!!!!!!!!!!!
 }
@@ -1144,9 +1184,9 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
     int ilabel=static_cast<int>(label[n]);
     CHECK_LT(ilabel,10);
     CHECK_GE(ilabel,0);
-    loss += -ilabel*log(probptr[0])-(1-ilabel)*(1-probptr[0]);//is this correct? 
-    if (n < 10)
-      LOG(INFO)<<"ilabel "<<ilabel<<" predict prob-1 "<<probptr[0]<<"src pre-sigmoid"<<srcdptr[0];
+    loss += -ilabel*log(probptr[0])-(1-ilabel)*log(1-probptr[0]);//is this correct? 
+    /*if (n < 30)
+      LOG(INFO)<<"ilabel "<<ilabel<<" predict prob-1 "<<probptr[0]<<"src pre-sigmoid"<<srcdptr[0]<<" loss "<<loss;*/
     if (ilabel == 0){
       if (static_cast<float>(probptr[0]) < (1.0f - static_cast<float>(probptr[0]))) 
         precision++;
@@ -1176,6 +1216,8 @@ void LogisticLossLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   float* probdptr = prob.dptr; //after sigmoid
   for (int n = 0; n < batchsize_; n++){
     gsrcptr[n] = -label[n]*(1-probdptr[n]) + (1-label[n])*probdptr[n];
+    /*if (n < 20)
+      LOG(INFO)<<"gsrc: "<<gsrcptr[n];*/
   }
   gsrc*=scale_/(1.0f*batchsize_);
 }
@@ -1209,8 +1251,8 @@ void SoftmaxLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclaye
     CHECK_GE(ilabel,0);
     float prob_of_truth=probptr[ilabel];
     
-    if (n < 15)
-      LOG(INFO)<<"n: "<<n<<" dim_: "<<dim_<<" prob of 1: "<<probptr[1];
+    /*if (n < 50)
+      LOG(INFO)<<"n: "<<n<<" dim_: "<<dim_<<" prob of 1: "<<probptr[1];*/
 
     loss-=log(std::max(prob_of_truth, FLT_MIN));
     vector<std::pair<float, int> > probvec;
