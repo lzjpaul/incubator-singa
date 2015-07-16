@@ -296,15 +296,15 @@ void InnerProductLayer::Setup(const LayerProto& proto,
       const vector<SLayer>& srclayers){
   //LOG(ERROR)<<"inner setup begin ";
   CHECK_EQ(srclayers.size(),1);
-  //LOG(ERROR)<<"layer name from inner product layer"<<(this->name());
+  LOG(ERROR)<<"layer name from inner product layer"<<(this->name());
   const auto& src=srclayers[0]->data(this);
-  //LOG(ERROR)<<"fetch data ends ";
+  LOG(ERROR)<<"fetch data ends ";
   batchsize_=src.shape()[0];
-  //LOG(ERROR)<<"batchsize "<<batchsize_;
+  LOG(ERROR)<<"batchsize "<<batchsize_;
   vdim_=src.count()/batchsize_;
-  //LOG(ERROR)<<"vdim_ "<<vdim_;
+  LOG(ERROR)<<"vdim_ "<<vdim_;
   hdim_=proto.innerproduct_conf().num_output();
-  //LOG(ERROR)<<"hdim "<<hdim_;
+  LOG(ERROR)<<"hdim "<<hdim_;
   data_.Reshape(vector<int>{batchsize_, hdim_});
   grad_.ReshapeLike(data_);
   //LOG(ERROR)<<"data_ and grad_ ";
@@ -313,7 +313,7 @@ void InnerProductLayer::Setup(const LayerProto& proto,
   bias_=shared_ptr<Param>(factory->Create("Param"));
   weight_->Setup(proto.param(0), vector<int>{vdim_, hdim_});
   bias_->Setup(proto.param(1), vector<int>{hdim_});
-  //LOG(ERROR)<<"inner setup end ";
+  LOG(ERROR)<<"inner setup end ";
 }
 void InnerProductLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
