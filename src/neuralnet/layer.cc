@@ -331,7 +331,7 @@ void InnerProductLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
   Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
       Shape2(batchsize_,vdim_));
   float* srcdptr = src.dptr;
-  if (strcmp((this->name()).c_str(), "Medication") == 0 || strcmp((this->name()).c_str(), "Demographics") == 0){
+  if (strcmp((this->name()).c_str(), "Demographics") == 0 || strcmp((this->name()).c_str(), "Procedure") == 0){
     for (int i = 0; i < 10; i++)
       LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
   }
@@ -735,7 +735,7 @@ void MultiSrcDataLayer::ParseRecords(Phase phase,
   }
   if (proc_dim_ != 0){
     procdptr=proc_data_.mutable_cpu_data();
-    LOG(ERROR)<<"procdptr over";
+    //LOG(ERROR)<<"procdptr over";
   }
   if (demo_dim_ != 0){
     demodptr=demo_data_.mutable_cpu_data(); 
@@ -810,8 +810,10 @@ void MultiSrcDataLayer::Setup(const LayerProto& proto,
   CHECK_EQ(srclayers.size(),1);
   int batchsize=static_cast<DataLayer*>(srclayers[0].get())->batchsize();
   Record sample=static_cast<DataLayer*>(srclayers[0].get())->sample();
-
+  
+  LOG(ERROR)<<"MultiSrcData batchsize: "<<batchsize;
   int ndim=sample.image().shape_size();
+  LOG(ERROR)<<"ndim: "<<ndim;
   CHECK_GE(ndim,2);
   //LOG(ERROR)<<"parse set up";
   //int s=sample.image().shape(ndim-1);
@@ -1052,12 +1054,14 @@ void ShardDataLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers
       CHECK(shard_->Next(&key, &record));
     }
   }
+  //LOG(ERROR)<<"shard_records num"<<records_.size();
 }
 
 void ShardDataLayer::Setup(const LayerProto& proto,
     const vector<SLayer>& srclayers){
   shard_= std::make_shared<DataShard>(proto.sharddata_conf().path(),
       DataShard::kRead);
+  LOG(ERROR)<<"data path "<<proto.sharddata_conf().path();
   string key;
   shard_->Next(&key, &sample_);
   batchsize_=proto.sharddata_conf().batchsize();
@@ -1119,12 +1123,12 @@ void SoftmaxProbLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclaye
   Softmax(prob, src); //compute probability
   float* probdptr = prob.dptr;
   float* srcdptr = src.dptr;
-  /*for (int i = 0; i < 50; i++){
+  for (int i = 0; i < 10; i++){
     LOG(INFO)<<this->name()<<" "<<i<<": prob_1: "<<probdptr[1]<<" prob_0: "<<probdptr[0];
     //LOG(INFO)<<this->name()<<" "<<i<<": src_1: "<<srcdptr[1]<<" src_0: "<<srcdptr[0];
     probdptr+=dim_;
     srcdptr+=dim_;
-  }*/
+  }
 }
 
 void SoftmaxProbLayer::ComputeGradient(const vector<SLayer>& srclayers) {
@@ -1139,8 +1143,8 @@ void SoftmaxProbLayer::ComputeGradient(const vector<SLayer>& srclayers) {
     float gradval = gradptr[n];
     gsrcptr[n*dim_+0] = -gradval*exp(a0-a1)/((exp(a0-a1)+1) * (exp(a0-a1)+1));
     gsrcptr[n*dim_+1] = gradval*exp(a0-a1)/((exp(a0-a1)+1) * (exp(a0-a1)+1));
-    if (n < 10)
-      LOG(INFO)<<"a0: "<<a0<<" a1: "<<a1<<" gradval: "<<gradval<<" gsrc0: "<<gsrcptr[n*dim_+0]<<" gsrc1: "<<gsrcptr[n*dim_+1];
+    /*if (n < 10)
+      LOG(INFO)<<"a0: "<<a0<<" a1: "<<a1<<" gradval: "<<gradval<<" gsrc0: "<<gsrcptr[n*dim_+0]<<" gsrc1: "<<gsrcptr[n*dim_+1];*/
   } 
   //remember to scale batchsize in logistic loss layer!!!!!!!!!!!
 }
@@ -1185,8 +1189,8 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
     CHECK_LT(ilabel,10);
     CHECK_GE(ilabel,0);
     loss += -ilabel*log(probptr[0])-(1-ilabel)*log(1-probptr[0]);//is this correct? 
-    /*if (n < 30)
-      LOG(INFO)<<"ilabel "<<ilabel<<" predict prob-1 "<<probptr[0]<<"src pre-sigmoid"<<srcdptr[0]<<" loss "<<loss;*/
+    if (n < 10)
+      LOG(INFO)<<"ilabel "<<ilabel<<" predict prob-1 "<<probptr[0]<<"src pre-sigmoid"<<srcdptr[0]<<" loss "<<loss;
     if (ilabel == 0){
       if (static_cast<float>(probptr[0]) < (1.0f - static_cast<float>(probptr[0]))) 
         precision++;
