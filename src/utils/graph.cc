@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <queue>
 #include "utils/graph.h"
+#include <unordered_set>
 
 const string Graph::ToString() const {
   map<string, string> info;
@@ -77,8 +78,10 @@ void Graph::topology_sort_inner(SNode node,
   stack->push(node->name());
 }
 
+
 // sort to make `bottom' nodes be placed in the front positions
 void Graph::Sort() {
+  LOG(ERROR)<<"begin sorting graph ";
   SNode start=nullptr;
   map<string, bool> visited;
   for(auto node: nodes_){
@@ -88,30 +91,59 @@ void Graph::Sort() {
     }
     visited[node->name()]=false;
   }
+  //LOG(ERROR)<<"nodes";
   int n=nodes_.size();
   std::queue<SNode> tmp;
+  std::unordered_set<SNode> pushed;
+  pushed.insert(start);
   tmp.push(start);
   nodes_.clear();
+  //LOG(ERROR)<<"before check one src";
   while(!tmp.empty()){
     auto node=tmp.front();
     tmp.pop();
     bool visit=true;
+    bool bi_direction = false;
+    LOG(ERROR)<<"node: "<<node->name();
     for(auto src: node->srcnodes())
-      if(visited[src->name()]==false){
-        visit=false;
-        break;
-      }
+      for (auto src_of_src: src->srcnodes())
+        if(strcmp((src_of_src->name()).c_str(), (node->name()).c_str())==0){
+          bi_direction=true;
+          break;
+        }
+    //LOG(ERROR)<<"bi-direction: "<<bi_direction;
+    if (bi_direction && (node->srcnodes()).size() > 1){
+        LOG(ERROR)<<"special";  
+        auto src =  node->srcnodes().at(0); //check whether src nodes number greater than 1
+        if(visited[src->name()]==false){
+          visit=false;
+        }
+    }
+    else{
+      for(auto src: node->srcnodes())
+        if(visited[src->name()]==false){
+          visit=false;
+          break;
+        }
+    }
+    //LOG(ERROR)<<"only check one src";
     if(visit){
       nodes_.push_back(node);
       visited[node->name()]=true;
       for(auto dst: node->dstnodes()){
-        CHECK(visited.find(dst->name())!=visited.end())<<dst->name();
-        if(visited[dst->name()]==false){
-          tmp.push(dst);
+        if(pushed.find(dst) == pushed.end()){
+            pushed.insert(dst);
+            tmp.push(dst);
         }
       }
     }
+    else
+      tmp.push(node);
   }
+  for(auto node: nodes_){
+    LOG(ERROR)<<"nodes: "<<node->name();
+  }
+  LOG(ERROR)<<"finish printing nodes ";
   CHECK_EQ(nodes_.size(), n);
 }
 
