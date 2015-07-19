@@ -273,6 +273,117 @@ void DBMBottomLayer::ComputeLoss(Metric* perf) {
   perf->Reset();
   perf->AddMetric("reconstruct_error", loss);
 }
+/**************** Implementation for RBMVisLayer********************/
+void RBMVisLayer::Setup(const LayerProto& proto,
+      const vector<SLayer>& srclayers) {
+  CHECK_EQ(srclayers.size(), 2);
+  for (int i = 0; i < srclayers.size(); i++)
+    for (int j = 0; j < (srclayers[i]-> dstlayers()).size(); j++)
+      if (strcmp(((srclayers[i]->dstlayers()).at(j)->name().c_str()), (this->name()).c_str())==0)
+        hid_idx_ = i;
+  for (int i = 0; i < srclayers.size(); i++)
+    if (i != hid_idx_)
+      data_idx_ = i;
+  const auto& src = srclayers[data_idx_]->data(this);
+  is_first_iteration_vis_ = true;
+  batchsize_ = src.shape()[0];
+  neg_batchsize_ = batchsize_;
+  /*gibbs sampling size and input have the same size*/
+  vdim_ = src.count()/batchsize_;
+  hdim_ = proto.rbmvis_conf().num_output();
+  data_.Reshape(vector<int>{batchsize_, vdim_}); //this is visible dimension
+  vis_sample_.Reshape(vector<int>{neg_batchsize_, vdim_});
+  scale_ = static_cast<float> (1.0f);
+  Factory<Param>* factory = Singleton<Factory<Param>>::Instance();
+  weight_ = shared_ptr<Param>(factory->Create("Param"));
+  bias_ = shared_ptr<Param>(factory->Create("Param"));
+  weight_->Setup(proto.param(0), vector<int>{vdim_, hdim_});
+  bias_->Setup(proto.param(1), vector<int>{vdim_});
+}
+void RBMVisLayer::SetupAfterPartition(const LayerProto& proto,
+      const vector<int> &shape,
+      const vector<SLayer>& srclayers) {
+}
+
+void RBMVisLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
+  float matrix_norm = (weight_->data()).sum_data();
+  float bias_norm = (bias_->data()).sum_data();
+  if (phase == kPositive) { /*positive phase*/
+        Tensor<cpu, 2> data(data_.mutable_cpu_data(),
+          Shape2(batchsize_, vdim_));
+        CHECK_EQ(srclayers[data_idx_]->data(this).count(), batchsize_*vdim_);
+        Tensor<cpu, 2> src(srclayers[data_idx_]->mutable_data(this)->mutable_cpu_data(),
+         Shape2(batchsize_, vdim_));
+        Copy(data, src);
+  }
+  else if (phase == kNegative) {   /*negative phase*/
+        if (is_first_iteration_vis_) {
+          CHECK_EQ(srclayers[data_idx_]->data(this).count(), batchsize_*vdim_);
+          Tensor<cpu, 2> src(srclayers[data_idx_]->mutable_data(this)->mutable_cpu_data(),
+          Shape2(batchsize_, vdim_));
+          Tensor<cpu, 2> vis_sample(vis_sample_.mutable_cpu_data(),
+            Shape2(neg_batchsize_, vdim_));
+          Copy(vis_sample, src);
+          is_first_iteration_vis_ = false;
+        }
+        else {
+            //need to check neg_batchsize_*hdim_
+            Tensor<cpu, 2> hid_sample(srclayers[hid_idx_]->mutable_data(this, kNegative)->mutable_cpu_data(),
+                           Shape2(neg_batchsize_, hdim_));  //fetch sampling results from hidden layer
+            Tensor<cpu, 2> vis_sample(vis_sample_.mutable_cpu_data(),
+                           Shape2(neg_batchsize_, vdim_));
+            Tensor<cpu, 2> weight(weight_->mutable_cpu_data(),
+                           Shape2(vdim_, hdim_));
+            Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));
+            vis_sample = dot(hid_sample, weight.T());
+            vis_sample+=repmat(bias, neg_batchsize_);
+            vis_sample = F<op::sigmoid>(vis_sample);
+            TSingleton<Random<cpu>>::Instance()->SampleBinary(vis_sample);
+        }
+  }
+}
+
+void RBMVisLayer::ComputeGradient(const vector<SLayer>& srclayers) {
+  Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_, hdim_));//v
+  Tensor<cpu, 2> hid_data(srclayers[hid_idx_]->mutable_data(this, kPositive)->mutable_cpu_data(), //u
+              Shape2(neg_batchsize_, hdim_));
+  Tensor<cpu, 2> vis_sample(vis_sample_.mutable_cpu_data(),
+        Shape2(neg_batchsize_, vdim_));
+  Tensor<cpu, 2> hid_sample(srclayers[hid_idx_]->mutable_data(this, kNegative)->mutable_cpu_data(),
+        Shape2(neg_batchsize_, hdim_));  //fetch sampling results from hidden layer
+  Tensor<cpu, 2> gweight(weight_->mutable_cpu_grad(), Shape2(vdim_, hdim_));
+  Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(vdim_));
+  gbias = sum_rows(vis_sample);
+  gbias-=sum_rows(data);
+  gweight = dot(vis_sample.T(), hidden_sample);
+  gweight-=dot(data.T(), hid_data);
+  gbias*=scale_/(1.0f*batchsize_);
+  gweight*=scale_/(1.0f*batchsize_);
+}
+
+void RBMVisLayer::ComputeLoss(Metric* perf) {
+  float loss = (0.0f);
+  CHECK_EQ(srclayers[data_idx_]->data(this).count(), batchsize_*vdim_);
+          Tensor<cpu, 2> src(srclayers[data_idx_]->mutable_data(this)->mutable_cpu_data(),
+          Shape2(batchsize_, vdim_));
+  Tensor<cpu, 2> hid_data(srclayers[hid_idx_]->mutable_data(this, kPositive)->mutable_cpu_data(), //gibbs using u
+              Shape2(neg_batchsize_, hdim_));
+  Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_, hdim_));
+  Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(vdim_));
+  Tensor<cpu, 2> reconstruct(Shape2(batchsize_, vdim_)); /*reconstruct error*/
+  AllocSpace(reconstruct);
+  reconstruct = dot(hid_data, weight.T());
+  reconstruct+=repmat(bias, batchsize_);
+  reconstruct = F<op::sigmoid>(reconstruct);
+  float *src_dptr = src.dptr;
+  float *reconstruct_dptr = reconstruct.dptr;
+  for (int i = 0; i < vdim_*batchsize_; i++)
+    loss += -(src_dptr[i]*log(reconstruct_dptr[i])+(1-src_dptr[i])*log(1-reconstruct_dptr[i]));
+  loss/=batchsize_;
+  FreeSpace(reconstruct);
+  perf->Reset();
+  perf->AddMetric("reconstruct_error", loss);
+}
 /**************** Implementation for DBMTopLayer********************/
 void DBMTopLayer::Setup(const LayerProto& proto,
       const vector<SLayer>& srclayers) {
@@ -330,6 +441,69 @@ void DBMTopLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(vdim_));
   gbias = sum_rows(negsrc);
   gbias-=sum_rows(possrc);
+  gbias*=scale_/(1.0f*batchsize_);
+}
+/**************** Implementation for RBMHidLayer********************/
+void RBMHidLayer::Setup(const LayerProto& proto,
+      const vector<SLayer>& srclayers) {
+  CHECK_EQ(srclayers.size(), 1);
+  const auto& src_data = srclayers[0]->data(this, kPositive);
+  const auto& src_sample = srclayers[0]->data(this, kNegative);
+  is_first_iteration_hid_ = true;
+  scale_ = static_cast<float> (1.0f);
+  batchsize_ = src_data.shape()[0];
+  neg_batchsize_ = src_sample.shape()[0];
+  vdim_ = src_data.count()/batchsize_;
+  hdim_ = proto.rbmhid_conf().hid_dim();
+  Factory<Param>* factory = Singleton<Factory<Param>>::Instance();
+  bias_ = shared_ptr<Param>(factory->Create("Param"));
+  weight_ = factory->Create("Param");
+  bias_->Setup(proto.param(0), vector<int>{hdim_});
+  weight_->Setup(proto.param(0), vector<int>{vdim_, hdim_});
+}
+
+void RBMHidLayer::SetupAfterPartition(const LayerProto& proto,
+      const vector<int> &shape,
+      const vector<SLayer>& srclayers) {
+}
+
+void RBMHidLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
+  if (phase == kPositive) {  /*postive phase*/
+    Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));
+    CHECK_EQ(srclayers[0]->data(this, kPositive).count(), batchsize_*vdim_);
+    Tensor<cpu, 2> src(srclayers[0]->mutable_data(this, kPositive)->mutable_cpu_data(),
+       Shape2(batchsize_, vdim_));
+    Tensor<cpu, 2> weight(weight_->mutable_cpu_data(),
+                           Shape2(vdim_, hdim_));
+    Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(hdim_));
+    data = dot(src, weight);
+    data+=repmat(bias, batchsize_);
+    data = F<op::sigmoid>(data);
+  }
+  else if (phase == kNegative) {   /*negative phase*/
+    CHECK_EQ(srclayers[0]->data(this, kNegative).count(), neg_batchsize_*vdim_);
+    Tensor<cpu, 2> src_sample(srclayers[0]->mutable_data(this, kNegative)->mutable_cpu_data(),
+         Shape2(neg_batchsize_, vdim_));
+    Tensor<cpu, 2> hid_sample(hid_sample_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_));
+    Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(hdim_));
+    Tensor<cpu, 2> weight(weight_->mutable_cpu_data(),
+                           Shape2(vdim_, hdim_));
+    hid_sample = dot(src_sample, weight);
+    hid_sample += repmat(bias, neg_batchsize_);
+    hid_sample = F<op::sigmoid>(hid_sample);
+    TSingleton<Random<cpu>>::Instance()->SampleBinary(hid_sample);
+  }
+  else if (phase == kTest) {   /*test phase*/
+     Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));//data: sigmoid(wv+b)
+     TSingleton<Random<cpu>>::Instance()->SampleBinary(data);
+  }
+}
+void RBMHidLayer::ComputeGradient(const vector<SLayer>& srclayers) {
+  Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));
+  Tensor<cpu, 2> hid_sample(hid_sample_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_));
+  Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(vdim_));
+  gbias = sum_rows(hid_sample);
+  gbias-=sum_rows(data);
   gbias*=scale_/(1.0f*batchsize_);
 }
 /**************** Implementation for InnerProductLayer********************/

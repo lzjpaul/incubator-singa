@@ -148,6 +148,8 @@ message LayerProto {
     kTanh = 14;
     kDBMBottom = 21;
     kDBMTop = 22;
+    kRBMVis = 23;
+    kRBMHid = 24;
   }
   // source layer names
   repeated string srclayers = 3;
@@ -195,6 +197,10 @@ message LayerProto {
   optional DBMBottomProto dbmbottom_conf = 46;
   // configuration for dbmtop layer
   optional DBMTopProto dbmtop_conf = 47;
+  // configuration for rbmvis layer
+  optional RBMVisProto rbmvis_conf = 48;
+  // configuration for rbmhid layer
+  optional RBMHidProto rbmhid_conf = 49;
   // partition type which overrides the partition type for neural net
   optional PartitionType partition_type = 59;
   optional string datablob = 58 [default = "unknow"];
@@ -304,6 +310,16 @@ message DBMBottomProto {
 // Message that stores parameters used by DBMTopLayer
 message DBMTopProto {
   optional int32 num_output = 1; // The number of outputs for the layer
+  optional bool bias_term = 2 [default = true]; // whether to have bias terms
+}
+
+message RBMVisProto {
+  optional int32 num_output = 1; // The number of outputs for the layer
+  optional bool bias_term = 2 [default = true]; // whether to have bias terms
+}
+
+message RBMHidProto {
+  optional int32 hid_dim = 1; // The number of outputs for the layer
   optional bool bias_term = 2 [default = true]; // whether to have bias terms
 }
 

@@ -38,6 +38,8 @@ void NeuralNet::RegisterLayers(){
   RegisterLayer(factory, Tanh);
   RegisterLayer(factory, DBMBottom);
   RegisterLayer(factory, DBMTop);
+  RegisterLayer(factory, RBMVis);
+  RegisterLayer(factory, RBMHid);
 }
 shared_ptr<NeuralNet> NeuralNet::SetupNeuralNet(const NetProto& np, Phase phase,
     int group_size){

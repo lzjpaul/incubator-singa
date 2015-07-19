@@ -355,7 +355,7 @@ void CDWorker::NegativePhase(int step, shared_ptr<NeuralNet> net) {
   auto& layers = net->layers();
   for (int i = 0; i < modelproto_.pcd_k(); i++) {
     for (auto& layer : layers) {
-      if (layer->is_bottomlayer() || layer->is_toplayer())
+      if (layer->is_vislayer() || layer->is_hidlayer())
         layer->ComputeFeature(kNegative);
     }
   }
@@ -376,18 +376,17 @@ void CDWorker::LossPhase(int step, Phase phase,
   auto& layers = net->layers();
   if (phase == kTrain) 
     ;
-  else if (phase == kTest) { // kTest
+  else if (phase == kTest) { // kTest, this is modified!!!
     for (auto& layer : layers) {
-        if (layer->is_datalayer() || layer->is_parserlayer() || layer->is_bottomlayer())
-          layer->ComputeFeature(kPositive);
+      layer->ComputeFeature(kPositive);
     }
   }
   for (auto& layer : layers) {
-    if (layer->is_toplayer())
+    if (layer->is_hidlayer())
       layer->ComputeFeature(kTest);
   }
   for (auto& layer : layers) {
-    if (layer->is_bottomlayer())
+    if (layer->is_vislayer())
       layer->ComputeLoss(perf);
   }
   if (step % modelproto_.vis_step() == 0 && step!= 0) { /*print weight matrix*/
@@ -396,7 +395,7 @@ void CDWorker::LossPhase(int step, Phase phase,
     int colnum;
     const float *dptr;
     for (auto& layer : layers) {
-      if (layer->is_bottomlayer()) {
+      if (layer->is_vislayer()) {
         for (shared_ptr<Param> p : layer->GetParams()) {
           rownum = p->data().shape()[0];
           colnum = p->data().shape()[1];

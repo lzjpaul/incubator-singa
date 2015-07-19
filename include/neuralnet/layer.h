@@ -146,6 +146,69 @@ class DBMBottomLayer: public Layer {
 };
 
 /**
+  * RBM visible layer
+  */
+class RBMVisLayer: public Layer {
+ public:
+  using Layer::Setup;
+  using Layer::SetupAfterPartition;
+  using Layer::ComputeFeature;
+  using Layer::ComputeGradient;
+
+  virtual void Setup(const LayerProto& proto,
+      const vector<SLayer>& srclayers);
+  virtual bool is_vislayer() const {
+    return true;
+  }
+  virtual void SetupAfterPartition(const LayerProto& proto,
+      const vector<int> &shape,
+      const vector<SLayer>& srclayers);
+  virtual ConnectionType connection_type(int k) const {
+    CHECK_LT(k, srclayers_.size());
+    return kOneToAll;
+  }
+
+  virtual void ComputeFeature(Phase phase,
+     const vector<shared_ptr<Layer>>& srclayers);
+  virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
+  virtual void ComputeLoss(Metric* perf);
+  virtual Blob<float>* mutable_data(const Layer* from, Phase phase) {
+    if (phase == kPositive)
+      return &data_;
+    else
+      return &vis_sample_;
+  }
+  virtual const Blob<float>& data(const Layer* from, Phase phase) const {
+    if (phase == kPositive)
+      return data_;
+    else
+      return vis_sample_;
+  }
+  // virtual void ToProto(LayerProto *layer_proto, bool copyData);
+  virtual vector<shared_ptr<Param>> GetParams() {
+    return vector<shared_ptr<Param>>{weight_, bias_};
+  }
+
+ private:
+  //! dimension of the hidden layer
+  int hdim_;
+  //! dimension of the visible layer
+  int vdim_;
+  int batchsize_;
+  // batchsize of negative phase
+  int neg_batchsize_;
+  bool is_first_iteration_vis_;
+  float scale_;
+  //srclayer index
+  int data_idx_;
+  int hid_idx_;
+  shared_ptr<Param> weight_, bias_;
+  // data to store sampling result
+  Blob<float> vis_sample_;
+  // in order to implement Persistent Contrastive Divergence,
+};
+
+/**
   * DBM top layer
   */
 class DBMTopLayer: public Layer {
@@ -187,6 +250,64 @@ class DBMTopLayer: public Layer {
   bool is_first_iteration_top_;
   float scale_;
   shared_ptr<Param> bias_;
+};
+
+/**
+  * RBM hidden layer
+  */
+class RBMHidLayer: public Layer {
+ public:
+  using Layer::Setup;
+  using Layer::SetupAfterPartition;
+  using Layer::ComputeFeature;
+  using Layer::ComputeGradient;
+
+  virtual void Setup(const LayerProto& proto,
+      const vector<SLayer>& srclayers);
+  virtual bool is_hidlayer() const {
+    return true;
+  }
+  virtual void SetupAfterPartition(const LayerProto& proto,
+      const vector<int> &shape,
+      const vector<SLayer>& srclayers);
+  virtual ConnectionType connection_type(int k) const {
+    CHECK_LT(k, srclayers_.size());
+    return kOneToAll;
+  }
+
+  virtual void ComputeFeature(Phase phase,
+     const vector<shared_ptr<Layer>>& srclayers);
+  virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
+  /*virtual Blob<float>* mutable_data(const Layer* from);*/
+  /*virtual const Blob<float>& data(const Layer* from) const;*/
+  // virtual void ToProto(LayerProto *layer_proto, bool copyData);
+  virtual Blob<float>* mutable_data(const Layer* from, Phase phase) {
+    if (phase == kPositive)
+      return &data_;
+    else
+      return &hid_sample_;
+  }
+  virtual const Blob<float>& data(const Layer* from, Phase phase) const {
+    if (phase == kPositive)
+      return data_;
+    else
+      return hid_sample_;
+  }
+  virtual vector<shared_ptr<Param>> GetParams() {
+    return vector<shared_ptr<Param>>{bias_};
+  }
+
+ private:
+  //! dimension of the hidden layer
+  int hdim_;
+  int vdim_; //dimension of visible layer
+  int batchsize_;
+  // batchsize of negative phase
+  int neg_batchsize_;
+  bool is_first_iteration_hid_;
+  float scale_;
+  Blob<float> hid_sample_;
+  shared_ptr<Param> weight_, bias_;
 };
 
 /**
