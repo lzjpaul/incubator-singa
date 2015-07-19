@@ -34,6 +34,8 @@ void NeuralNet::RegisterLayers() {
   RegisterLayer(factory, SoftmaxLoss);
   RegisterLayer(factory, Split);
   RegisterLayer(factory, Tanh);
+  RegisterLayer(factory, RBMVis);
+  RegisterLayer(factory, RBMHid);
 }
 
 shared_ptr<NeuralNet> NeuralNet::Create(

@@ -175,6 +175,30 @@ void Graph::Sort() {
     auto node = visiting_nodes.front();
     visiting_nodes.pop();
     bool visit = true;
+    bool bi_direction = false;
+    LOG(ERROR)<<"node: "<<node->name;
+    for(auto src: node->srcnodes)
+      for (auto src_of_src: src->srcnodes)
+        if(strcmp((src_of_src->name).c_str(), (node->name).c_str())==0){
+          bi_direction=true;
+          break;
+        }
+    LOG(ERROR)<<"bi-direction: "<<bi_direction;
+    if (bi_direction && (node->srcnodes).size() > 1){
+        LOG(ERROR)<<"special";  
+        auto src =  node->srcnodes.at(0); //check whether src nodes number greater than 1
+        if(visited_set.find(src) == visited_set.end()){
+          visit=false;
+        }
+    }
+    else{
+      for(auto src: node->srcnodes)
+        if(visited_set.find(src) == visited_set.end()){
+          visit=false;
+          break;
+        }
+    }
+/*********************************************
     for (auto src : node->srcnodes) {
       // visit this node only if all srouce nodes have been visited
       if (visited_set.find(src) == visited_set.end()) {
@@ -182,6 +206,7 @@ void Graph::Sort() {
         break;
       }
     }
+*********************************************/
     if (visit) {
       nodes_.push_back(node);
       visited_set.insert(node);
@@ -196,6 +221,10 @@ void Graph::Sort() {
       visiting_nodes.push(node);
     }
   }
+  for(auto node: nodes_){
+    LOG(ERROR)<<"nodes: "<<node->name;
+  }
+  LOG(ERROR)<<"finish printing nodes ";
   CHECK_EQ(nodes_.size(), n);
 }
 
