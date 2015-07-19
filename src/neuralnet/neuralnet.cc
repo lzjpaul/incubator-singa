@@ -120,10 +120,35 @@ void NeuralNet::CreateNetFromGraph(Graph* graph, int npartitions) {
       share_param_layers[node->origin].push_back(layer);
   }
   LOG(INFO) << "Neural net structure\n"  << graph->ToJson(layerinfo);
-  // share Params for layers generated from the same origin layer
+
+  // create map from param name to param ptr
+  std::unordered_map<string, Param*> name2param;
+  for (auto layer : layers_) {
+    for (auto param : layer->GetParams()) {
+      name2param[param->name()] = param;
+    }
+  }
   for (auto & entry : share_param_layers) {
-    auto owner = entry.second.begin();
-    auto owner_params = (*owner)->GetParams();
+    // overwrite entries for replicated params due to layer partition (dim 0).
+    for (auto *param : entry.second.front()->GetParams())
+      name2param.at(param->name()) = param;
+  }
+  // share params based on share_from field
+  for (auto & entry : name2param) {
+    Param* param = entry.second;
+    const string share_from = param->share_from();
+    if (param->share_from() != "") {
+      if(name2param.find(share_from) != name2param.end()) {
+        param->ShareFrom(*name2param.at(param->share_from()));
+      } else {
+        LOG(FATAL) << "No param with the name (share_from) " << share_from;
+      }
+    }
+  }
+  // share Params for layers generated (partitioned) from the same origin layer
+  for (auto & entry : share_param_layers) {
+    const auto& owner = entry.second.begin();
+    const auto& owner_params = (*owner)->GetParams();
     for (auto it = owner + 1; it != entry.second.end(); it++) {
       auto params = (*it)->GetParams();
       CHECK_EQ(params.size(), owner_params.size());

@@ -110,6 +110,8 @@ message ParamProto {
   optional int32 partition_dim = 30;
   // usually, the program will infer the param shape
   repeated int32 shape = 31;
+  // name of the owner param from which this param shares the values
+  optional string share_from = 32;
 
   // used for identifying the same params from diff models and display deug info
   optional string name =  61 [default = ""];
