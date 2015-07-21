@@ -165,6 +165,9 @@ void DropoutLayer::ComputeGradient(Phase phase)  {
 /**************** Implementation for RBMVisLayer********************/
 void RBMVisLayer::Setup(const LayerProto& proto,
       int npartitions) {
+  Layer::Setup(proto, npartitions);
+  LOG(ERROR)<<"setup layername: "<< this->name();
+  LOG(ERROR)<<"RBMVis setup begins";
   CHECK_EQ(srclayers_.size(), 2);
   for (int i = 0; i < srclayers_.size(); i++)
     for (int j = 0; j < (srclayers_[i]-> dstlayers()).size(); j++)
@@ -173,6 +176,7 @@ void RBMVisLayer::Setup(const LayerProto& proto,
   for (int i = 0; i < srclayers_.size(); i++)
     if (i != hid_idx_)
       data_idx_ = i;
+  LOG(ERROR)<<"hid_idx: "<< hid_idx_<<"data_idx: "<<data_idx_;
   const auto& src = srclayers_[data_idx_]->data(this);
   is_first_iteration_vis_ = true;
   batchsize_ = src.shape()[0];
@@ -184,10 +188,13 @@ void RBMVisLayer::Setup(const LayerProto& proto,
   vis_sample_.Reshape(vector<int>{neg_batchsize_, vdim_});
   scale_ = static_cast<float> (1.0f);
   Factory<Param>* factory = Singleton<Factory<Param>>::Instance();
-  weight_ = shared_ptr<Param>(factory->Create("Param"));
-  bias_ = shared_ptr<Param>(factory->Create("Param"));
+  weight_ = factory->Create("Param");
+  bias_ = factory->Create("Param");
+  LOG(ERROR)<<"RBMVis vdim_: "<< vdim_<<" hdim: "<<hdim_;
   weight_->Setup(proto.param(0), vector<int>{vdim_, hdim_});
   bias_->Setup(proto.param(1), vector<int>{vdim_});
+  LOG(ERROR)<<"weight shape: "<<weight_->data().shape()[0]<<" "<<weight_->data().shape()[1];
+  LOG(ERROR)<<"RBMVis setup ends";
 }
 /*void RBMVisLayer::SetupAfterPartition(const LayerProto& proto,
       const vector<int> &shape,
@@ -197,6 +204,8 @@ void RBMVisLayer::Setup(const LayerProto& proto,
 void RBMVisLayer::ComputeFeature(Phase phase, Metric* perf) {
   float matrix_norm = (weight_->data()).sum_data();
   float bias_norm = (bias_->data()).sum_data();
+  //LOG(ERROR)<<"layername: "<< this->name();
+  //LOG(ERROR)<<"RBMVis computefeature begins";
   if (phase == kPositive) { /*positive phase*/
         Tensor<cpu, 2> data(data_.mutable_cpu_data(),
           Shape2(batchsize_, vdim_));
@@ -230,10 +239,12 @@ void RBMVisLayer::ComputeFeature(Phase phase, Metric* perf) {
             TSingleton<Random<cpu>>::Instance()->SampleBinary(vis_sample);
         }
   }
+  //LOG(ERROR)<<"RBMVis computefeature ends";
 }
 
 void RBMVisLayer::ComputeGradient(Phase phase) {
-  Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_, hdim_));//v
+  //LOG(ERROR)<<"RBMVis Gradient Phase begins";
+  Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_, vdim_));//v
   Tensor<cpu, 2> hid_data(srclayers_[hid_idx_]->mutable_data(this, kPositive)->mutable_cpu_data(), //u
               Shape2(neg_batchsize_, hdim_));
   Tensor<cpu, 2> vis_sample(vis_sample_.mutable_cpu_data(),
@@ -248,6 +259,7 @@ void RBMVisLayer::ComputeGradient(Phase phase) {
   gweight-=dot(data.T(), hid_data);
   gbias*=scale_/(1.0f*batchsize_);
   gweight*=scale_/(1.0f*batchsize_);
+  //LOG(ERROR)<<"RBMVis Gradient Phase ends";
 }
 
 void RBMVisLayer::ComputeLoss(Metric* perf) {
@@ -276,6 +288,8 @@ void RBMVisLayer::ComputeLoss(Metric* perf) {
 /**************** Implementation for RBMHidLayer********************/
 void RBMHidLayer::Setup(const LayerProto& proto,
       int npartitions) {
+  Layer::Setup(proto, npartitions);
+  LOG(ERROR)<<"RBMHids setup begins";
   CHECK_EQ(srclayers_.size(), 1);
   const auto& src_data = srclayers_[0]->data(this, kPositive);
   const auto& src_sample = srclayers_[0]->data(this, kNegative);
@@ -285,11 +299,15 @@ void RBMHidLayer::Setup(const LayerProto& proto,
   neg_batchsize_ = src_sample.shape()[0];
   vdim_ = src_data.count()/batchsize_;
   hdim_ = proto.rbmhid_conf().hid_dim();
+  data_.Reshape(vector<int>{batchsize_, hdim_}); //this is visible dimension
+  hid_sample_.Reshape(vector<int>{neg_batchsize_, hdim_});
   Factory<Param>* factory = Singleton<Factory<Param>>::Instance();
-  bias_ = shared_ptr<Param>(factory->Create("Param"));
-  weight_ = shared_ptr<Param>(factory->Create("Param"));
-  bias_->Setup(proto.param(0), vector<int>{hdim_});
+  bias_ = factory->Create("Param");
+  weight_ = factory->Create("Param");
+  LOG(ERROR)<<"RBMHid vdim_: "<< vdim_<<" hdim: "<<hdim_;
+  bias_->Setup(proto.param(1), vector<int>{hdim_});
   weight_->Setup(proto.param(0), vector<int>{vdim_, hdim_});
+  LOG(ERROR)<<"RBMHids setup ends";
 }
 
 /*void RBMHidLayer::SetupAfterPartition(const LayerProto& proto,
@@ -298,17 +316,25 @@ void RBMHidLayer::Setup(const LayerProto& proto,
 }*/
 
 void RBMHidLayer::ComputeFeature(Phase phase, Metric* perf) {
+  //LOG(ERROR)<<"layername: "<< this->name();
+  //LOG(ERROR)<<"RBMHid computefeature begins";
   if (phase == kPositive) {  /*postive phase*/
+    //LOG(ERROR)<<"RBMHid computefeature positive begins";
+    //LOG(ERROR)<<"srclayer name: "<<srclayers_[0]->name();
+    //LOG(ERROR)<<"srclayer no: "<<srclayers_.size();
     Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));
+    //LOG(ERROR)<<"before fetch RBMVis data";
     CHECK_EQ(srclayers_[0]->data(this, kPositive).count(), batchsize_*vdim_);
     Tensor<cpu, 2> src(srclayers_[0]->mutable_data(this, kPositive)->mutable_cpu_data(),
        Shape2(batchsize_, vdim_));
+    //LOG(ERROR)<<"RBMHid srclayers_[0] ends";
     Tensor<cpu, 2> weight(weight_->mutable_cpu_data(),
                            Shape2(vdim_, hdim_));
     Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(hdim_));
     data = dot(src, weight);
     data+=repmat(bias, batchsize_);
     data = F<op::sigmoid>(data);
+    //LOG(ERROR)<<"RBMHid computefeature positive ends";
   }
   else if (phase == kNegative) {   /*negative phase*/
     CHECK_EQ(srclayers_[0]->data(this, kNegative).count(), neg_batchsize_*vdim_);
@@ -327,11 +353,13 @@ void RBMHidLayer::ComputeFeature(Phase phase, Metric* perf) {
      Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));//data: sigmoid(wv+b)
      TSingleton<Random<cpu>>::Instance()->SampleBinary(data);
   }
+  //LOG(ERROR)<<"RBMHids computefeature ends";
 }
 void RBMHidLayer::ComputeGradient(Phase phase) {
+  //LOG(ERROR)<<"RBMHid Gradient Phase begins";
   Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));
   Tensor<cpu, 2> hid_sample(hid_sample_.mutable_cpu_data(), Shape2(neg_batchsize_,hdim_));
-  Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(vdim_));
+  Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(hdim_));
   Tensor<cpu, 2> gweight(weight_->mutable_cpu_grad(), Shape2(vdim_, hdim_));
   gbias = sum_rows(hid_sample);
   gbias-=sum_rows(data);
@@ -339,6 +367,7 @@ void RBMHidLayer::ComputeGradient(Phase phase) {
   float* gweight_dptr = gweight.dptr;
   for (int i = 0; i < vdim_*hdim_; i++)
     gweight_dptr[i] = 0.0f;
+  //LOG(ERROR)<<"RBMHid Gradient Phase ends";
 }
 /*********** Implementation for InnerProductLayer**********/
 InnerProductLayer::~InnerProductLayer() {

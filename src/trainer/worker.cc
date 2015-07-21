@@ -385,6 +385,7 @@ void CDWorker::PositivePhase(int step, shared_ptr<NeuralNet> net, Metric* perf) 
   auto& layers = net->layers();
   for (auto& layer : layers) {
       // clock_t s=clock();
+    //LOG(ERROR)<<"layer name: "<<layer->name();
     layer->ComputeFeature(kPositive, perf);
   }
 }
@@ -404,6 +405,16 @@ void CDWorker::GradientPhase(int step, shared_ptr<NeuralNet> net) {
   auto& layers = net->layers();
   for (auto& layer : layers) {
       layer->ComputeGradient(kTrain);
+      if(layer->mutable_grad(nullptr)!=nullptr && step % modelproto_.display_frequency() == 0){
+        LOG(INFO)<<StringPrintf("Backward layer %10s grad norm1 %13.9f\t",
+              layer->name().c_str(), layer->grad(nullptr).asum_data());
+          LOG(INFO)<<"layer: "<<layer->name()<<" param number: "<<layer->GetParams().size();
+          for(Param* p: layer->GetParams())
+            LOG(INFO)<<StringPrintf("param id %2d, name %10s,\
+                value norm1 %13.9f, grad norm1 %13.9f",
+                p->id(), p->name().c_str(),
+                p->data().asum_data(), p->grad().asum_data());
+      }
       for (Param* p : layer->GetParams()) {
         Update(p, step);
       }
@@ -417,7 +428,8 @@ void CDWorker::LossPhase(int step, Phase phase,
     ;
   else if (phase == kTest) { // kTest, this is modified!!!
     for (auto& layer : layers) {
-      layer->ComputeFeature(kPositive, perf);
+        //if (layer->is_datalayer() || layer->is_parserlayer() || layer->is_vislayer())
+        layer->ComputeFeature(kPositive, perf);
     }
   }
   for (auto& layer : layers) {
@@ -438,9 +450,13 @@ void CDWorker::LossPhase(int step, Phase phase,
         for (Param* p : layer->GetParams()) {
           rownum = p->data().shape()[0];
           colnum = p->data().shape()[1];
+          LOG(ERROR)<<"weight matrix rownum: "<<rownum<<" colnum: "<<colnum;
           dptr = p->data().cpu_data();
-          for (int i = 0; i < p->data().count(); i++)
-              bp.add_data(static_cast<float>(dptr[i]));
+          for (int i = 0; i < p->data().count(); i++){
+            /*if (i < 10)
+              LOG(ERROR)<<"weight matrix: "<<static_cast<float>(dptr[i]);*/
+            bp.add_data(static_cast<float>(dptr[i]));
+          }
           break;
         }
         bp.add_shape(rownum);
@@ -455,9 +471,13 @@ void CDWorker::LossPhase(int step, Phase phase,
 
 void CDWorker::TrainOneBatch(int step, Metric* perf) {
   PositivePhase(step, train_net_, perf);
+  //LOG(ERROR)<<"Positive phase ends";
   NegativePhase(step, train_net_, perf);
+  //LOG(ERROR)<<"Negative phase ends";
   GradientPhase(step, train_net_);
+  //LOG(ERROR)<<"Gradient phase ends";
   LossPhase(step, kTrain, train_net_, perf);
+  //LOG(ERROR)<<"Loss phase ends";
 }
 
 void CDWorker::TestOneBatch(int step, Phase phase,

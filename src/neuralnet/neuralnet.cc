@@ -108,6 +108,7 @@ void NeuralNet::CreateNetFromGraph(Graph* graph, int npartitions) {
   for (Node* node : graph->nodes()) {
     auto layer = name2layer_[node->name];
     layer->Setup(*(static_cast<LayerProto*>(node->proto)), npartitions);
+    LOG(ERROR)<<"constructing graph: "<<layer->name();
     layerinfo[layer->name()] = IntVecToString(layer->data(nullptr).shape());
     string param_name = "$";
     for (auto param : layer->GetParams()) {
@@ -126,7 +127,11 @@ void NeuralNet::CreateNetFromGraph(Graph* graph, int npartitions) {
   // create map from param name to param ptr
   std::unordered_map<string, Param*> name2param;
   for (auto layer : layers_) {
+    LOG(ERROR)<<"layer: "<<layer->name();
     for (auto param : layer->GetParams()) {
+      LOG(ERROR)<<"param: "<<param->name();
+      for (int x: param->data().shape())
+        LOG(ERROR)<<"param dim: "<<x;
       name2param[param->name()] = param;
     }
   }
@@ -141,6 +146,7 @@ void NeuralNet::CreateNetFromGraph(Graph* graph, int npartitions) {
     const string share_from = param->share_from();
     if (param->share_from() != "") {
       if(name2param.find(share_from) != name2param.end()) {
+        LOG(ERROR) << "param with the name (share_from) " << share_from;
         param->ShareFrom(*name2param.at(param->share_from()));
       } else {
         LOG(FATAL) << "No param with the name (share_from) " << share_from;

@@ -96,21 +96,27 @@ class RBMVisLayer: public Layer {
   virtual void ComputeGradient(Phase phase) override;
   virtual void ComputeLoss(Metric* perf);
   virtual Blob<float>* mutable_data(const Layer* from, Phase phase) {
-    if (phase == kPositive)
+    if (phase == kPositive){
+      //LOG(ERROR)<<"return mutable_data in RBMVis";
       return &data_;
+    }
     else
       return &vis_sample_;
   }
   virtual const Blob<float>& data(const Layer* from, Phase phase) const {
-    if (phase == kPositive)
+    if (phase == kPositive){
+      //LOG(ERROR)<<"return data in RBMVis";
       return data_;
+    }
     else
       return vis_sample_;
   }
   // virtual void ToProto(LayerProto *layer_proto, bool copyData);
-  virtual vector<shared_ptr<Param>> GetParams() {
-    return vector<shared_ptr<Param>>{weight_, bias_};
+  const vector<Param*> GetParams() const override {
+    vector<Param*> params{weight_, bias_};
+    return params;
   }
+
 
  private:
   //! dimension of the hidden layer
@@ -125,7 +131,7 @@ class RBMVisLayer: public Layer {
   //srclayer index
   int data_idx_;
   int hid_idx_;
-  shared_ptr<Param> weight_, bias_;
+  Param* weight_, *bias_;
   // data to store sampling result
   Blob<float> vis_sample_;
   // in order to implement Persistent Contrastive Divergence,
@@ -171,9 +177,14 @@ class RBMHidLayer: public Layer {
     else
       return hid_sample_;
   }
-  virtual vector<shared_ptr<Param>> GetParams() {
-    return vector<shared_ptr<Param>>{weight_, bias_};
+  const vector<Param*> GetParams() const override {
+    //LOG(ERROR)<<"get param from Hid";
+    //LOG(ERROR)<<"weight: "<<weight_->name();
+    //LOG(ERROR)<<"bias: "<<bias_->name();
+    vector<Param*> params{weight_, bias_};
+    return params;
   }
+
 
  private:
   //! dimension of the hidden layer
@@ -185,7 +196,7 @@ class RBMHidLayer: public Layer {
   bool is_first_iteration_hid_;
   float scale_;
   Blob<float> hid_sample_;
-  shared_ptr<Param> weight_, bias_;
+  Param* weight_, *bias_;
 };
 /**
   * fully connected layer
