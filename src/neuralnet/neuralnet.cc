@@ -45,6 +45,9 @@ shared_ptr<NeuralNet> NeuralNet::Create(
   NetProto conf;
   conf.CopyFrom(net_conf);
   conf.clear_layer();
+  // for sharing param conf
+  std::unordered_map<string, ParamProto*> name2param;
+  std::vector<ParamProto*> shares;
   // exclude layers according to phase
   for (const auto& layer : net_conf.layer()) {
     bool include = true;
@@ -58,8 +61,26 @@ shared_ptr<NeuralNet> NeuralNet::Create(
       // using net partition if layer partition is not set
       if (!layer_conf->has_partition_dim())
         layer_conf->set_partition_dim(net_conf.partition_dim());
+      for (int i = 0; i < layer_conf->param_size(); i++) {
+        ParamProto* param = layer_conf->mutable_param(i);
+        if (param->has_name() && param->name() != "") {
+          CHECK(name2param.find(param->name()) == name2param.end())
+            << "param name is repeated: " << param->name();
+          name2param[param->name()] = param;
+        }
+        if (param->has_share_from() && param->share_from() != "")
+          shares.push_back(param);
+      }
     }
   }
+  for (auto param : shares) {
+    const std::string& from = param->share_from();
+    CHECK(name2param.find(from) != name2param.end())
+      << "can't find param " << from;
+    param->MergeFrom(*name2param.at(from));
+  }
+
+  for (auto layer : net_conf.layer())
   LOG(INFO) << "NeuralNet config is\n" << conf.DebugString();
 
   // TODO(wangwei) create net based on net type, e.g., directed, undirected, etc
