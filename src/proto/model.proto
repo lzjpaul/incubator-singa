@@ -97,7 +97,7 @@ message ParamProto {
     // <a href="http://deeplearning.net/tutorial/mlp.html"> Theano MLP</a>
     kUniformSqrtFanInOut = 6;
   }
-  required InitMethod init_method = 1 [default = kGaussian];
+  optional InitMethod init_method = 1 [default = kGaussian];
   // constant init
   optional float value = 5 [default = 1];
   // for uniform sampling

@@ -68,16 +68,23 @@ shared_ptr<NeuralNet> NeuralNet::Create(
             << "param name is repeated: " << param->name();
           name2param[param->name()] = param;
         }
-        if (param->has_share_from() && param->share_from() != "")
-          shares.push_back(param);
+	if (param->has_share_from() && param->share_from() != "") {
+	  shares.push_back(param);
+          LOG(ERROR) << "param name = " << param->name() << " share from = " << param->share_from();
+	}
       }
     }
   }
-  for (auto param : shares) {
-    const std::string& from = param->share_from();
+  for (ParamProto* param : shares) {
+    const std::string from = param->share_from();
+    const std::string name = param->name();
+    LOG(ERROR) << "share param from " << from << " to " << name;
     CHECK(name2param.find(from) != name2param.end())
       << "can't find param " << from;
-    param->MergeFrom(*name2param.at(from));
+    param->CopyFrom(*name2param.at(from));
+    param->set_name(name);
+    param->set_share_from(from);
+    LOG(ERROR) << "share param from " << from << " to " << name;
   }
 
   for (auto layer : net_conf.layer())
@@ -154,6 +161,7 @@ void NeuralNet::CreateNetFromGraph(Graph* graph, int npartitions) {
       for (int x: param->data().shape())
         LOG(ERROR)<<"param dim: "<<x;
       name2param[param->name()] = param;
+	LOG(ERROR)<<"param end";
     }
   }
   for (auto & entry : share_param_layers) {
