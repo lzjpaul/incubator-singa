@@ -67,6 +67,21 @@ class Worker {
    * @param net the training net whose params will be dumped.
    */
   void Checkpoint(int step, shared_ptr<NeuralNet> net);
+
+  /**
+   * Extract layer features and dump them onto disk
+   * @param step training step for creating file name
+   * @param samples total num of records to extract for each layer
+   * @param net
+   */
+  void ExtractFeature(int step, int samples, shared_ptr<NeuralNet> net);
+  /**
+   * Extract layer params and dump them onto disk
+   * @param step training step for creating file name
+   * @param net
+   */
+  void ExtractParam(int step, shared_ptr<NeuralNet> net);
+
   /**
     * Test the perforance of the learned model on validation or test dataset.
     * Test is done by the first group.
@@ -160,6 +175,12 @@ class Worker {
    */
   inline bool ValidateNow(int step) const;
 
+  /**
+   * Dump feature and params for visualization
+   *
+   * @param step
+   */
+  inline bool VisNow(int step) const;
   /**
    * @return group ID
    */

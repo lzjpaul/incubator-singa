@@ -118,6 +118,10 @@ class Param {
   const std::string& share_from() const {
     return proto_.share_from();
   }
+
+  bool vis() const {
+    return proto_.vis();
+  }
    /**
     * @return num of floats.
     */

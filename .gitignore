@@ -44,3 +44,5 @@ config.h
 Makefile
 thirdparty/*
 !thirdpary/install.sh
+*.pyc
+tool/bh_tsne/._*

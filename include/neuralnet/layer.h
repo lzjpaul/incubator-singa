@@ -33,6 +33,8 @@ class ConvolutionLayer: public Layer {
   void Setup(const LayerProto& proto, int npartitions) override;
   void ComputeFeature(Phase phase, Metric *perf) override;
   void ComputeGradient(Phase phase) override;
+  void ExtractParam(int step, BlobProtos *blobs) override;
+
   const vector<Param*> GetParams() const override {
     vector<Param*> params{weight_, bias_};
     return params;
@@ -183,7 +185,7 @@ class InnerProductLayer: public Layer {
   void Setup(const LayerProto& proto, int npartitions) override;
   void ComputeFeature(Phase phase, Metric *perf) override;
   void ComputeGradient(Phase phase) override;
-
+  void ExtractParam(int step, BlobProtos *blobs) override;
 
   ConnectionType src_neuron_connection(int k) const override {
     // CHECK_LT(k, srclayers_.size());

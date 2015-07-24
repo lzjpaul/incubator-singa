@@ -31,6 +31,30 @@ const string Layer::DebugString(int step, Phase phase) {
   }
   return ret;
 }
+
+void Layer::ExtractFeature(int step, BlobProtos *blobs) {
+  if (!vis_feature())
+    return;
+  BlobProto* blob = nullptr;
+  for (int i = 0; i< blobs->name_size(); i++) {
+    if (name() == blobs->name(i)) {
+      blob = blobs->mutable_blob(i);
+      break;
+    }
+  }
+  if (blob == nullptr) {
+    blobs->add_name(name());
+    blob = blobs->add_blob();
+    for (int s : data_.shape())
+      blob->add_shape(s);
+    blob->set_shape(0, 0);
+  }
+  blob->set_shape(0, blob->shape(0) + data_.shape()[0]);
+  auto* ptr = data_.cpu_data();
+  for (int i =0; i< data_.count(); i++)
+    blob->add_data(ptr[i]);
+}
+
 /********* Implementation for BridgeDstLayer **************/
 void BridgeDstLayer::Setup(const LayerProto& proto, int npartitions) {
   Layer::Setup(proto, npartitions);

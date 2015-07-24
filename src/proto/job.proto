@@ -21,16 +21,12 @@ message ClusterProto {
   optional int32 start_port = 13 [default = 6723];
   // local workspace, train/val/test shards, checkpoint files
   required string workspace = 14;
-
+  // port number is used by ZeroMQ
+  optional int32 start_port = 64 [default = 6723];
   // conduct updates at server side; otherwise do it at worker side
-  optional bool server_update = 40 [default = true];
+  optional bool server_update = 65 [default = true];
   // share memory space between worker groups in one procs
-  optional bool share_memory = 41 [default = true];
-
-  // bandwidth of ethernet, Bytes per second, default is 1 Gbps
-  optional int32 bandwidth=50 [default=134217728];
-  // poll time in milliseconds
-  optional int32 poll_time=51 [default =100];
+  optional bool share_memory = 66 [default = true];
 }
 
 
@@ -80,6 +76,10 @@ message ModelProto {
   optional int32 warmup_steps = 35 [default = 0];
   // checkpoint path
   optional bool resume = 36 [default = false];
+  // visualization frequency
+  optional int32 vis_frequency = 37 [default =0];
+  // num of feature records to extract
+  optional int32 vis_samples = 38 [default = 1000];
 
    // start display after this num steps
   optional int32 display_after =  60[default = 0];
@@ -87,12 +87,14 @@ message ModelProto {
   optional int32 checkpoint_after = 61 [default = 0];
   // start test after this num steps
   optional int32 test_after = 62 [default = 0];
-// start validation after this num steps
+  // start validation after this num steps
   optional int32 validation_after = 63 [default = 0];
+  // start vis after this num steps
+  optional int32 vis_after = 64 [default = 0];
   // last snapshot step
-  optional int32 step = 64 [default = 0];
+  optional int32 step = 65 [default = 0];
   // display debug info
-  optional bool debug = 65 [default = false];
+  optional bool debug = 66 [default = false];
   // checkpoint files
   repeated string checkpoint = 66;
   // reset the version of params loaded from checkpoint file to step
@@ -144,6 +146,8 @@ message ParamProto {
   optional float learning_rate_multiplier = 15 [default = 1];
   // multiplied on the global weight decay.
   optional float weight_decay_multiplier = 16 [default = 1];
+  // dump this param for visualization
+  optional bool vis = 17 [default = false];
   // partition dimension, -1 for no partition
   optional int32 partition_dim = 30;
   // usually, the program will infer the param shape
@@ -200,6 +204,9 @@ message LayerProto {
   // some layers like data layer for loading test data are not used by training
   // phase should be removed by setting the exclude field.
   repeated Phase exclude = 15;
+  // dump feature of this layer for visualization
+  optional bool vis = 16 [default = false];
+
   // the layer type from the enum above
   required LayerType type = 20;
   // configuration for convolution layer

@@ -168,6 +168,14 @@ void Worker::Run() {
       Test(modelproto_.test_steps(), kTest, test_net_);
     }
 
+    if (VisNow(step_)) {
+      ExtractParam(step_, train_net_);
+      if (test_net_)
+        ExtractFeature(step_, modelproto_.vis_samples(), test_net_);
+      else
+        ExtractFeature(step_, modelproto_.vis_samples(), train_net_);
+    }
+
     if (CheckpointNow(step_)) {
       CollectAll(train_net_, step_);
       Checkpoint(step_, train_net_);
@@ -198,7 +206,38 @@ void Worker::Run() {
   LOG(ERROR) << "Worker (group = " <<grp_id_ << ", id = " << id_ << ") stops";
 }
 
+void Worker::ExtractParam(int step, shared_ptr<NeuralNet> net) {
+  BlobProtos blobs;
+  for (auto layer: net->layers()) {
+    if (layer->partition_id() == id_) {
+      layer->ExtractParam(step, &blobs);
+    }
+  }
+  char buf[256];
+  snprintf(buf, sizeof(buf), "%s/step%d-worker%d-param.bin",
+      Cluster::Get()->vis_folder().c_str(), step, id_);
+  WriteProtoToBinaryFile(blobs, buf);
+}
 
+void Worker::ExtractFeature(int step, int samples, shared_ptr<NeuralNet> net) {
+  BlobProtos blobs;
+  Metric perf;
+  int i = 0;
+  while (1) {
+    TestOneBatch(i++, kTest, net, &perf);
+    for (auto layer: net->layers()) {
+      if (layer->partition_id() == id_) {
+        layer->ExtractFeature(step, &blobs);
+      }
+    }
+    if (blobs.blob(0).shape(0) >= samples)
+      break;
+  }
+  char buf[256];
+  snprintf(buf, sizeof(buf), "%s/step%d-worker%d-feature.bin",
+      Cluster::Get()->vis_folder().c_str(), step, id_);
+  WriteProtoToBinaryFile(blobs, buf);
+}
 
 int Worker::Put(Param* param, int step) {
   Msg* msg=new Msg(Addr(grp_id_, id_, kWorkerParam), Addr(-1, -1, kStub));
@@ -332,6 +371,14 @@ bool Worker::ValidateNow(const int step) const {
         % modelproto_.validation_frequency() == 0));
 }
 
+bool Worker::VisNow(int step) const {
+  return (grp_id_ == 0
+      && modelproto_.vis_frequency() > 0
+      && modelproto_.vis_samples() > 0
+      && step >= modelproto_.vis_after()
+      && ((step - modelproto_.vis_after())
+        % modelproto_.vis_frequency() == 0));
+}
 
 /****************************BPWorker**********************************/
 BPWorker::BPWorker(int thread_id, int group_id, int worker_id):

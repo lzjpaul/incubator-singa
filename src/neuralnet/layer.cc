@@ -78,6 +78,31 @@ void ConvolutionLayer::Setup(const LayerProto& proto, int npartitions) {
   bias_->Setup(proto.param(1), vector<int>{num_filters_});
 }
 
+void ConvolutionLayer::ExtractParam(int step, BlobProtos *blobs) {
+  if (!weight_->vis() || weight_->id() != weight_->owner())
+    return;
+  BlobProto* blob = nullptr;
+  for (int i = 0; i< blobs->name_size(); i++) {
+    if (weight_->name() == blobs->name(i)) {
+      blob = blobs->mutable_blob(i);
+      break;
+    }
+  }
+  if (blob == nullptr) {
+    blobs->add_name(weight_->name());
+    blob = blobs->add_blob();
+    blob->add_shape(channels_);
+    blob->add_shape(kernel_ * kernel_);
+    blob->add_shape(num_filters_);
+    float* ptr = weight_->mutable_cpu_data();
+    for (int i =0; i< weight_->size(); i++)
+      blob->add_data(ptr[i]);
+  } else {
+    LOG(ERROR) << "The param is extracted twice " << weight_->name();
+  }
+}
+
+
 void ConvolutionLayer::ComputeFeature(Phase phase, Metric* perf){
   auto src = Tensor4(srclayers_[0]->mutable_data(this));
   auto data = Tensor3(&data_);
@@ -345,6 +370,30 @@ void InnerProductLayer::Setup(const LayerProto& proto, int npartitions) {
   bias_->Setup(proto.param(1), vector<int>{hdim_});
 }
 
+void InnerProductLayer::ExtractParam(int step, BlobProtos *blobs) {
+  if (!weight_->vis() || weight_->id() != weight_->owner())
+    return;
+  BlobProto* blob = nullptr;
+  for (int i = 0; i< blobs->name_size(); i++) {
+    if (weight_->name() == blobs->name(i)) {
+      blob = blobs->mutable_blob(i);
+      break;
+    }
+  }
+  if (blob == nullptr) {
+    blobs->add_name(weight_->name());
+    blob = blobs->add_blob();
+    blob->add_shape(1);
+    blob->add_shape(vdim_);
+    blob->add_shape(hdim_);
+    float* ptr = weight_->mutable_cpu_data();
+    for (int i =0; i< weight_->size(); i++)
+      blob->add_data(ptr[i]);
+  } else {
+    LOG(ERROR) << "The param is extracted twice " << weight_->name();
+  }
+}
+
 void InnerProductLayer::ComputeFeature(Phase phase, Metric* perf) {
   auto data = Tensor2(&data_);
   auto src = Tensor2(srclayers_[0]->mutable_data(this));
@@ -380,7 +429,7 @@ void LabelLayer::Setup(const LayerProto& proto, int npartitions){
 }
 
 void LabelLayer::ParseRecords(Phase phase, const vector<Record>& records,
-    Blob<float>* blob){
+    Blob<float>* blob) {
   int rid=0;
   float *label= blob->mutable_cpu_data() ;
   for(const Record& record: records){

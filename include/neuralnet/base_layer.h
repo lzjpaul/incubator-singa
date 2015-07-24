@@ -7,6 +7,7 @@
 #include <utility>
 #include <memory>
 #include <thread>
+#include <unordered_map>
 
 #include "proto/job.pb.h"
 #include "proto/common.pb.h"
@@ -51,6 +52,29 @@ class Layer {
    * @param phase kTrain, kTest, kPositive, etc.
    */
   virtual void ComputeFeature(Phase phase, Metric* perf) = 0;
+  /**
+   * Extract features which will be visulaized/analyzed by external programs.
+   * It is called after ComptueFeature().
+   *
+   * The extraction is done in mini-batches, i.e., one call of this function
+   * adds features of records from one mini-batch.
+   *
+   * @param step
+   * @param blobs features from all layers to be extracted. Every feature
+   * BlobProto would have the same number of records.
+   */
+  virtual void ExtractFeature(int step, BlobProtos *blobs);
+  /**
+   *
+   * Extract weight param which will be visulaized/analyzed by external programs
+   *
+   * The extraction is done at once, each Param object from this layer is fully
+   * converted into a BlobProto object.
+   *
+   * @param step
+   * @param blobs BlobProto for all Param objects to be extracted from the net.
+   */
+  virtual void ExtractParam(int step, BlobProtos *blobs) {};
   /**
    * Compute gradients for parameters and connected layers.
    *
@@ -127,6 +151,10 @@ class Layer {
    */
   const std::string &name() const {
     return layer_proto_.name();
+  }
+
+  bool vis_feature() const {
+    return layer_proto_.vis();
   }
   /**
    * @return name of src data blob, used by prefetch layer to locate the data
