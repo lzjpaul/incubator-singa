@@ -26,7 +26,7 @@ def plot2d(x, y, label, fname):
   #plt.show()
   plt.savefig(fname)
 
-def plot_all_features(infile, outfolder):
+def plot_all_feature(infile, outfolder):
   fd = open(infile, 'rb')
   bps = common_pb2.BlobProtos()
   bps.ParseFromString(fd.read())
