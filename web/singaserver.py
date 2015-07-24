@@ -168,6 +168,9 @@ if __name__ == '__main__':
     print 'Usage: python webserver.py SINGA_ROOT'
     sys.exit()
   singa_dir = sys.argv[1]
+  mydir = os.path.split(sys.argv[0])[0]
+  img_dir = os.path.join(mydir, img_dir)
+  log_dir = os.path.join(mydir, log_dir)
   assert singa_dir, "%s is not a dir " % singa_dir
   if not os.path.isdir(img_dir):
     os.makedirs(img_dir)
