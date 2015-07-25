@@ -204,6 +204,7 @@ class InnerProductLayer: public Layer {
   //! dimension of the visible layer
   int vdim_;
   int batchsize_;
+  bool transpose_;
   Param* weight_, *bias_;
 };
 
@@ -286,6 +287,32 @@ class ReLULayer: public Layer {
   void ComputeGradient(Phase phase) override;
 };
 
+class ReconstructLossLayer: public LossLayer {
+  /*
+   * connected from the data layer and the last sigmoid layer
+   */
+ public:
+  using Layer::ComputeFeature;
+  using Layer::ComputeGradient;
+
+  void Setup(const LayerProto& proto, int npartitions) override;
+  void ComputeFeature(Phase phase, Metric *perf) override;
+  void ComputeGradient(Phase phase) override;
+
+  
+  int partition_dim() const override {
+    CHECK_LE(layer_proto_.partition_dim(), 1);
+    return layer_proto_.partition_dim();
+  }
+  ConnectionType src_neuron_connection(int k) const override {
+    // CHECK_LT(k, srclayers_.size());
+    return kOneToAll;
+  }
+
+ private:
+  int batchsize_;
+  int dim_;
+};
 
 class SoftmaxLossLayer: public LossLayer {
   /*

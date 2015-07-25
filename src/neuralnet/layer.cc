@@ -383,6 +383,7 @@ void InnerProductLayer::Setup(const LayerProto& proto, int npartitions) {
   batchsize_=src.shape()[0];
   vdim_=src.count()/batchsize_;
   hdim_=proto.innerproduct_conf().num_output();
+  transpose_=proto.innerproduct_conf().transpose();
   if(partition_dim()>0)
     hdim_ /= npartitions;
   data_.Reshape(vector<int>{batchsize_, hdim_});
@@ -423,7 +424,10 @@ void InnerProductLayer::ComputeFeature(Phase phase, Metric* perf) {
   auto src = Tensor2(srclayers_[0]->mutable_data(this));
   auto weight = Tensor2(weight_->mutable_data());
   auto bias = Tensor1(bias_->mutable_data());
-  data=dot(src, weight);
+  if (transpose)
+    data=dot(src, weight.T());
+  else 
+    data=dot(src, weight);
   // repmat: repeat bias vector into batchsize rows
   data+=repmat(bias, batchsize_);
 }
@@ -434,13 +438,22 @@ void InnerProductLayer::ComputeGradient(Phase phas) {
   auto weight = Tensor2(weight_->mutable_data());
   auto gweight = Tensor2(weight_->mutable_grad());
   auto gbias = Tensor1(bias_->mutable_grad());
-
+  Tensor<cpu, 2> gweight_tmp(Shape2(hdim_, vdim_)); /*reconstruct error*/
+  AllocSpace(gweight_tmp);
   gbias=sum_rows(grad);
-  gweight=dot(src.T(), grad);
+  if (transpose){
+    gweight_tmp = dot(src.T(), grad);
+    gweight = gweight_tmp.T();  //gweight share?
+  } else
+    gweight=dot(src.T(), grad);
   if(srclayers_[0]->mutable_grad(this)!=nullptr){
     auto gsrc = Tensor2(srclayers_[0]->mutable_grad(this));
-    gsrc=dot(grad, weight.T());
+    if (transpose)
+      gsrc=dot(grad, weight);
+    else
+      gsrc=dot(grad, weight.T());
   }
+  FreeSpace(gweight_tmp);
 }
 /*****************************************************************************
  * Implementation for LabelLayer
@@ -800,6 +813,46 @@ void TanhLayer::ComputeGradient(Phase phase) {
   auto gsrc = Tensor1(srclayers_[0]->mutable_grad(this));
   gsrc=F<op::stanh_grad>(data)*grad;
 }
+/********** * Implementation for ReconstructLossLayer*************************/
+void ReconstructLossLayer::Setup(const LayerProto& proto, int npartitions) {
+  LossLayer::Setup(proto, npartitions);
+  CHECK_EQ(srclayers_.size(),2);
+  data_.Reshape(srclayers_[0]->data(this).shape());
+  batchsize_=data_.shape()[0];
+  dim_=data_.count()/batchsize_;
+  metric_.Reshape(vector<int>{1});
+}
+void ReconstructLossLayer::ComputeFeature(Phase phase, Metric* perf) {
+  Shape<2> s=Shape2(batchsize_, dim_);
+  const float* reconstruct_dptr=srclayers_[0]->data(this).cpu_data();  // sigmoid:hi
+  const float* input_dptr=srclayers_[1]->data(this).cpu_data();
+  float loss = 0;
+  for(int n=0;n<batchsize_;n++){
+    for (int j = 0; j < dim_; ++j) {  // ++j??
+      loss+=-(input_dptr[j]*log(reconstruct_dptr[j])
+            +(1-input_dptr[j])*log(1-reconstruct_dptr[j]));
+    }
+    reconstruct_dptr+=dim_;
+    input_dptr+=dim_;
+  }
+  CHECK_EQ(reconstruct_dptr, srclayers_[0]->data(this).cpu_data() + (batchsize_*dim_) );
+  CHECK_EQ(input_dptr, srclayers_[1]->data(this).cpu_data() + (batchsize_*dim_) );
+  perf->Add("loss", loss/(1.0f*batchsize_));
+}
+void ReconstructLossLayer::ComputeGradient(Phase phase) {
+  const float* reconstruct_dptr=srclayers_[0]->data(this).cpu_data();  // sigmoid:hi
+  const float* input_dptr=srclayers_[1]->data(this).cpu_data();  // vi
+  Blob<float>* gsrcblob=srclayers_[0]->mutable_grad(this);
+  float* gsrcptr=gsrcblob->mutable_cpu_data();
+  for(int n=0;n<batchsize_;n++){
+    for (int j = 0; j < dim_; j++)
+    gsrcptr[n*dim_+j]= - input_dptr[n*dim_+j]/reconstruct_dptr[n*dim_+j] 
+                      + (1-input_dptr[n*dim_+j])/(1-reconstruct_dptr[n*dim_+j]);
+  }
+  Tensor<cpu, 1> gsrc(gsrcptr, Shape1(gsrcblob->count()));
+  gsrc*=1.0f/(1.0f*batchsize_); //necessary?
+}
+
 /********** * Implementation for SoftmaxLossLayer*************************/
 void SoftmaxLossLayer::Setup(const LayerProto& proto, int npartitions) {
   LossLayer::Setup(proto, npartitions);
