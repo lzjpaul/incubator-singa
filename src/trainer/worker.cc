@@ -396,8 +396,10 @@ CDWorker::CDWorker(int thread_id, int group_id, int worker_id):
 void CDWorker::PositivePhase(int step,
      shared_ptr<NeuralNet> net, Metric* perf) {
   auto& layers = net->layers();
+  // LOG(ERROR)<<"Positive Phase";
   for (auto& layer : layers) {
       // clock_t s=clock();
+    // LOG(ERROR)<<"layer: "<<layer->name();
     layer->ComputeFeature(kPositive, perf);
   }
 }
@@ -406,33 +408,45 @@ void CDWorker::NegativePhase(int step,
      shared_ptr<NeuralNet> net, Metric* perf) {
 // for negative phase, gibbs sampling only concerns RBM bottom and top layer
   auto& layers = net->layers();
+  // LOG(ERROR)<<"Negative Phase";
   for (int i = 0; i < modelproto_.pcd_k(); i++) {
     for (auto& layer : layers) {
-      if (layer->is_vislayer() || layer->is_hidlayer())
+      if (layer->is_vislayer() || layer->is_hidlayer()){
         layer->ComputeFeature(kNegative, perf);
+        // LOG(ERROR)<<"layer: "<<layer->name();
+      }
     }
   }
 }
 
 void CDWorker::GradientPhase(int step, shared_ptr<NeuralNet> net) {
   auto& layers = net->layers();
+  // LOG(ERROR)<<"Gradient Phase";
   for (auto& layer : layers) {
+    if (layer->is_vislayer() || layer->is_hidlayer()){
       layer->ComputeGradient(kTrain);
+      // LOG(ERROR)<<"layer: "<<layer->name();
       for (Param* p : layer->GetParams()) {
         Update(p, step);
       }
+    }
   }
 }
 
 void CDWorker::LossPhase(int step, shared_ptr<NeuralNet> net, Metric* perf) {
   auto& layers = net->layers();
+  // LOG(ERROR)<<"Loss Phase";
   for (auto& layer : layers) {
-    if (layer->is_hidlayer())
+    if (layer->is_hidlayer()){
       layer->ComputeFeature(kLoss, perf);
+      // LOG(ERROR)<<"layer: "<<layer->name();
+    }
   }
   for (auto& layer : layers) {
-    if (layer->is_vislayer())
+    if (layer->is_vislayer()){
+      // LOG(ERROR)<<"layer: "<<layer->name();
       layer->ComputeLoss(perf);
+    }
   }
 }
 
