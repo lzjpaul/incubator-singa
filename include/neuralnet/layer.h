@@ -374,6 +374,24 @@ class ShardDataLayer: public DataLayer{
 };
 
 /**
+ * This layer apply Sigmoid function to neuron activations.
+ * f(x)=1/(1+exp(-x))
+ * f'(x)=f(x)*(1-f(x))
+ */
+class SigmoidLayer: public Layer {
+ public:
+  using Layer::ComputeFeature;
+  using Layer::ComputeGradient;
+
+  void Setup(const LayerProto& proto, int npartitions) override;
+  void ComputeFeature(Phase phase, Metric *perf) override;
+  void ComputeGradient(Phase phase) override;
+
+ private:
+  float outer_scale_, inner_scale_;
+};
+
+/**
  * This layer apply Tan function to neuron activations.
  * f(x)=A tanh(Bx)
  * f'(x)=B/A (A*A-f(x)*f(x))
