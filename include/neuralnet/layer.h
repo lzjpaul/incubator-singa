@@ -250,6 +250,9 @@ class MnistLayer: public ParserLayer {
   void Setup(const LayerProto& proto, int npartitions) override;
   void ParseRecords(Phase phase, const vector<Record>& records,
       Blob<float>* blob) override;
+  ConnectionType dst_layer_connection() const override{
+    return kOneToMany;
+  }
 
  protected:
   // height and width of the image after deformation
@@ -270,6 +273,8 @@ class PoolingLayer: public Layer {
   void Setup(const LayerProto& proto, int npartitions) override;
   void ComputeFeature(Phase phase, Metric *perf) override;
   void ComputeGradient(Phase phase) override;
+  
+
 
  protected:
   int kernel_, pad_, stride_;
