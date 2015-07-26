@@ -190,6 +190,8 @@ message LayerProto {
     kTanh = 14;
     kRBMVis = 23;
     kRBMHid = 24;
+    kReconstructLoss = 25;
+    kSigmoid = 26;
   }
   // source layer names
   repeated string srclayers = 3;
@@ -233,10 +235,15 @@ message LayerProto {
   optional SplitProto split_conf = 42;
   // configuration for tanh layer
   optional TanhProto tanh_conf = 43;
+  // configuration for sigmoid layer
+  optional SigmoidProto sigmoid_conf = 51;
   // configuration for rbmvis layer
   optional RBMVisProto rbmvis_conf = 48;
   // configuration for rbmhid layer
   optional RBMHidProto rbmhid_conf = 49;
+  // configuration for reconstructloss layer
+  optional ReconstructLossProto reconstructloss_conf = 50;
+
 
 
   // overrides the partition dimension for neural net
@@ -267,6 +274,12 @@ message SplitProto {
   optional int32 num_splits = 1 [default =1];
 }
 
+// sigmoid
+message SigmoidProto {
+  optional float outer_scale = 1 [default = 1.0];
+  optional float inner_scale = 2 [default = 1.0];
+}
+
 // scaled tan: A*tan(B*x)
 message TanhProto {
   // A of A*tan(B*x)
@@ -280,6 +293,9 @@ message SoftmaxLossProto {
   optional int32 topk = 1 [default = 1];
   // loss scale factor
   optional float scale= 30 [default = 1];
+}
+
+message ReconstructLossProto {
 }
 
 message ConvolutionProto {
@@ -351,6 +367,8 @@ message InnerProductProto {
   required int32 num_output = 1;
   // use bias vector or not
   optional bool bias_term = 30 [default = true];
+  // transpose or not
+  optional bool transpose = 31 [default = false];
 }
 
 message LRNProto {

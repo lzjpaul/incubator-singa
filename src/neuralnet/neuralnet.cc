@@ -33,9 +33,10 @@ void NeuralNet::RegisterLayers() {
   RegisterLayer(factory, SoftmaxLoss);
   RegisterLayer(factory, Split);
   RegisterLayer(factory, Tanh);
+  RegisterLayer(factory, Sigmoid);
   RegisterLayer(factory, RBMVis);
   RegisterLayer(factory, RBMHid);
-
+  RegisterLayer(factory, ReconstructLoss);
 #ifdef USE_OPTIONAL_LAYER
   RegisterLayer(factory, LMDBData);
 #endif

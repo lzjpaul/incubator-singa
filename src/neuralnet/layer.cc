@@ -342,7 +342,10 @@ void InnerProductLayer::Setup(const LayerProto& proto, int npartitions) {
   Factory<Param>* factory=Singleton<Factory<Param>>::Instance();
   weight_ = factory->Create("Param");
   bias_ = factory->Create("Param");
-  weight_->Setup(proto.param(0), vector<int>{vdim_, hdim_});
+  if (transpose_)
+    weight_->Setup(proto.param(0), vector<int>{hdim_, vdim_});
+  else
+    weight_->Setup(proto.param(0), vector<int>{vdim_, hdim_});
   bias_->Setup(proto.param(1), vector<int>{hdim_});
 }
 
@@ -351,7 +354,7 @@ void InnerProductLayer::ComputeFeature(Phase phase, Metric* perf) {
   auto src = Tensor2(srclayers_[0]->mutable_data(this));
   auto weight = Tensor2(weight_->mutable_data());
   auto bias = Tensor1(bias_->mutable_data());
-  if (transpose)
+  if (transpose_)
     data=dot(src, weight.T());
   else 
     data=dot(src, weight);
@@ -365,22 +368,19 @@ void InnerProductLayer::ComputeGradient(Phase phas) {
   auto weight = Tensor2(weight_->mutable_data());
   auto gweight = Tensor2(weight_->mutable_grad());
   auto gbias = Tensor1(bias_->mutable_grad());
-  Tensor<cpu, 2> gweight_tmp(Shape2(hdim_, vdim_)); /*reconstruct error*/
-  AllocSpace(gweight_tmp);
+
   gbias=sum_rows(grad);
-  if (transpose){
-    gweight_tmp = dot(src.T(), grad);
-    gweight = gweight_tmp.T();  //gweight share?
-  } else
+  if (transpose_)
+    gweight = dot(grad.T(), src);  //gweight share?
+  else
     gweight=dot(src.T(), grad);
   if(srclayers_[0]->mutable_grad(this)!=nullptr){
     auto gsrc = Tensor2(srclayers_[0]->mutable_grad(this));
-    if (transpose)
+    if (transpose_)
       gsrc=dot(grad, weight);
     else
       gsrc=dot(grad, weight.T());
   }
-  FreeSpace(gweight_tmp);
 }
 /*****************************************************************************
  * Implementation for LabelLayer
@@ -711,6 +711,25 @@ void ShardDataLayer::Setup(const LayerProto& proto, int npartitions) {
   records_.resize(batchsize_);
   random_skip_=proto.sharddata_conf().random_skip();
 }
+/*******************Implementation of SigmoidLayer***************************/
+void SigmoidLayer::Setup(const LayerProto& proto, int npartitions){
+  Layer::Setup(proto, npartitions);
+  data_.ReshapeLike(srclayers_[0]->data(this));
+  grad_.ReshapeLike(srclayers_[0]->grad(this));
+}
+
+void SigmoidLayer::ComputeFeature(Phase phase, Metric* perf) {
+  auto data = Tensor1(&data_);
+  auto src = Tensor1(srclayers_[0]->mutable_data(this));
+  data=F<op::sigmoid>(src);
+}
+
+void SigmoidLayer::ComputeGradient(Phase phase) {
+  auto data = Tensor1(&data_);
+  auto grad = Tensor1(&grad_);
+  auto gsrc = Tensor1(srclayers_[0]->mutable_grad(this));
+  gsrc=F<op::sigmoid_grad>(data)*grad;
+}
 /*******************Implementation of TanLayer***************************/
 void TanhLayer::Setup(const LayerProto& proto, int npartitions){
   Layer::Setup(proto, npartitions);
@@ -740,7 +759,6 @@ void ReconstructLossLayer::Setup(const LayerProto& proto, int npartitions) {
   metric_.Reshape(vector<int>{1});
 }
 void ReconstructLossLayer::ComputeFeature(Phase phase, Metric* perf) {
-  Shape<2> s=Shape2(batchsize_, dim_);
   const float* reconstruct_dptr=srclayers_[0]->data(this).cpu_data();  // sigmoid:hi
   const float* input_dptr=srclayers_[1]->data(this).cpu_data();
   float loss = 0;
@@ -759,7 +777,7 @@ void ReconstructLossLayer::ComputeFeature(Phase phase, Metric* perf) {
 void ReconstructLossLayer::ComputeGradient(Phase phase) {
   const float* reconstruct_dptr=srclayers_[0]->data(this).cpu_data();  // sigmoid:hi
   const float* input_dptr=srclayers_[1]->data(this).cpu_data();  // vi
-  Blob<float>* gsrcblob=srclayers_[0]->mutable_grad(this);
+  Blob<float>* gsrcblob=srclayers_[0]->mutable_grad(this);  // why blob here?
   float* gsrcptr=gsrcblob->mutable_cpu_data();
   for(int n=0;n<batchsize_;n++){
     for (int j = 0; j < dim_; j++)
