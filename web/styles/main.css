@@ -1,0 +1,208 @@
+.browsehappy {
+  margin: 0.2em 0;
+  background: #ccc;
+  color: #000;
+  padding: 0.2em 0;
+}
+
+/* Space out content a bit */
+body {
+  padding : 20px;
+}
+
+/* Everything but the jumbotron gets side spacing for mobile first views */
+.header,
+.marketing,
+.footer {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Custom page header */
+.header {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+/* Make the masthead heading the same height as the navigation */
+.header h3 {
+  margin-top: 0;
+  margin-bottom: 0;
+  line-height: 40px;
+  padding-bottom: 19px;
+}
+
+/* Custom page footer */
+.footer {
+  padding-top: 19px;
+  color: #777;
+  border-top: 1px solid #e5e5e5;
+}
+
+.container-narrow > hr {
+  margin: 30px 0;
+}
+
+/* Main marketing message and sign up button */
+.jumbotron {
+  text-align: center;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.jumbotron .btn {
+  font-size: 21px;
+  padding: 14px 24px;
+}
+
+/* Supporting marketing content */
+#content{
+  height:800px;
+}
+
+.column{
+  padding:10px 5px;
+  width:200px;
+  min-height:300px;
+  height:100%;
+  float:left;
+  border-right:solid 1px #ddd;
+}
+.message .action{
+  float:right;
+  cursor: pointer;
+  margin:2px 5px;
+}
+.required{
+  color:red;
+  font-size:24px;
+}
+
+.optional{
+  display:none;
+}
+
+.add-btn{
+  display:none;
+  margin:0px 20px;
+}
+.remove-btn{
+  display:none;
+  margin:0px 20px;
+}
+
+.btn{
+  margin:0px 10px;
+}
+
+.comment{
+  color:#ac2925;
+  float:right;
+  width:400px;
+  overflow: hidden;
+  text-align: right;
+}
+
+.form-group .title{
+  font-weight:bold;
+}
+
+#value textarea{
+  width:100%;
+  height:300px;
+}
+
+li.monitor{
+  display:none;
+}
+#chart .highchart{
+  height:300px;
+}
+#chart .btn{
+  float:right;
+}
+#chart .chart{
+  height:350px;
+}
+
+#pic .pic_container{
+  height:200px;
+  overflow: auto;
+  margin:10px;
+}
+#pic .pic img{
+  height:200px;
+  margin:5px;
+}
+
+.show-btn{
+  cursor:pointer;
+}
+
+.plus-btn{
+  cursor: pointer;
+}
+
+.minus-btn{
+  cursor: pointer;
+}
+.field.selected{
+  background-color:#19469D;
+  color:#eee;
+}
+#configure{
+  position:absolute;
+  width:95%;
+}
+
+#left{
+  position:absolute;
+  left:20px;
+  overflow: auto;
+  height:100%;
+}
+#right{
+  position: absolute;
+  right:20px;
+  height:100%;
+}
+
+#form{
+  width:1000px;
+  height:100%;
+}
+#footer{
+  position: absolute;
+  bottom:0px;
+}
+
+#info_conf textarea{
+  width:90%;
+  height:400px;
+}
+
+
+#monitor{
+  position:absolute;
+  width:95%;
+}
+/* Responsive: Portrait tablets and up */
+@media screen and (min-width: 1200px) {
+
+  /* Remove the padding we set earlier */
+  .header,
+  .marketing,
+  .footer {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* Space out the masthead */
+  .header {
+    margin-bottom: 15px;
+  }
+
+
+  /* Remove the bottom border on the jumbotron for visual effect */
+  .jumbotron {
+    border-bottom: 0;
+  }
+}

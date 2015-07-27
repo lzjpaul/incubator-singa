@@ -1,0 +1,221 @@
+<!doctype html>
+<html class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <title>singaconf</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="styles/bootstrap.css" />
+    <link rel="stylesheet" href="styles/main.css">
+  </head>
+  <body>
+    <!--[if lt IE 10]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+
+      <div class="header">
+        <ul class="nav nav-pills pull-right">
+          <li class="active configure"><a href="#" id="submitForm">submit</a></li>
+          <li class="active monitor"><a href="#" id="monitorBtn">monitor</a></li>
+          <li class="active monitor"><a href="#" id="killBtn">kill</a></li>
+
+        </ul>
+        <h3 class="text-muted">SINGA Configuration</h3>
+      </div>
+      <div id="configure">
+        <div id="left">
+          <div id="form">
+            <div class="column" _index="1">
+
+            </div>
+            <div class="column" _index="2">
+
+            </div>
+            <div class="column" _index="3">
+
+            </div>
+            <div class="column" _index="4">
+
+            </div>
+            <div class="column" _index="5">
+
+            </div>
+          </div>
+
+        </div>
+        <div id="right">
+          <div>
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs" role="tablist">
+              <li role="presentation" class="active"><a href="#info_conf" aria-controls="info_conf" role="tab" data-toggle="tab">Conf</a></li>
+              <li role="presentation"><a href="#info_neuralnet" aria-controls="info_neuralnet" role="tab" data-toggle="tab">Neuralnet</a></li>
+            </ul>
+
+            <!-- Tab panes -->
+            <div class="tab-content">
+              <div role="tabpanel" class="tab-pane active" id="info_conf">
+                <h4>job.conf<button id="uploadButton" class="btn btn-primary">upload</button></h4>
+                <textarea readonly></textarea>
+
+              </div>
+              <div role="tabpanel" class="tab-pane" id="info_neuralnet"></div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+      <div id="monitor">
+        <div id="chart"></div>
+        <div id="pic"></div>
+
+      </div>
+      <div id="footer">
+        <p><span class="glyphicon glyphicon-heart"></span> SINGA, By NUS </p>
+      </div>
+
+    <div class="modal fade" id="uploadModal"  role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Job Management</h4>
+          </div>
+          <div class="modal-body">
+            <div class="container-fluid">
+              <form>
+                <div class="form-group">
+                  <label for="file">conf file:</label>
+                  <input  type="file" name="file" id="file"/>
+                </div>
+                <button type="button" class="btn btn-primary submit">Submit</button>
+              </form>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="picModal"  role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+          <div class="modal-body">
+            <div class="container-fluid">
+              <img style="height:300px" src="#"/>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default close" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+      <script type="text/x-handlebars" id='formTemplate' >
+      <h2>{{confName}} <button class="toggle-optional-btn btn btn-primary">show optional</button><button class=" btn btn-primary" id="{{name}}LoadBtn">importFile</button></h2>
+      <form id="{{name}}Form"  >
+      </form>
+
+    </script>
+    <script type="text/x-handlebars" id='textTemplate' >
+
+      <div class="form-group field_{{id}}">
+
+        <input type="text"  class="form-control" aria-describedby="helpBlock" value="{{value}}"/>
+      </div>
+    </script>
+
+    <script type="text/x-handlebars" id='selectTemplate' >
+
+      <div class="form-group field_{{id}}">
+
+          <p class="title" >{{#if isRequired}}<span class="required">*</span>{{/if}}{{name}}
+            <button class="add-btn btn btn-primary"  >add</button>
+            <button class="remove-btn btn btn-primary" >remove</button>
+            <span class="comment" title="{{comment}}">{{trimString50 comment}}</span>
+          </p>
+          <select class="form-control">
+            <option value="">please select</option>
+            {{#each _enum.values}}
+            <option value="{{key}}" title="{{comment}}" >{{key}}</option>
+            {{/each}}
+          </select>
+      </div>
+    </script>
+    <script type="text/x-handlebars" id='messageTemplate' >
+      <div class="message">
+        <h4>
+          {{def.name}}
+          <span class="toggle-btn action glyphicon glyphicon-chevron-up" aria-hidden="true"></span>
+          <span class="done-btn action glyphicon glyphicon-ok" aria-hidden="true" style="display:none"></span>
+          <span class="edit-btn action glyphicon glyphicon-pencil" aria-hidden="true" ></span>
+
+        </h4>
+        <p class="comment">{{def.comment}}</p>
+        <div class="detail">
+
+          </div>
+      </div>
+    </script>
+
+    <script type="text/x-handlebars" id='fieldTemplate' >
+      <div class="field field_{{def.name}}" id="field_{{id}}">
+        <span type="button" data-toggle="tooltip" data-placement="right"  title="{{def.comment}}">{{def.name}}</span>
+        {{#if isRequired}}<span class="required">*</span>{{/if}}
+        {{#if isRepeated}}
+        <span class="plus-btn glyphicon glyphicon-plus" aria-hidden="true"></span>
+        <span class="minus-btn glyphicon glyphicon-minus" aria-hidden="true"></span>
+        {{/if}}
+
+        {{#if isMessage}}
+          <span class="show-btn glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+        {{else}}
+          <p class="value">{{value}}</p>
+        {{/if}}
+
+      </div>
+
+    </script>
+
+    <script type="text/x-handlebars" id='chart_template' >
+      <div class="chart col-lg-6">
+        <div class="highchart"></div>
+      </div>
+    </script>
+
+    <script type="text/x-handlebars" id='pic_template' >
+      <div class="pic col-lg-12">
+        <h2>{{name}}<button class=" btn btn-primary">check change</button></h2>
+        <div class="pic_container">
+        </div>
+
+      </div>
+    </script>
+
+    <script src="scripts/jquery.js"></script>
+    <script src="scripts/handlebars.js"></script>
+    <script src="scripts/highcharts.js"></script>
+    <script src="scripts/highcharts-more.js"></script>
+    <script src="scripts/bootstrap.js"></script>
+
+    <script src="scripts/main.js"></script>
+    <script src="scripts/model.js"></script>
+    <script src="scripts/chart_controller.js"></script>
+    <script src="scripts/pic_controller.js"></script>
+    <script>
+
+      $(document).ready(function(){
+        Model.init($("#configure"));
+        $("#configure").height(window.innerHeight-150);
+        $("#left").width(window.innerWidth*0.6-60);
+        $("#right").width(window.innerWidth*0.4-60);
+      });
+
+    </script>
+</body>
+</html>
