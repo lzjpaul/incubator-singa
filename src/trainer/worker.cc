@@ -170,9 +170,9 @@ void Worker::Run() {
 
     if (VisNow(step_)) {
       ExtractParam(step_, train_net_);
-      if (test_net_)
+      if (test_net_ && modelproto_.vis_samples())
         ExtractFeature(step_, modelproto_.vis_samples(), test_net_);
-      else
+      else if (train_net_ && modelproto_.vis_samples())
         ExtractFeature(step_, modelproto_.vis_samples(), train_net_);
     }
 
@@ -216,7 +216,10 @@ void Worker::ExtractParam(int step, shared_ptr<NeuralNet> net) {
   char buf[256];
   snprintf(buf, sizeof(buf), "%s/step%d-worker%d-param.bin",
       Cluster::Get()->vis_folder().c_str(), step, id_);
-  WriteProtoToBinaryFile(blobs, buf);
+  if (blobs.name_size() == 0)
+    LOG(ERROR) << "No params are visiable";
+  else
+    WriteProtoToBinaryFile(blobs, buf);
 }
 
 void Worker::ExtractFeature(int step, int samples, shared_ptr<NeuralNet> net) {
@@ -236,7 +239,10 @@ void Worker::ExtractFeature(int step, int samples, shared_ptr<NeuralNet> net) {
   char buf[256];
   snprintf(buf, sizeof(buf), "%s/step%d-worker%d-feature.bin",
       Cluster::Get()->vis_folder().c_str(), step, id_);
-  WriteProtoToBinaryFile(blobs, buf);
+  if (blobs.name_size() == 0)
+    LOG(ERROR) << "No layers are visiable";
+  else
+    WriteProtoToBinaryFile(blobs, buf);
 }
 
 int Worker::Put(Param* param, int step) {

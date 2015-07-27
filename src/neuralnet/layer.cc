@@ -219,6 +219,30 @@ void RBMVisLayer::Setup(const LayerProto& proto,
   weight_->Setup(proto.param(0), vector<int>{vdim_, hdim_});
   bias_->Setup(proto.param(1), vector<int>{vdim_});
 }
+void RBMVisLayer::ExtractParam(int step, BlobProtos *blobs) {
+  if (!weight_->vis() || weight_->id() != weight_->owner())
+    return;
+  BlobProto* blob = nullptr;
+  for (int i = 0; i< blobs->name_size(); i++) {
+    if (weight_->name() == blobs->name(i)) {
+      blob = blobs->mutable_blob(i);
+      break;
+    }
+  }
+  if (blob == nullptr) {
+    blobs->add_name(weight_->name());
+    blob = blobs->add_blob();
+    blob->add_shape(1);
+    blob->add_shape(vdim_);
+    blob->add_shape(hdim_);
+    float* ptr = weight_->mutable_cpu_data();
+    for (int i =0; i< weight_->size(); i++)
+      blob->add_data(ptr[i]);
+  } else {
+    LOG(ERROR) << "The param is extracted twice " << weight_->name();
+  }
+}
+
 
 void RBMVisLayer::ComputeFeature(Phase phase, Metric* perf) {
   if (phase == kPositive) { /*positive phase*/

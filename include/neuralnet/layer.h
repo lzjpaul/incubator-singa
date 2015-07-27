@@ -83,6 +83,7 @@ class RBMVisLayer: public Layer {
   virtual bool is_vislayer() const {
     return true;
   }
+  void ExtractParam(int step, BlobProtos *blobs) override;
 
   void ComputeFeature(Phase phase,
      Metric *perf) override;

@@ -22,9 +22,10 @@ def plot2d(x, y, label, fname):
   for i,lb in enumerate(label):
     plt.scatter(x[i],y[i], marker=marker[lb], s=40, c='w', edgecolor=color[lb])
     count[lb]+=1
-  print count
+  #print count
   #plt.show()
   plt.savefig(fname)
+  plt.clf()
 
 def plot_all_feature(infile, outfolder):
   fd = open(infile, 'rb')

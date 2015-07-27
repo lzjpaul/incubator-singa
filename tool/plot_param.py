@@ -78,6 +78,7 @@ def make_filter_fig(filters, outfile,  combine_chans):
     #print bigpic
     plt.imshow(bigpic, interpolation='nearest')
   plt.savefig(outfile)
+  plt.clf()
 
 def plot_filters(outfile, filters, yuv_to_rgb = False):
   '''
@@ -103,7 +104,7 @@ def plot_all_params(infile, outfolder):
   outprefix = os.path.join(outfolder, os.path.splitext(os.path.split(infile)[1])[0])
   for (name, blob) in zip(bps.name, bps.blob):
     filters = np.asarray(blob.data, dtype = np.float32).reshape(tuple(blob.shape))
-    print filters.shape
+    #print filters.shape
     #W = np.swapaxes(filters, 0, 1).reshape(3, blob.shape[1]/3, blob.shape[0])
     #print W.shape
     plot_filters(outprefix + '-' + name + '.png', filters)

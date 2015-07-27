@@ -79,7 +79,7 @@ message ModelProto {
   // visualization frequency
   optional int32 vis_frequency = 37 [default =0];
   // num of feature records to extract
-  optional int32 vis_samples = 38 [default = 1000];
+  optional int32 vis_samples = 38 [default = 0];
 
    // start display after this num steps
   optional int32 display_after =  60[default = 0];
