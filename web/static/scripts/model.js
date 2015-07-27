@@ -8,8 +8,8 @@
 
   Model.Config={
     unimportId:60,  //if field id is bigger than this, then not show
-    host:"http://wangwei-pc.d1.comp.nus.edu.sg:5000/",
-    apiUrl:"http://wangwei-pc.d1.comp.nus.edu.sg:5000/api"
+    host:"/",
+    apiUrl:"/api"
   }
 
   var Package =function(name,comment){
@@ -485,7 +485,7 @@
         }else{
           return "";
         }
-      }else if(this.value&&this.value!=this.def._default){
+      }else if(this.value){
         if(this.isEnum()){
           return prefix+this.def.name+": "+this.value+"\n";
         }else if(this.def.type=="string"){
@@ -638,12 +638,12 @@
   ClusterProto.fields['nworkers_per_procs'] = new FieldDef(5 ,'nworkers_per_procs','optional','int32','','1');
   ClusterProto.fields['nservers_per_procs'] = new FieldDef(6 ,'nservers_per_procs','optional','int32','','1');
   ClusterProto.fields['server_worker_separate'] = new FieldDef(11 ,'server_worker_separate','optional','bool','servers and workers in different processes?','false');
-  ClusterProto.fields['start_port'] = new FieldDef(13 ,'start_port','optional','int32','port number is used by ZeroMQ','6723');
-  ClusterProto.fields['workspace'] = new FieldDef(14 ,'workspace','optional','string','local workspace, train/val/test shards, checkpoint files','"workspace"');
-  ClusterProto.fields['server_update'] = new FieldDef(40 ,'server_update','optional','bool','conduct updates at server side; otherwise do it at worker side','true');
-  ClusterProto.fields['share_memory'] = new FieldDef(41 ,'share_memory','optional','bool','share memory space between worker groups in one procs','true');
-  ClusterProto.fields['bandwidth'] = new FieldDef(50 ,'bandwidth','optional','int32','bandwidth of ethernet, Bytes per second, default is 1 Gbps','134217728');
-  ClusterProto.fields['poll_time'] = new FieldDef(51 ,'poll_time','optional','int32','poll time in milliseconds','100');
+  ClusterProto.fields['bandwidth'] = new FieldDef(61 ,'bandwidth','optional','int32','bandwidth of ethernet, Bytes per second, default is 1 Gbps','134217728');
+  ClusterProto.fields['poll_time'] = new FieldDef(62 ,'poll_time','optional','int32','poll time in milliseconds','100');
+  ClusterProto.fields['workspace'] = new FieldDef(63 ,'workspace','optional','string','workspace for checkpoint/vis folder. Overwrite cmd "workspace" if set','"workspace"');
+  ClusterProto.fields['start_port'] = new FieldDef(64 ,'start_port','optional','int32','port number is used by ZeroMQ','6723');
+  ClusterProto.fields['server_update'] = new FieldDef(65 ,'server_update','optional','bool','conduct updates at server side; otherwise do it at worker side','true');
+  ClusterProto.fields['share_memory'] = new FieldDef(66 ,'share_memory','optional','bool','share memory space between worker groups in one procs','true');
   packsinga.messages['ClusterProto']=ClusterProto;
 
   var Phase=new EnumDef('Phase','');
@@ -654,6 +654,7 @@
   Phase.values['kNegative']=new EnumValueDef('kNegative', 4,'negative phase for contrastive divergence algorithm');
   Phase.values['kForward']=new EnumValueDef('kForward', 5,'');
   Phase.values['kBackward']=new EnumValueDef('kBackward', 6,'');
+  Phase.values['kLoss']=new EnumValueDef('kLoss', 7,'');
   packsinga.enums['Phase']=Phase;
 
   var GradCalcAlg=new EnumDef('GradCalcAlg','');
@@ -675,14 +676,18 @@
   ModelProto.fields['checkpoint_frequency'] = new FieldDef(34 ,'checkpoint_frequency','optional','int32','frequency of checkpoint','0');
   ModelProto.fields['warmup_steps'] = new FieldDef(35 ,'warmup_steps','optional','int32','send parameters to servers after training for this num of steps','0');
   ModelProto.fields['resume'] = new FieldDef(36 ,'resume','optional','bool','checkpoint path','false');
+  ModelProto.fields['vis_frequency'] = new FieldDef(37 ,'vis_frequency','optional','int32','visualization frequency','0');
+  ModelProto.fields['vis_samples'] = new FieldDef(38 ,'vis_samples','optional','int32','num of feature records to extract','0');
   ModelProto.fields['display_after'] = new FieldDef(60,'display_after','optional','int32','start display after this num steps','0');
   ModelProto.fields['checkpoint_after'] = new FieldDef(61 ,'checkpoint_after','optional','int32','start checkpoint after this num steps','0');
   ModelProto.fields['test_after'] = new FieldDef(62 ,'test_after','optional','int32','start test after this num steps','0');
   ModelProto.fields['validation_after'] = new FieldDef(63 ,'validation_after','optional','int32','start validation after this num steps','0');
-  ModelProto.fields['step'] = new FieldDef(64 ,'step','optional','int32','last snapshot step','0');
-  ModelProto.fields['debug'] = new FieldDef(65 ,'debug','optional','bool','display debug info','false');
-  ModelProto.fields['checkpoint'] = new FieldDef(66,'checkpoint','repeated','string','checkpoint files');
-  ModelProto.fields['reset_param_version'] = new FieldDef(67 ,'reset_param_version','optional','bool','reset the version of params loaded from checkpoint file to step','false');
+  ModelProto.fields['vis_after'] = new FieldDef(64 ,'vis_after','optional','int32','start vis after this num steps','0');
+  ModelProto.fields['step'] = new FieldDef(65 ,'step','optional','int32','last snapshot step','0');
+  ModelProto.fields['debug'] = new FieldDef(66 ,'debug','optional','bool','display debug info','false');
+  ModelProto.fields['checkpoint'] = new FieldDef(67,'checkpoint','repeated','string','checkpoint files');
+  ModelProto.fields['reset_param_version'] = new FieldDef(68 ,'reset_param_version','optional','bool','reset the version of params loaded from checkpoint file to step','false');
+  ModelProto.fields['pcd_k'] = new FieldDef(69 ,'pcd_k','optional','int32','number of steps for gibbs sampling','15');
   packsinga.messages['ModelProto']=ModelProto;
 
   var NetProto=new MessageDef('NetProto','');
@@ -709,6 +714,7 @@
   ParamProto.fields['std'] = new FieldDef(9 ,'std','optional','float','','1');
   ParamProto.fields['learning_rate_multiplier'] = new FieldDef(15 ,'learning_rate_multiplier','optional','float','multiplied on the global learning rate.','1');
   ParamProto.fields['weight_decay_multiplier'] = new FieldDef(16 ,'weight_decay_multiplier','optional','float','multiplied on the global weight decay.','1');
+  ParamProto.fields['vis'] = new FieldDef(17 ,'vis','optional','bool','dump this param for visualization','false');
   ParamProto.fields['partition_dim'] = new FieldDef(30,'partition_dim','optional','int32','partition dimension, -1 for no partition');
   ParamProto.fields['shape'] = new FieldDef(31,'shape','repeated','int32','usually, the program will infer the param shape');
   ParamProto.fields['name'] = new FieldDef(61 ,'name','optional','string','used for identifying the same params from diff models and display deug info','""');
@@ -744,6 +750,8 @@
   LayerType.values['kSlice']=new EnumValueDef('kSlice', 12,'');
   LayerType.values['kSplit']=new EnumValueDef('kSplit', 13,'');
   LayerType.values['kTanh']=new EnumValueDef('kTanh', 14,'');
+  LayerType.values['kRBMVis']=new EnumValueDef('kRBMVis', 23,'');
+  LayerType.values['kRBMHid']=new EnumValueDef('kRBMHid', 24,'');
   packsinga.enums['LayerType']=LayerType;
 
   var LayerProto=new MessageDef('LayerProto','');
@@ -751,6 +759,7 @@
   LayerProto.fields['srclayers'] = new FieldDef(3,'srclayers','repeated','string','source layer names');
   LayerProto.fields['param'] = new FieldDef(12,'param','repeated','ParamProto','parameters, e.g., weight matrix or bias vector');
   LayerProto.fields['exclude'] = new FieldDef(15,'exclude','repeated','Phase','all layers are included in the net structure for training phase by default. some layers like data layer for loading test data are not used by training phase should be removed by setting the exclude field.');
+  LayerProto.fields['vis'] = new FieldDef(16 ,'vis','optional','bool','dump feature of this layer for visualization','false');
   LayerProto.fields['type'] = new FieldDef(20,'type','required','LayerType','the layer type from the enum above');
   LayerProto.fields['convolution_conf'] = new FieldDef(30,'convolution_conf','optional','ConvolutionProto','configuration for convolution layer');
   LayerProto.fields['concate_conf'] = new FieldDef(31,'concate_conf','optional','ConcateProto','configuration for concatenation layer');
@@ -768,6 +777,8 @@
   LayerProto.fields['softmaxloss_conf'] = new FieldDef(40,'softmaxloss_conf','optional','SoftmaxLossProto','configuration for softmax loss layer');
   LayerProto.fields['split_conf'] = new FieldDef(42,'split_conf','optional','SplitProto','configuration for split layer');
   LayerProto.fields['tanh_conf'] = new FieldDef(43,'tanh_conf','optional','TanhProto','configuration for tanh layer');
+  LayerProto.fields['rbmvis_conf'] = new FieldDef(48,'rbmvis_conf','optional','RBMVisProto','configuration for rbmvis layer');
+  LayerProto.fields['rbmhid_conf'] = new FieldDef(49,'rbmhid_conf','optional','RBMHidProto','configuration for rbmhid layer');
   LayerProto.fields['partition_dim'] = new FieldDef(59 ,'partition_dim','optional','int32','overrides the partition dimension for neural net','-1');
   LayerProto.fields['datablob'] = new FieldDef(58 ,'datablob','optional','string','','"unknow"');
   LayerProto.fields['share_param'] = new FieldDef(60,'share_param','repeated','string','names of parameters shared from other layers');
@@ -832,6 +843,16 @@
   var DropoutProto=new MessageDef('DropoutProto','');
   DropoutProto.fields['dropout_ratio'] = new FieldDef(30 ,'dropout_ratio','optional','float','dropout ratio','0.5');
   packsinga.messages['DropoutProto']=DropoutProto;
+
+  var RBMVisProto=new MessageDef('RBMVisProto','');
+  RBMVisProto.fields['num_output'] = new FieldDef(1,'num_output','optional','int32','');
+  RBMVisProto.fields['bias_term'] = new FieldDef(2 ,'bias_term','optional','bool','','true');
+  packsinga.messages['RBMVisProto']=RBMVisProto;
+
+  var RBMHidProto=new MessageDef('RBMHidProto','');
+  RBMHidProto.fields['hid_dim'] = new FieldDef(1,'hid_dim','optional','int32','');
+  RBMHidProto.fields['bias_term'] = new FieldDef(2 ,'bias_term','optional','bool','','true');
+  packsinga.messages['RBMHidProto']=RBMHidProto;
 
   var InnerProductProto=new MessageDef('InnerProductProto','');
   InnerProductProto.fields['num_output'] = new FieldDef(1,'num_output','required','int32','number of outputs for the layer');
@@ -935,6 +956,9 @@
   InverseProto.fields['gamma'] = new FieldDef(1 ,'gamma','required','float','lr = base_lr*(1+gamma*step)^(-pow)','1');
   InverseProto.fields['pow'] = new FieldDef(2 ,'pow','required','float','lr = base_lr*(1+gamma*step)^(-pow)','0');
   packsinga.messages['InverseProto']=InverseProto;
+
+
+  //end python
 
   Model.package=packsinga;
   Model.package.rootMessage=JobProto;

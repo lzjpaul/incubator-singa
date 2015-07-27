@@ -4,20 +4,23 @@ import json
 import shutil
 import glob
 import subprocess
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, send_from_directory
 
 singa_dir = '/home/wangwei/program/asf/incubator-singa'
 img_dir = 'static/image/'
 log_dir = 'static/log/'
 
 # import plot modules
-sys.path.append(os.path.join(singa_dir, 'tool'))
-import plot_param
-import plot_feature
-
 app = Flask(__name__)
 Joblist = {}
-
+@app.route("/", methods = ['GET'])
+def indexpage():
+  return send_from_directory('static', 'index.html')
+ 
+@app.route("/<path:path>", methods = ['GET'])
+def homepage(path):
+  return send_from_directory('static', path)
+ 
 @app.route("/api/workspace", methods = ['GET'])
 def list_workspace():
   '''
@@ -123,6 +126,7 @@ def poll_image_record(idstr):
 
 def poll_chart_record(idstr):
   charts = []
+  ret = ''
   try:
     for line in Joblist[idstr][1]:
       if 'step-' in line:
@@ -170,6 +174,10 @@ if __name__ == '__main__':
     print 'Usage: python webserver.py SINGA_ROOT'
     sys.exit()
   singa_dir = sys.argv[1]
+  sys.path.append(os.path.join(singa_dir, 'tool'))
+  import plot_param
+  import plot_feature
+
   mydir = os.path.split(sys.argv[0])[0]
   img_dir = os.path.join(mydir, img_dir)
   log_dir = os.path.join(mydir, log_dir)
