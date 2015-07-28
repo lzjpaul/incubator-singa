@@ -62,7 +62,6 @@ def make_filter_fig(filters, outfile,  combine_chans):
     y, x = (m - filter_start) / f_per_row, (m - filter_start) % f_per_row
     if not combine_chans:
       for c in xrange(num_colors):
-        print filter_size
         filter_pic = filter[c,:].reshape((filter_size,filter_size))
         bigpic[1 + (1 + filter_size) * y:1 + (1 + filter_size) * y + filter_size,
             1 + (1 + filter_size*num_colors) * x + filter_size*c:1 + (1 + filter_size*num_colors) * x + filter_size*(c+1)] = filter_pic

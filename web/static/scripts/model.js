@@ -637,10 +637,10 @@
   ClusterProto.fields['nservers_per_group'] = new FieldDef(4 ,'nservers_per_group','optional','int32','','1');
   ClusterProto.fields['nworkers_per_procs'] = new FieldDef(5 ,'nworkers_per_procs','optional','int32','','1');
   ClusterProto.fields['nservers_per_procs'] = new FieldDef(6 ,'nservers_per_procs','optional','int32','','1');
+  ClusterProto.fields['workspace'] = new FieldDef(15 ,'workspace','optional','string','workspace for checkpoint/vis folder. Overwrite cmd "workspace" if set','workspace');
   ClusterProto.fields['server_worker_separate'] = new FieldDef(11 ,'server_worker_separate','optional','bool','servers and workers in different processes?','false');
   ClusterProto.fields['bandwidth'] = new FieldDef(61 ,'bandwidth','optional','int32','bandwidth of ethernet, Bytes per second, default is 1 Gbps','134217728');
   ClusterProto.fields['poll_time'] = new FieldDef(62 ,'poll_time','optional','int32','poll time in milliseconds','100');
-  ClusterProto.fields['workspace'] = new FieldDef(63 ,'workspace','optional','string','workspace for checkpoint/vis folder. Overwrite cmd "workspace" if set','workspace');
   ClusterProto.fields['start_port'] = new FieldDef(64 ,'start_port','optional','int32','port number is used by ZeroMQ','6723');
   ClusterProto.fields['server_update'] = new FieldDef(65 ,'server_update','optional','bool','conduct updates at server side; otherwise do it at worker side','true');
   ClusterProto.fields['share_memory'] = new FieldDef(66 ,'share_memory','optional','bool','share memory space between worker groups in one procs','true');
@@ -1050,12 +1050,12 @@
   $("#submitForm").click(function(){
 
     var jobConf = $("#info_conf textarea").val();
-    var result = /workspace:(\s*)"(.*)"\n/.exec(jobConf);
+    var result = /workspace\s*:\s*"(.*)"\n/.exec(jobConf);
     if(result==null){
       alert("workspace not defined!");
       return;
     }
-    var workspace =result[2];
+    var workspace =result[1];
     $.ajax({
       url:Model.Config.apiUrl+"/submit",
       type:"POST",
