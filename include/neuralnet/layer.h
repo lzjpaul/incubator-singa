@@ -172,6 +172,8 @@ class RBMHidLayer: public Layer {
   // batchsize of negative phase
   int neg_batchsize_;
   float scale_;
+  //whether use gaussian sampling
+  bool gaussian_;
   Blob<float> hid_sample_;
   Param* weight_, *bias_;
 };

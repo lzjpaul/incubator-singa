@@ -301,12 +301,19 @@ void RBMVisLayer::ComputeLoss(Metric* perf) {
   AllocSpace(reconstruct);
   reconstruct = dot(hid_data, weight.T());
   reconstruct+=repmat(bias, batchsize_);
+  /*float *reconstruct_presigmoid = reconstruct.dptr;
+  for (int j = (vdim_*batchsize_-100); j < vdim_*batchsize_; j++)
+     LOG(INFO)<<"reconstruct_presigmoid: "<<reconstruct_presigmoid[j];*/
   reconstruct = F<op::sigmoid>(reconstruct);
   float *src_dptr = src.dptr;
   float *reconstruct_dptr = reconstruct.dptr;
-  for (int i = 0; i < vdim_*batchsize_; i++)
-    loss += -(src_dptr[i]*log(reconstruct_dptr[i])
-            +(1-src_dptr[i])*log(1-reconstruct_dptr[i]));
+  for (int i = 0; i < vdim_*batchsize_; i++){
+      loss += -(src_dptr[i]*log(std::max(reconstruct_dptr[i], FLT_MIN))
+            +(1-src_dptr[i])*log(std::max(1-reconstruct_dptr[i], FLT_MIN)));
+    /*if ( (-(src_dptr[i]*log(reconstruct_dptr[i])+(1-src_dptr[i])*log(1-reconstruct_dptr[i]))) > (1000.0f) )
+      LOG(INFO)<<"src: "<<src_dptr[i]<<" reconstruct: "<<reconstruct_dptr[i]<< " loss: "<<loss<<" inc: "
+      <<(-(src_dptr[i]*log(reconstruct_dptr[i])+(1-src_dptr[i])*log(1-reconstruct_dptr[i])));*/
+  }
   loss/=batchsize_;
   FreeSpace(reconstruct);
   perf->Reset();
@@ -328,6 +335,7 @@ void RBMHidLayer::Setup(const LayerProto& proto,
   neg_batchsize_ = src_sample.shape()[0];
   vdim_ = src_data.count()/batchsize_;
   hdim_ = proto.rbmhid_conf().hid_dim();
+  gaussian_ = proto.rbmhid_conf().gaussian();
   data_.Reshape(vector<int>{batchsize_, hdim_});
   hid_sample_.Reshape(vector<int>{neg_batchsize_, hdim_});
   Factory<Param>* factory = Singleton<Factory<Param>>::Instance();
@@ -356,8 +364,17 @@ void RBMHidLayer::ComputeFeature(Phase phase, Metric* perf) {
       auto weight = Tensor2(weight_->mutable_data());
       hid_sample = dot(src_sample, weight);
       hid_sample += repmat(bias, neg_batchsize_);
-      hid_sample = F<op::sigmoid>(hid_sample);
-      TSingleton<Random<cpu>>::Instance()->SampleBinary(hid_sample);
+      if (gaussian_){
+        Tensor<cpu, 2> gaussian_sample(Shape2(batchsize_, hdim_));
+        AllocSpace(gaussian_sample);
+        auto random = TSingleton<Random<cpu>>::Instance();
+        random->SampleGaussian(gaussian_sample);
+        hid_sample += gaussian_sample;
+        FreeSpace(gaussian_sample);
+      } else {
+          hid_sample = F<op::sigmoid>(hid_sample);
+          TSingleton<Random<cpu>>::Instance()->SampleBinary(hid_sample);
+        }
     } else if (phase == kLoss) {   /*test phase*/
        auto data = Tensor2(&data_);  // data: sigmoid(Wv+b)
        TSingleton<Random<cpu>>::Instance()->SampleBinary(data);
