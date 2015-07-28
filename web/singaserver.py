@@ -111,6 +111,7 @@ def submit_job():
   except Keyerror:
     return json.dumps({'result': 'error', 'data': 'No workspace or jobconf fields'})
 
+  print workspace
   #workspace = os.path.join(singa_dir, 'examples/cifar10')
   if not os.path.isdir(workspace):
     return json.dumps({'result': 'error', 'data': "No such workspace %s on server" % workspace})
@@ -130,7 +131,7 @@ def submit_job():
   output = iter(procs.stdout.readline, '')
   jobid = -1
   for line in output:
-    if 'jobid' in line:
+    if 'job_id' in line:
       jobid = int(line.split('job_id =')[1].split(']')[0])
       break
   assert jobid >= 0, 'Wrong job id %d' % jobid

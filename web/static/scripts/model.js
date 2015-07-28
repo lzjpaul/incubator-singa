@@ -958,7 +958,7 @@
   packsinga.messages['InverseProto']=InverseProto;
 
 
-  //end python
+  //end auto generate
 
   Model.package=packsinga;
   Model.package.rootMessage=JobProto;
@@ -1125,7 +1125,11 @@
                 pic.addData(item);
               }
             }
-            canPolling?polling():"";
+            if(data.data&&data.data.length>0) {
+              canPolling ? polling() : "";
+            }else{
+              $("#downloadBtn").show();
+            }
           }else{
             canPolling?setTimeout(polling, 5000):"";
             alert(data.data);
@@ -1207,18 +1211,28 @@
   function demo(){
     $("#configure").hide();
     $("#monitor").show();
-
-    $(".monitor").show();
-    $(".configure").hide();
+    $("#submitForm").hide();
 
     $("#chart").empty();
     $("#pic").empty();
+
+
+
+
+    var speed = 1000;
+    $("#demoSpeed").show();
+    $("#demoSpeed").find("select").change(function(){
+      speed = $(this).val();
+    });
 
     var charts={};
     var pics={};
 
     var canPolling=true;
     polling();
+
+
+
 
     function polling() {
       $.ajax({
@@ -1244,10 +1258,14 @@
                 pic.addData(item);
               }
             }
-            canPolling ? setTimeout(polling, 1000) : "";
+            if(data.data&&data.data.length>0) {
+              canPolling ? setTimeout(polling, speed) : "";
+            }else{
+              alert("Finished!");
+            }
 
           } else {
-            canPolling ? setTimeout(polling, 5000) : "";
+            canPolling ? setTimeout(polling, speed) : "";
             alert(data.data);
           }
 

@@ -184,6 +184,10 @@ li.monitor{
   position:absolute;
   width:95%;
 }
+
+#demoSpeed{
+  padding:10px;
+}
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 1200px) {
 

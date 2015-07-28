@@ -17,12 +17,22 @@
 
       <div class="header">
         <ul class="nav nav-pills pull-right">
-          <li class="active configure"><a href="#" id="submitForm">submit</a></li>
-          <li class="active monitor"><a href="#" id="killBtn">kill</a></li>
+          <li class="active "><a href="#" id="submitForm">submit</a></li>
+          <li class="active "><a href="#" id="killBtn" style="display:none">kill</a></li>
           <li class="active "><a href="#" id="demoBtn">demo</a></li>
-          <li class="active "><a href="#" id="downloadBtn">download</a></li>
+          <li class="active "><a href="#" id="downloadBtn" style="display:none">download</a></li>
 
         </ul>
+        <div id="demoSpeed" class="pull-right" style="display: none">
+          <span>demo speed:</span>
+          <select>
+            <option value="2000">slow</option>
+            <option value="1000" selected>normal</option>
+            <option value="500">fast</option>
+            <option value="100">super fast</option>
+
+          </select>
+        </div>
         <h3 class="text-muted">SINGA Configuration</h3>
       </div>
       <div id="configure">
@@ -216,7 +226,7 @@
 
     <script type="text/x-handlebars" id='pic_template' >
       <div class="pic col-lg-12">
-        <h2>{{name}}<button class=" btn btn-primary">check change</button></h2>
+        <h2>{{name}}</h2>
         <div class="pic_container">
         </div>
 
