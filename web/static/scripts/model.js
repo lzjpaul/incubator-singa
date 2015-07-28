@@ -1088,8 +1088,9 @@
   function monitor(){
     $("#configure").hide();
     $("#monitor").show();
-    $(".monitor").show();
-    $(".configure").hide();
+
+    $("#killBtn").show();
+    $("#submitForm").hide();
 
     $("#chart").empty();
     $("#pic").empty();
@@ -1150,6 +1151,9 @@
 
 
     $("#killBtn").click(function(){
+
+      alert("Stop singa! It will take a few seconds.");
+
       $.ajax({
         url:Model.Config.apiUrl+"/kill/"+Model.jobId,
         type:"GET",
@@ -1157,6 +1161,7 @@
           data =JSON.parse(data);
           if(data.result=="success") {
             alert(data.data)
+            $("#downloadBtn").show();
           }else{
             alert(data.data);
           }
@@ -1176,6 +1181,30 @@
   $("#demoBtn").bind("click",function(){
 
     $("#demoModal").modal("show");
+
+  });
+
+  $("#downloadBtn").bind("click",function(){
+    $.ajax({
+      url: Model.Config.apiUrl+"/download/"+Model.jobId,
+      type: "GET",
+      success:function(data){
+        data =JSON.parse(data);
+        if(data.result=="success"){
+          var url= data.data.url;
+
+          document.getElementById('download_iframe').src = url;
+
+        }else{
+          alert(data.data);
+        }
+
+      },
+      error:function(e){
+        console.log(e);
+      }
+    });
+
 
   });
 
