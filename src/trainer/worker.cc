@@ -380,7 +380,6 @@ bool Worker::ValidateNow(const int step) const {
 bool Worker::VisNow(int step) const {
   return (grp_id_ == 0
       && modelproto_.vis_frequency() > 0
-      && modelproto_.vis_samples() > 0
       && step >= modelproto_.vis_after()
       && ((step - modelproto_.vis_after())
         % modelproto_.vis_frequency() == 0));
