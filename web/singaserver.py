@@ -11,7 +11,7 @@ from werkzeug import secure_filename
 ALLOWED_EXTENSIONS = set(['zip'])
 job_dir = 'static/job/'
 upload_dir = 'static/upload/'
-singa_dir = '.'
+singa_dir = '..'
 
 DEMO = True
 
@@ -25,6 +25,10 @@ def indexpage():
 
 @app.route("/<path:path>", methods = ['GET'])
 def homepage(path):
+  return send_from_directory('static', path)
+
+@app.route("/static/<path:path>", methods = ['GET'])
+def static_page(path):
   return send_from_directory('static', path)
 
 @app.route("/api/workspace", methods = ['GET'])
@@ -65,10 +69,10 @@ def upload():
         print 'delete previous folder %s' % cur_job_dir
         shutil.rmtree(cur_job_dir)
       for f in zf.namelist():
-        zf.extract(f, cur_job_dir)
+        zf.extract(f, job_dir)
         if f.endswith('.log'):
           records = []
-          with open(os.path.join(cur_job_dir, f), 'r') as fd:
+          with open(os.path.join(job_dir, f), 'r') as fd:
             records=fd.readlines()
           Joblist[idstr]={'idx':0, 'records': records}
       print(len(records))
