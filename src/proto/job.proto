@@ -367,6 +367,7 @@ message RBMVisProto {
 message RBMHidProto {
   optional int32 hid_dim = 1; // The number of outputs for the layer
   optional bool bias_term = 2 [default = true]; // whether to have bias terms
+  optional bool gaussian = 3 [default = false]; // whether to have bias terms
 }
 
 // Message that stores parameters used by InnerProductLayer
