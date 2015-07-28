@@ -63,6 +63,11 @@ void Worker::InitLocalParams() {
       LOG(INFO) << "Load from checkpoint file " << checkpoint;
       BlobProtos bps;
       ReadProtoFromBinaryFile(checkpoint.c_str(), &bps);
+      /*for (int i = 0; i < bps.name_size(); i++){
+        LOG(INFO)<<"name: "<<bps.name(i);
+        for (auto j: bps.blob(i).shape())
+          LOG(INFO)<<"shape: "<<j;
+      }*/
       for (int i = 0; i < bps.name_size(); i++) {
         if (name2param.find(bps.name(i)) != name2param.end()) {
           name2param.at(bps.name(i))->FromProto(bps.blob(i));
@@ -396,7 +401,6 @@ CDWorker::CDWorker(int thread_id, int group_id, int worker_id):
 void CDWorker::PositivePhase(int step,
      shared_ptr<NeuralNet> net, Metric* perf) {
   auto& layers = net->layers();
-  // LOG(ERROR)<<"Positive Phase";
   for (auto& layer : layers) {
       // clock_t s=clock();
     // LOG(ERROR)<<"layer: "<<layer->name();
@@ -426,6 +430,17 @@ void CDWorker::GradientPhase(int step, shared_ptr<NeuralNet> net) {
     if (layer->is_vislayer() || layer->is_hidlayer()){
       layer->ComputeGradient(kTrain);
       // LOG(ERROR)<<"layer: "<<layer->name();
+      
+      /*if(layer->mutable_grad(nullptr)!=nullptr){
+        LOG(INFO)<<StringPrintf("Gradient layer %10s grad norm1 %13.9f\t",
+            layer->name().c_str(), layer->grad(nullptr).asum_data());
+        for(Param* p: layer->GetParams())
+          LOG(INFO)<<StringPrintf("param id %2d, name %10s,\
+              value norm1 %13.9f, grad norm1 %13.9f",
+              p->id(), p->name().c_str(),
+              p->data().asum_data(), p->grad().asum_data());
+      }*/
+
       for (Param* p : layer->GetParams()) {
         Update(p, step);
       }
