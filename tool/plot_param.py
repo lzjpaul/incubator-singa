@@ -26,14 +26,15 @@ The code is adapted from ConvNet's ShowNet.py
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
-from matplotlib import pyplot as plt
 #import pylab as plt
 from pb2 import common_pb2
 import numpy as np
 from math import ceil, sqrt
 import sys
 import os
-
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
 def make_filter_fig(filters, outfile,  combine_chans):
   filter_start = 0
   fignum = 1
@@ -58,7 +59,7 @@ def make_filter_fig(filters, outfile,  combine_chans):
   for m in xrange(filter_start,filter_end):
     filter = filters[:,:,m]
     y, x = (m - filter_start) / f_per_row, (m - filter_start) % f_per_row
-    if not combine_chans:
+    if not combine_chans or num_colors == 1:
       for c in xrange(num_colors):
         filter_pic = filter[c,:].reshape((filter_size,filter_size))
         bigpic[1 + (1 + filter_size) * y:1 + (1 + filter_size) * y + filter_size,

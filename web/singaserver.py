@@ -4,23 +4,29 @@ import json
 import shutil
 import glob
 import subprocess
+import zipfile
 from flask import Flask, request, make_response, send_from_directory
+from werkzeug import secure_filename
 
-singa_dir = '/home/wangwei/program/asf/incubator-singa'
-img_dir = 'static/image/'
-log_dir = 'static/log/'
+ALLOWED_EXTENSIONS = set(['zip'])
+job_dir = 'static/job/'
+upload_dir = 'static/upload/'
+singa_dir = '.'
+
+DEMO = True
 
 # import plot modules
 app = Flask(__name__)
 Joblist = {}
+
 @app.route("/", methods = ['GET'])
 def indexpage():
   return send_from_directory('static', 'index.html')
- 
+
 @app.route("/<path:path>", methods = ['GET'])
 def homepage(path):
   return send_from_directory('static', path)
- 
+
 @app.route("/api/workspace", methods = ['GET'])
 def list_workspace():
   '''
@@ -35,6 +41,56 @@ def list_workspace():
   ret = {'type' : 'workspace', 'values' : dirs}
   return json.dumps({'result': 'success', 'data': ret})
 
+def allowed_file(filename):
+  return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+@app.route("/api/upload", methods = ['GET', 'POST'])
+def upload():
+  if request.method == 'POST':
+    file = request.files['file']
+    if file and allowed_file(file.filename):
+      filename = secure_filename(file.filename)
+      file.save(os.path.join(upload_dir, filename))
+      zf = zipfile.ZipFile(filename, 'r')
+      jobid = -1
+      for f in zf.namelist():
+        if f.endswith('.log'):
+          jobid = int(f.splitext()[0])
+          break
+      if jobid < 0:
+        return json.dumps({'result': 'error', 'data': 'cannot find correct files from uploaded zip %s' % filename})
+      idstr = 'job' + str(jobid)
+      cur_job_dir = os.path.join(job_dir, idstr)
+      if os.path.isdir(cur_job_dir):
+        print 'delete previous folder %s' % cur_job_dir
+        shutil.rmtree(cur_job_dir)
+      for f in zf.namelist():
+        zf.extract(f, cur_job_dir)
+        if f.endswith('.log'):
+          Joblist[idstr]={'idx':0, 'records': json.load(os.path.join(cur_job_dir, f))}
+      return json.dumps({'result': 'success', 'data': {'jobid': str(jobid)}})
+    else:
+      return json.dumps({'result': 'error', 'data': 'error in uploading file'})
+  else:
+    return json.dumps({'result': 'error', 'data': 'must use POST'})
+
+@app.route("/api/download/<jobid>", methods = ['GET'])
+def download(jobid):
+  idstr = 'job' + str(jobid)
+  cur_job_dir = os.path.join(job_dir, idstr)
+  if not os.path.isdir(cur_job_dir): #idstr not in Joblist or
+    return json.dumps({'result': 'error', 'data': 'not such job %s' % jobid})
+  else:
+    zfpath = cur_job_dir.strip('/') + '.zip'
+    zf = zipfile.ZipFile(zfpath, mode = 'w')
+    try:
+      for f in os.listdir(cur_job_dir):
+        fpath = os.path.join(cur_job_dir, f)
+        if os.path.isfile(fpath):
+          zf.write(fpath, f)
+    finally:
+      zf.close()
+    return json.dumps({'result':'success', 'data':{'url': zfpath}})
 
 @app.route("/api/submit", methods = ['GET','POST'])
 def submit_job():
@@ -64,18 +120,36 @@ def submit_job():
 
   procs = subprocess.Popen([os.path.join(singa_dir, 'bin/singa-run.sh'), '-workspace=%s' % workspace], stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
   output = iter(procs.stdout.readline, '')
-  job_id = -1
+  jobid = -1
   for line in output:
-    if 'job_id' in line:
-      job_id = int(line.split('job_id =')[1].split(']')[0])
+    if 'jobid' in line:
+      jobid = int(line.split('job_id =')[1].split(']')[0])
       break
-  assert job_id >= 0, 'Wrong job id %d' % job_id
-  idstr = 'job' + str(job_id)
+  assert jobid >= 0, 'Wrong job id %d' % jobid
+  idstr = 'job' + str(jobid)
   if idstr not in Joblist:
     Joblist[idstr] = [procs, output, workspace]
+    cur_job_dir = os.path.join(job_dir, idstr)
+    if os.path.isdir(cur_job_dir):
+      print 'delete previous job folder %s ' % cur_job_dir
+      shutil.rmtree(cur_job_dir)
+    os.makedirs(cur_job_dir)
   else:
     return json.dumps({'result':'error', 'data': 'Repeated job ID'})
-  return json.dumps({'result': 'success', 'data': {'jobid': job_id}})
+  return json.dumps({'result': 'success', 'data': {'jobid': jobid}})
+
+@app.route("/api/get/<jobid>", methods = ['GET'])
+def get_record(jobid):
+  idstr = 'job' + jobid
+  if idstr not in Joblist:
+    return json.dumps({'result':'error', 'data':'No such job with id %s' % jobid})
+  else:
+    idx = Joblist[idstr]['idx']
+    if idx < len(Joblist['record']):
+      Joblist[idstr]['idx'] = idx + 1
+      return Joblist['record'][idx]
+    else:
+      return json.dumps({'result': 'success', 'data': []})
 
 @app.route("/api/poll/<jobid>", methods = ['GET'])
 def poll_progress(jobid):
@@ -93,7 +167,7 @@ def poll_progress(jobid):
       charts = poll_chart_record(idstr)
       # parse records from log
     Joblist[idstr].extend(charts)
-    with open(os.path.join(log_dir, jobid + '.log'), 'a') as fd:
+    with open(os.path.join(job_dir, idstr, jobid + '.log'), 'a') as fd:
       for chart in charts:
         fd.write(json.dumps(chart))
     return json.dumps({'result': 'success', 'data': charts})
@@ -106,21 +180,22 @@ def poll_image_record(idstr):
   bins = [f for f in os.listdir(vis_dir) if 'step' in f and '.bin' in f]
   for f in bins:
     plot = False
+    cur_job_dir = os.path.join(job_dir, idstr)
     if f.endswith('param.bin'):
-      plot_param.plot_all_params(os.path.join(vis_dir, f), img_dir)
+      plot_param.plot_all_params(os.path.join(vis_dir, f), cur_job_dir)
       plot = True
     elif f.endswith('feature.bin'):
-      plot_feature.plot_all_feature(os.path.join(vis_dir, f), img_dir)
+      plot_feature.plot_all_feature(os.path.join(vis_dir, f), cur_job_dir)
       plot = True
     if plot:
       prefix = os.path.splitext(f)[0]
       #the file name is stepxxx-workerxxx-feature|param.bin
       step = f.split('-')[0][4:]
-      newimgs = [img for img in os.listdir(img_dir) if img.startswith(prefix)]
+      newimgs = [img for img in os.listdir(cur_job_dir) if img.startswith(prefix)]
       for img in newimgs:
         #the file name is stepxxx-workerxxx-feature|param-<name>.png
         title = os.path.splitext(img)[0].split('-')[-1]
-        charts.append({'type' : 'pic', 'step': step, 'title' : title, 'url' : os.path.join(img_dir, img)})
+        charts.append({'type' : 'pic', 'step': step, 'title' : title, 'url' : os.path.join(cur_job_dir, img)})
     os.remove(os.path.join(vis_dir, f))
   return charts
 
@@ -170,21 +245,27 @@ def handle_kill(jobid):
     return json.dumps({'result': 'success', 'data': procs.communicate()[0]})
 
 if __name__ == '__main__':
-  if len(sys.argv) != 2:
-    print 'Usage: python webserver.py SINGA_ROOT'
+  if len(sys.argv) == 1:
+    print 'running in demo mode (will not run singa program)'
+  elif len(sys.argv) == 2:
+    singa_dir = sys.argv[1]
+    assert singa_dir, "%s is not a dir " % singa_dir
+    assert os.path.isfile(os.path.join(singa_dir, 'bin/singa-run.sh'))
+    sys.path.append(os.path.join(singa_dir, 'tool'))
+    import plot_param
+    import plot_feature
+  else:
+    print 'Usage: run demo mode with $>python webserver.py ', \
+        ' run server mode with $>python webserver.py SINGA_ROOT'
     sys.exit()
-  singa_dir = sys.argv[1]
-  sys.path.append(os.path.join(singa_dir, 'tool'))
-  import plot_param
-  import plot_feature
 
   mydir = os.path.split(sys.argv[0])[0]
-  img_dir = os.path.join(mydir, img_dir)
-  log_dir = os.path.join(mydir, log_dir)
-  assert singa_dir, "%s is not a dir " % singa_dir
-  if not os.path.isdir(img_dir):
-    os.makedirs(img_dir)
-  if not os.path.isdir(log_dir):
-    os.makedirs(log_dir)
+  job_dir = os.path.join(mydir, job_dir)
+  upload_dir = os.path.join(mydir, upload_dir)
+  if not os.path.isdir(job_dir):
+    os.makedirs(job_dir)
+  if not os.path.isdir(upload_dir):
+    os.makedirs(upload_dir)
+
 
   app.run(host = '0.0.0.0', debug = True, use_debugger = True)

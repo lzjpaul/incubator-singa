@@ -1,11 +1,11 @@
 from pb2 import common_pb2
-from matplotlib import pyplot as plt
 import matplotlib.cm as cm
 import matplotlib
 import os
 import sys
 from bh_tsne import bhtsne
-
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
 matplotlib.rcParams.update({'font.size': 17})
 import numpy as np
 
