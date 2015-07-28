@@ -51,11 +51,11 @@ def upload():
     if file and allowed_file(file.filename):
       filename = secure_filename(file.filename)
       file.save(os.path.join(upload_dir, filename))
-      zf = zipfile.ZipFile(filename, 'r')
+      zf = zipfile.ZipFile(os.path.join(upload_dir, filename), 'r')
       jobid = -1
       for f in zf.namelist():
         if f.endswith('.log'):
-          jobid = int(f.splitext()[0])
+          jobid = int(os.path.splitext(os.path.split(f)[-1])[0])
           break
       if jobid < 0:
         return json.dumps({'result': 'error', 'data': 'cannot find correct files from uploaded zip %s' % filename})
@@ -69,9 +69,10 @@ def upload():
         if f.endswith('.log'):
           records = []
           with open(os.path.join(cur_job_dir, f), 'r') as fd:
-            records.append(fd.readline())
+            records=fd.readlines()
           Joblist[idstr]={'idx':0, 'records': records}
-      return json.dumps({'result': 'success', 'data': {'jobid': str(jobid)}})
+      print(len(records))
+      return json.dumps({'result': 'success', 'data': {'jobid': str(jobid), 'num':len(records)}})
     else:
       return json.dumps({'result': 'error', 'data': 'error in uploading file'})
   else:
@@ -148,9 +149,9 @@ def get_record(jobid):
     return json.dumps({'result':'error', 'data':'No such job with id %s' % jobid})
   else:
     idx = Joblist[idstr]['idx']
-    if idx < len(Joblist['record']):
+    if idx < len(Joblist[idstr]['records']):
       Joblist[idstr]['idx'] = idx + 1
-      return Joblist['record'][idx]
+      return json.dumps({'result':'success', 'data': [json.loads(Joblist[idstr]['records'][idx])]})
     else:
       return json.dumps({'result': 'success', 'data': []})
 

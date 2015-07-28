@@ -485,7 +485,7 @@
         }else{
           return "";
         }
-      }else if(this.value){
+      }else if(this.value&&(this.def.type=="required"||this.value!=this.def._default)){
         if(this.isEnum()){
           return prefix+this.def.name+": "+this.value+"\n";
         }else if(this.def.type=="string"){
@@ -640,7 +640,7 @@
   ClusterProto.fields['server_worker_separate'] = new FieldDef(11 ,'server_worker_separate','optional','bool','servers and workers in different processes?','false');
   ClusterProto.fields['bandwidth'] = new FieldDef(61 ,'bandwidth','optional','int32','bandwidth of ethernet, Bytes per second, default is 1 Gbps','134217728');
   ClusterProto.fields['poll_time'] = new FieldDef(62 ,'poll_time','optional','int32','poll time in milliseconds','100');
-  ClusterProto.fields['workspace'] = new FieldDef(63 ,'workspace','optional','string','workspace for checkpoint/vis folder. Overwrite cmd "workspace" if set','"workspace"');
+  ClusterProto.fields['workspace'] = new FieldDef(63 ,'workspace','optional','string','workspace for checkpoint/vis folder. Overwrite cmd "workspace" if set','workspace');
   ClusterProto.fields['start_port'] = new FieldDef(64 ,'start_port','optional','int32','port number is used by ZeroMQ','6723');
   ClusterProto.fields['server_update'] = new FieldDef(65 ,'server_update','optional','bool','conduct updates at server side; otherwise do it at worker side','true');
   ClusterProto.fields['share_memory'] = new FieldDef(66 ,'share_memory','optional','bool','share memory space between worker groups in one procs','true');
@@ -717,7 +717,7 @@
   ParamProto.fields['vis'] = new FieldDef(17 ,'vis','optional','bool','dump this param for visualization','false');
   ParamProto.fields['partition_dim'] = new FieldDef(30,'partition_dim','optional','int32','partition dimension, -1 for no partition');
   ParamProto.fields['shape'] = new FieldDef(31,'shape','repeated','int32','usually, the program will infer the param shape');
-  ParamProto.fields['name'] = new FieldDef(61 ,'name','optional','string','used for identifying the same params from diff models and display deug info','""');
+  ParamProto.fields['name'] = new FieldDef(61 ,'name','optional','string','used for identifying the same params from diff models and display deug info','');
   ParamProto.fields['share_from'] = new FieldDef(62,'share_from','optional','string','name of the owner param from which this param shares the values');
   ParamProto.fields['id'] = new FieldDef(63,'id','optional','int32','used interally');
   ParamProto.fields['split_threshold'] = new FieldDef(64 ,'split_threshold','optional','int32','parameter slice limit (Google Protobuf also has size limit)','5000000');
@@ -780,7 +780,7 @@
   LayerProto.fields['rbmvis_conf'] = new FieldDef(48,'rbmvis_conf','optional','RBMVisProto','configuration for rbmvis layer');
   LayerProto.fields['rbmhid_conf'] = new FieldDef(49,'rbmhid_conf','optional','RBMHidProto','configuration for rbmhid layer');
   LayerProto.fields['partition_dim'] = new FieldDef(59 ,'partition_dim','optional','int32','overrides the partition dimension for neural net','-1');
-  LayerProto.fields['datablob'] = new FieldDef(58 ,'datablob','optional','string','','"unknow"');
+  LayerProto.fields['datablob'] = new FieldDef(58 ,'datablob','optional','string','','unknow');
   LayerProto.fields['share_param'] = new FieldDef(60,'share_param','repeated','string','names of parameters shared from other layers');
   LayerProto.fields['partition_id'] = new FieldDef(62 ,'partition_id','optional','int32','','0');
   packsinga.messages['LayerProto']=LayerProto;
@@ -789,7 +789,7 @@
   RGBImageProto.fields['scale'] = new FieldDef(1 ,'scale','optional','float','scale factor for each pixel','1.0');
   RGBImageProto.fields['cropsize'] = new FieldDef(2 ,'cropsize','optional','int32','size after cropping','0');
   RGBImageProto.fields['mirror'] = new FieldDef(3 ,'mirror','optional','bool','mirror the image','false');
-  RGBImageProto.fields['meanfile'] = new FieldDef(4 ,'meanfile','optional','string','meanfile path','""');
+  RGBImageProto.fields['meanfile'] = new FieldDef(4 ,'meanfile','optional','string','meanfile path','');
   packsinga.messages['RGBImageProto']=RGBImageProto;
 
   var PrefetchProto=new MessageDef('PrefetchProto','');
@@ -1168,6 +1168,120 @@
 
 
   }
+
+  $("#demoBtn").bind("click",function(){
+
+    $("#demoModal").modal("show");
+
+  });
+
+  $("#uploadSubmit").bind("click",function(){
+    $("#demoModal").modal("hide");
+
+    var fd = new FormData(document.getElementById("demoForm"));
+    $.ajax({
+      url: Model.Config.apiUrl+"/upload",
+      type: "POST",
+      data: fd,
+      processData: false,  // tell jQuery not to process the data
+      contentType: false,   // tell jQuery not to set contentType
+      success:function(data){
+        data =JSON.parse(data);
+        if(data.result=="success"){
+          Model.jobId=data.data.jobid;
+          demo();
+        }else{
+          alert(data.data);
+        }
+
+      },
+      error:function(e){
+        console.log(e);
+      }
+    });
+
+
+
+  });
+
+  function demo(){
+    $("#configure").hide();
+    $("#monitor").show();
+
+    $(".monitor").show();
+    $(".configure").hide();
+
+    $("#chart").empty();
+    $("#pic").empty();
+
+    var charts={};
+    var pics={};
+
+    var canPolling=true;
+    polling();
+
+    function polling() {
+      $.ajax({
+        url: Model.Config.apiUrl + "/get/" + Model.jobId,
+        type: "GET",
+        success: function (data) {
+          data = JSON.parse(data);
+          if (data.result == "success") {
+            for (var index in data.data) {
+              var item = data.data[index];
+              if (item.type == "chart") {
+                var chart = charts[item.ylabel];
+                if (!chart) {
+                  chart = charts[item.ylabel] = new Model.ChartController({model: item});
+                } else {
+                  chart.addData(item);
+                }
+              } else {
+                var pic = pics[item.title];
+                if (!pic) {
+                  pic = pics[item.title] = new Model.PicController({model: item.title});
+                }
+                pic.addData(item);
+              }
+            }
+            canPolling ? setTimeout(polling, 1000) : "";
+
+          } else {
+            canPolling ? setTimeout(polling, 5000) : "";
+            alert(data.data);
+          }
+
+
+        },
+        error: function (e) {
+          console.log(e);
+
+        }
+      });
+    }
+    $("#killBtn").click(function(){
+      $.ajax({
+        url:Model.Config.apiUrl+"/kill/"+Model.jobId,
+        type:"GET",
+        success:function(data){
+          data =JSON.parse(data);
+          if(data.result=="success") {
+            alert(data.data)
+          }else{
+            alert(data.data);
+          }
+          canPolling=false;
+        },
+        error:function(e){
+          console.log(e);
+        }
+      });
+
+
+    });
+
+  }
+
 
 
 })();

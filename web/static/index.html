@@ -18,8 +18,9 @@
       <div class="header">
         <ul class="nav nav-pills pull-right">
           <li class="active configure"><a href="#" id="submitForm">submit</a></li>
-          <li class="active monitor"><a href="#" id="monitorBtn">monitor</a></li>
           <li class="active monitor"><a href="#" id="killBtn">kill</a></li>
+          <li class="active "><a href="#" id="demoBtn">demo</a></li>
+          <li class="active "><a href="#" id="downloadBtn">download</a></li>
 
         </ul>
         <h3 class="text-muted">SINGA Configuration</h3>
@@ -100,6 +101,7 @@
         </div>
       </div>
     </div>
+
     <div class="modal fade" id="picModal"  role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -111,6 +113,30 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default close" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="demoModal"  role="dialog" aria-labelledby="demoModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Upload Job Zip Archive File</h4>
+          </div>
+          <div class="modal-body">
+            <div class="container-fluid">
+              <form  enctype="multipart/form-data" method="post" id="demoForm">
+                <div class="form-group">
+                  <label for="file">Zip file:</label>
+                  <input  type="file" name="file"/>
+                </div>
+                <button id="uploadSubmit" type="button" class="btn btn-primary submit">Submit</button>
+              </form>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
