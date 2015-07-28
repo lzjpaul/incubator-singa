@@ -54,4 +54,4 @@ if __name__ == "__main__":
     print 'the program use <path.dat> as input to generate a picture at <path.jpg>'
     sys.exit()
 
-  plot_all_features(sys.argv[1], sys.argv[2])
+  plot_all_feature(sys.argv[1], sys.argv[2])

@@ -43,6 +43,7 @@ def make_filter_fig(filters, outfile,  combine_chans):
   MAX_ROWS = 16
   MAX_FILTERS = FILTERS_PER_ROW * MAX_ROWS
   num_colors = filters.shape[0]
+  combine_chans = combine_chans and num_colors == 3
   f_per_row = int(ceil(FILTERS_PER_ROW / float(1 if combine_chans else num_colors)))
   filter_end = min(filter_start+MAX_FILTERS, num_filters)
   filter_rows = int(ceil(float(filter_end - filter_start) / f_per_row))
@@ -59,8 +60,9 @@ def make_filter_fig(filters, outfile,  combine_chans):
   for m in xrange(filter_start,filter_end):
     filter = filters[:,:,m]
     y, x = (m - filter_start) / f_per_row, (m - filter_start) % f_per_row
-    if not combine_chans or num_colors == 1:
+    if not combine_chans:
       for c in xrange(num_colors):
+        print filter_size
         filter_pic = filter[c,:].reshape((filter_size,filter_size))
         bigpic[1 + (1 + filter_size) * y:1 + (1 + filter_size) * y + filter_size,
             1 + (1 + filter_size*num_colors) * x + filter_size*c:1 + (1 + filter_size*num_colors) * x + filter_size*(c+1)] = filter_pic

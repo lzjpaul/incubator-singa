@@ -67,7 +67,10 @@ def upload():
       for f in zf.namelist():
         zf.extract(f, cur_job_dir)
         if f.endswith('.log'):
-          Joblist[idstr]={'idx':0, 'records': json.load(os.path.join(cur_job_dir, f))}
+          records = []
+          with open(os.path.join(cur_job_dir, f), 'r') as fd:
+            records.append(fd.readline())
+          Joblist[idstr]={'idx':0, 'records': records}
       return json.dumps({'result': 'success', 'data': {'jobid': str(jobid)}})
     else:
       return json.dumps({'result': 'error', 'data': 'error in uploading file'})
@@ -169,7 +172,7 @@ def poll_progress(jobid):
     Joblist[idstr].extend(charts)
     with open(os.path.join(job_dir, idstr, jobid + '.log'), 'a') as fd:
       for chart in charts:
-        fd.write(json.dumps(chart))
+        fd.write(json.dumps(chart) + '\n')
     return json.dumps({'result': 'success', 'data': charts})
 
 def poll_image_record(idstr):
