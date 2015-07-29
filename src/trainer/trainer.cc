@@ -206,6 +206,7 @@ void Trainer::Resume(ModelProto* modelConf) {
     tinydir_file file;
     tinydir_readfile(&dir, &file);
     tinydir_next(&dir);
+    LOG(ERROR) << file.name;
     char* ch = strstr(file.name, "step");
     if (ch == nullptr) {
       if (file.name[0] != '.')
