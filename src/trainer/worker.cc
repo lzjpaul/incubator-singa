@@ -478,10 +478,10 @@ void CDWorker::NegativePhase(int step,
         layer->ComputeFeature(kNegative, perf);
     //    LOG(ERROR)<<"layer: "<<layer->name();
 
-        if( layer->is_hidlayer() ){
+        /*if( layer->is_hidlayer() ){
         LOG(INFO)<<StringPrintf("layer name %10s hid_sample norm1 %13.9f\t",
             layer->name().c_str(), layer->data(nullptr, kNegative).asum_data());
-        }
+        }*/
 
       }
     }
