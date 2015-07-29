@@ -252,18 +252,12 @@ void RBMVisLayer::ComputeLoss(Metric* perf) {
   AllocSpace(reconstruct);
   reconstruct = dot(hid_data, weight.T());
   reconstruct+=repmat(bias, batchsize_);
-  /*float *reconstruct_presigmoid = reconstruct.dptr;
-  for (int j = (vdim_*batchsize_-100); j < vdim_*batchsize_; j++)
-     LOG(INFO)<<"reconstruct_presigmoid: "<<reconstruct_presigmoid[j];*/
   reconstruct = F<op::sigmoid>(reconstruct);
   float *src_dptr = src.dptr;
   float *reconstruct_dptr = reconstruct.dptr;
   for (int i = 0; i < vdim_*batchsize_; i++){
       loss += -(src_dptr[i]*log(std::max(reconstruct_dptr[i], FLT_MIN))
             +(1-src_dptr[i])*log(std::max(1-reconstruct_dptr[i], FLT_MIN)));
-    /*if ( (-(src_dptr[i]*log(reconstruct_dptr[i])+(1-src_dptr[i])*log(1-reconstruct_dptr[i]))) > (1000.0f) )
-      LOG(INFO)<<"src: "<<src_dptr[i]<<" reconstruct: "<<reconstruct_dptr[i]<< " loss: "<<loss<<" inc: "
-      <<(-(src_dptr[i]*log(reconstruct_dptr[i])+(1-src_dptr[i])*log(1-reconstruct_dptr[i])));*/
   }
   loss/=batchsize_;
   FreeSpace(reconstruct);
@@ -319,7 +313,7 @@ void RBMHidLayer::ComputeFeature(Phase phase, Metric* perf) {
         Tensor<cpu, 2> gaussian_sample(Shape2(batchsize_, hdim_));
         AllocSpace(gaussian_sample);
         auto random = TSingleton<Random<cpu>>::Instance();
-        random->SampleGaussian(gaussian_sample);
+        random->SampleGaussian(gaussian_sample, 0.0f, 1.0f);
         hid_sample += gaussian_sample;
         FreeSpace(gaussian_sample);
       } else {
