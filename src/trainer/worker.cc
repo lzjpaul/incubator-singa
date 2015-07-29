@@ -453,10 +453,17 @@ CDWorker::CDWorker(int thread_id, int group_id, int worker_id):
 void CDWorker::PositivePhase(int step,
      shared_ptr<NeuralNet> net, Metric* perf) {
   auto& layers = net->layers();
+  // LOG(ERROR)<<"Positive Phase";
   for (auto& layer : layers) {
       // clock_t s=clock();
     // LOG(ERROR)<<"layer: "<<layer->name();
     layer->ComputeFeature(kPositive, perf);
+
+    /*if( layer->is_hidlayer() || layer->name().compare("sigmoid3")==0 ){
+        LOG(INFO)<<StringPrintf("layer name %10s data norm1 %13.9f\t",
+            layer->name().c_str(), layer->data(nullptr).asum_data());
+     }*/
+
   }
 }
 
@@ -469,7 +476,13 @@ void CDWorker::NegativePhase(int step,
     for (auto& layer : layers) {
       if (layer->is_vislayer() || layer->is_hidlayer()){
         layer->ComputeFeature(kNegative, perf);
-        // LOG(ERROR)<<"layer: "<<layer->name();
+    //    LOG(ERROR)<<"layer: "<<layer->name();
+
+        if( layer->is_hidlayer() ){
+        LOG(INFO)<<StringPrintf("layer name %10s hid_sample norm1 %13.9f\t",
+            layer->name().c_str(), layer->data(nullptr, kNegative).asum_data());
+        }
+
       }
     }
   }
@@ -481,7 +494,7 @@ void CDWorker::GradientPhase(int step, shared_ptr<NeuralNet> net) {
   for (auto& layer : layers) {
     if (layer->is_vislayer() || layer->is_hidlayer()){
       layer->ComputeGradient(kTrain);
-      // LOG(ERROR)<<"layer: "<<layer->name();
+     //  LOG(ERROR)<<"layer: "<<layer->name();
       
       /*if(layer->mutable_grad(nullptr)!=nullptr){
         LOG(INFO)<<StringPrintf("Gradient layer %10s grad norm1 %13.9f\t",
@@ -492,7 +505,7 @@ void CDWorker::GradientPhase(int step, shared_ptr<NeuralNet> net) {
               p->id(), p->name().c_str(),
               p->data().asum_data(), p->grad().asum_data());
       }*/
-
+      
       for (Param* p : layer->GetParams()) {
         Update(p, step);
       }
@@ -506,7 +519,7 @@ void CDWorker::LossPhase(int step, shared_ptr<NeuralNet> net, Metric* perf) {
   for (auto& layer : layers) {
     if (layer->is_hidlayer()){
       layer->ComputeFeature(kLoss, perf);
-      // LOG(ERROR)<<"layer: "<<layer->name();
+     // LOG(ERROR)<<"layer: "<<layer->name();
     }
   }
   for (auto& layer : layers) {
@@ -518,6 +531,7 @@ void CDWorker::LossPhase(int step, shared_ptr<NeuralNet> net, Metric* perf) {
 }
 
 void CDWorker::TrainOneBatch(int step, Metric* perf) {
+  // LOG(ERROR)<<"TrainOneBatch";
   PositivePhase(step, train_net_, perf);
   NegativePhase(step, train_net_, perf);
   GradientPhase(step, train_net_);
@@ -526,6 +540,7 @@ void CDWorker::TrainOneBatch(int step, Metric* perf) {
 
 void CDWorker::TestOneBatch(int step, Phase phase,
      shared_ptr<NeuralNet> net, Metric* perf) {
+  // LOG(ERROR)<<"TestOneBatch";
   PositivePhase(step, test_net_, perf);
   LossPhase(step, test_net_, perf);
 }
