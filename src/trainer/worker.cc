@@ -63,11 +63,11 @@ void Worker::InitLocalParams() {
       LOG(INFO) << "Load from checkpoint file " << checkpoint;
       BlobProtos bps;
       ReadProtoFromBinaryFile(checkpoint.c_str(), &bps);
-      /*for (int i = 0; i < bps.name_size(); i++){
-        LOG(INFO)<<"name: "<<bps.name(i);
+      for (int i = 0; i < bps.name_size(); i++){
+        LOG(ERROR)<<"name: "<<bps.name(i);
         for (auto j: bps.blob(i).shape())
-          LOG(INFO)<<"shape: "<<j;
-      }*/
+          LOG(ERROR)<<"shape: "<<j;
+      }
       for (int i = 0; i < bps.name_size(); i++) {
         if (name2param.find(bps.name(i)) != name2param.end()) {
           name2param.at(bps.name(i))->FromProto(bps.blob(i));
@@ -479,7 +479,6 @@ void CDWorker::LossPhase(int step, shared_ptr<NeuralNet> net, Metric* perf) {
 }
 
 void CDWorker::TrainOneBatch(int step, Metric* perf) {
-  // LOG(ERROR)<<"TrainOneBatch";
   PositivePhase(step, train_net_, perf);
   NegativePhase(step, train_net_, perf);
   GradientPhase(step, train_net_);
