@@ -60,7 +60,7 @@ void Worker::InitLocalParams() {
     // the param from previous checkpoint files will be overwritten by
     // the param with the same name in later checkpoint files.
     for (const auto checkpoint : modelproto_.checkpoint()) {
-      LOG(INFO) << "Load from checkpoint file " << checkpoint;
+      LOG(ERROR) << "Load from checkpoint file " << checkpoint;
       BlobProtos bps;
       ReadProtoFromBinaryFile(checkpoint.c_str(), &bps);
       for (int i = 0; i < bps.name_size(); i++){
@@ -79,6 +79,7 @@ void Worker::InitLocalParams() {
         }
       }
     }
+    LOG(ERROR) << "model step " << modelproto_.step();
     // init other params who do not have checkpoint version
     for (auto entry : name2param)
       if (entry.second->version() < 0) {
@@ -443,7 +444,7 @@ void CDWorker::GradientPhase(int step, shared_ptr<NeuralNet> net) {
     if (layer->is_vislayer() || layer->is_hidlayer()){
       layer->ComputeGradient(kTrain);
      //  LOG(ERROR)<<"layer: "<<layer->name();
-      
+
       /*if(layer->mutable_grad(nullptr)!=nullptr){
         LOG(INFO)<<StringPrintf("Gradient layer %10s grad norm1 %13.9f\t",
             layer->name().c_str(), layer->grad(nullptr).asum_data());
@@ -453,7 +454,7 @@ void CDWorker::GradientPhase(int step, shared_ptr<NeuralNet> net) {
               p->id(), p->name().c_str(),
               p->data().asum_data(), p->grad().asum_data());
       }*/
-      
+
       for (Param* p : layer->GetParams()) {
         Update(p, step);
       }

@@ -367,7 +367,7 @@ void InnerProductLayer::ComputeFeature(Phase phase, Metric* perf) {
   auto bias = Tensor1(bias_->mutable_data());
   if (transpose_)
     data=dot(src, weight.T());
-  else 
+  else
     data=dot(src, weight);
   // repmat: repeat bias vector into batchsize rows
   data+=repmat(bias, batchsize_);
@@ -775,8 +775,9 @@ void ReconstructLossLayer::ComputeFeature(Phase phase, Metric* perf) {
   float loss = 0;
   for(int n=0;n<batchsize_;n++){
     for (int j = 0; j < dim_; ++j) {  // ++j??
-      loss+=-(input_dptr[j]*log(reconstruct_dptr[j])
-            +(1-input_dptr[j])*log(1-reconstruct_dptr[j]));
+      /*loss+=-(input_dptr[j]*log(reconstruct_dptr[j])
+            +(1-input_dptr[j])*log(1-reconstruct_dptr[j]));*/
+      loss += (input_dptr[j] - reconstruct_dptr[j]) * (input_dptr[j] - reconstruct_dptr[j]);
     }
     reconstruct_dptr+=dim_;
     input_dptr+=dim_;
@@ -792,8 +793,7 @@ void ReconstructLossLayer::ComputeGradient(Phase phase) {
   float* gsrcptr=gsrcblob->mutable_cpu_data();
   for(int n=0;n<batchsize_;n++){
     for (int j = 0; j < dim_; j++)
-    gsrcptr[n*dim_+j]= - input_dptr[n*dim_+j]/reconstruct_dptr[n*dim_+j] 
-                      + (1-input_dptr[n*dim_+j])/(1-reconstruct_dptr[n*dim_+j]);
+    gsrcptr[n*dim_+j]= 2 * (reconstruct_dptr[n*dim_+j]-input_dptr[n*dim_+j]);
   }
   Tensor<cpu, 1> gsrc(gsrcptr, Shape1(gsrcblob->count()));
   gsrc*=1.0f/(1.0f*batchsize_); //necessary?
