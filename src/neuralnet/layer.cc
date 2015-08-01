@@ -342,6 +342,15 @@ void InnerProductLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
     for (int i = 1018; i < (1018+50); i++)
       LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
     LOG(INFO)<<"finish 2nd round";
+    for (int i = 2036; i < (2036+50); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 3rd round";
+    for (int i = 3054; i < (3054+50); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 4th round";
+    for (int i = 4072; i < (4072+50); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 5th round";
   }*/
   LOG(INFO)<<" layer name: "<<(this->name())<<" src finish";
   if (strcmp((this->name()).c_str(), "fc1") == 0){
@@ -476,6 +485,26 @@ void LabelLayer::ParseRecords(Phase phase, const vector<Record>& records,
   CHECK_EQ(rid, blob->shape()[0]);
 }
 
+/*****************************************************************************
+ * Implementation for FLabelLayer
+ *****************************************************************************/
+void FLabelLayer::Setup(const LayerProto& proto,
+    const vector<SLayer>& srclayers){
+  CHECK_EQ(srclayers.size(),1);
+  int batchsize=static_cast<DataLayer*>(srclayers[0].get())->batchsize();
+  data_.Reshape(vector<int>{batchsize});
+}
+
+void FLabelLayer::ParseRecords(Phase phase, const vector<Record>& records,
+    Blob<float>* blob){
+  int rid=0;
+  float *label= blob->mutable_cpu_data() ;
+  for(const Record& record: records){
+    label[rid++]=record.vector().label();
+    CHECK_LT(record.image().label(),10);
+  }
+  CHECK_EQ(rid, blob->shape()[0]);
+}
 
 /*********************LMDBDataLayer**********************************/
 void LMDBDataLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers){
@@ -1334,7 +1363,7 @@ void LogisticLossLayer::SetupAfterPartition(const LayerProto& proto,
 }
 void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
   Shape<2> s=Shape2(batchsize_, dim_);
-  //LOG(ERROR)<<"logistic dimension "<<dim_; //dimension should be 1
+  // LOG(ERROR)<<"logistic dimension "<<dim_; //dimension should be 1
   Tensor<cpu, 2> prob(data_.mutable_cpu_data(), s);
   Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(), s);
   float* srcdptr_presigmoid = src.dptr;

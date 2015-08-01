@@ -220,6 +220,16 @@ class LabelLayer: public ParserLayer {
       Blob<float>* blob);
 };
 
+// Flabel for label of float vector, the same as label
+class FLabelLayer: public ParserLayer {
+ public:
+  using ParserLayer::Setup;
+
+  virtual void Setup(const LayerProto& proto, const vector<SLayer>& srclayers);
+  virtual void ParseRecords(Phase phase, const vector<Record>& records,
+      Blob<float>* blob);
+};
+
 class LRNLayer: public Layer {
 /**
  * Local Response Normalization edge

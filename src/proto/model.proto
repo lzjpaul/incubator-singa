@@ -145,6 +145,7 @@ message LayerProto {
     kDropout = 4;
     kInnerProduct = 5;
     kLabel = 18;
+    kFLabel = 27;
     kLMDBData = 17;
     kLRN = 6;
     kMnist = 7;

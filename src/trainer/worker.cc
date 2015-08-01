@@ -252,6 +252,7 @@ void BPWorker::Forward(int step, Phase phase, shared_ptr<NeuralNet> net){
       //clock_t s=clock();
       //LOG(ERROR)<<"Forward layer name: "<<layer->name();
       layer->ComputeFeature(phase);
+      //LOG(INFO)<< "in worker.cc" << " Forward layer name: "<<layer->name();
       //LOG(ERROR)<<layer->name()<<":"<<(clock()-s)*1.0/CLOCKS_PER_SEC;
       if(layer->is_bridgesrclayer()){
         auto dst=layer->dstlayers().at(0);

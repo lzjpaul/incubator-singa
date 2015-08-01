@@ -30,6 +30,7 @@ void NeuralNet::RegisterLayers(){
   RegisterLayer(factory, MultiSrcSingle);
   RegisterLayer(factory, LogisticLoss);
   RegisterLayer(factory, Label);
+  RegisterLayer(factory, FLabel);
   RegisterLayer(factory, LMDBData);
   RegisterLayer(factory, LRN);
   RegisterLayer(factory, Mnist);
