@@ -297,7 +297,7 @@ class MultiSrcDataLayer: public ParserLayer {
       else if ( strcmp((from->name()).c_str(), "Demographics") == 0 || strcmp((from->name()).c_str(), "Demoand") == 0)
         return &demo_data_;
       else{
-        LOG(ERROR)<<"no mutable_data returned in the MultiSrcDatalayer return &data_";
+        //LOG(ERROR)<<"no mutable_data returned in the MultiSrcDatalayer return &data_";
         return &data_;
       }
     }
@@ -326,7 +326,84 @@ class MultiSrcDataLayer: public ParserLayer {
         return demo_data_;
       }
       else{
-        LOG(ERROR)<<"no data returned in the MultiSrcDatalayer return data_";
+        //LOG(ERROR)<<"no data returned in the MultiSrcDatalayer return data_";
+        return data_;
+      }
+    }
+    else{
+      //LOG(ERROR)<<"nullptr";
+      return data_;
+    }
+  }
+ protected:
+  // height and width of the image after deformation
+  // kernel size for elastic distortion
+  // n^2 images are processed as a batch for elastic distortion
+  // conv height and conv width
+  // gauss kernel values, displacements, column image and tmp buffer
+  //float* gauss_, *displacementx_, *displacementy_, *colimg_, *tmpimg_;
+  //float  gamma_, beta_, sigma_, kernel_, alpha_, norm_a_, norm_b_;
+  Blob<float> diag_data_, lab_data_, rad_data_, med_data_, proc_data_, demo_data_;
+  int diag_dim_, lab_dim_, rad_dim_, med_dim_, proc_dim_, demo_dim_, resize_;
+};
+
+class MultiSrcFDataLayer: public ParserLayer {
+ public:
+  using Layer::Setup;
+
+  virtual void Setup(const LayerProto& proto, const vector<SLayer>& srclayers);
+  virtual void ParseRecords(Phase phase, const vector<Record>& records,
+      Blob<float>* blob);
+  virtual Blob<float>* mutable_data(const Layer* from, Phase phase) {
+    if (from != nullptr){
+      //LOG(ERROR)<<"not nullptr";
+      if ( strcmp((from->name()).c_str(), "Diagnosis") == 0 ){ //any other better solutions?
+        //LOG(ERROR)<<"return &diag_data_";
+        return &diag_data_;
+      }
+      else if ( strcmp ((from->name()).c_str(), "LabTest") == 0 )
+        return &lab_data_;
+      else if ( strcmp((from->name()).c_str(), "Radiology") == 0 )
+        return &rad_data_;
+      else if ( strcmp((from->name()).c_str(), "Medication") == 0 || strcmp((from->name()).c_str(), "Medand") == 0 )
+        return &med_data_;
+      else if ( strcmp((from->name()).c_str(), "Procedure") == 0 || strcmp((from->name()).c_str(), "Procand") == 0 )
+        return &proc_data_;
+      else if ( strcmp((from->name()).c_str(), "Demographics") == 0 || strcmp((from->name()).c_str(), "Demoand") == 0)
+        return &demo_data_;
+      else{
+        //LOG(ERROR)<<"no mutable_data returned in the MultiSrcDatalayer return &data_";
+        return &data_;
+      }
+    }
+    else{
+      //LOG(ERROR)<<"nullptr";
+      return &data_;
+    }
+  }
+  virtual const Blob<float>& data(const Layer* from, Phase phase) const {
+    if (from != nullptr){
+      //LOG(ERROR)<<"not nullptr";
+      if ( strcmp((from->name()).c_str(), "Diagnosis") == 0 ){ //any other better solutions?
+         //LOG(ERROR)<<"return diag_data_";
+        return diag_data_;
+      }
+      else if ( strcmp ((from->name()).c_str(), "LabTest") == 0 )
+        return lab_data_;
+      else if ( strcmp((from->name()).c_str(), "Radiology") == 0 )
+        return rad_data_;
+      else if ( strcmp((from->name()).c_str(), "Medication") == 0 || strcmp((from->name()).c_str(), "Medand") == 0 ){
+        //LOG(ERROR)<<"return med_data_ from data()";
+        return med_data_;
+      }
+      else if ( strcmp((from->name()).c_str(), "Procedure") == 0 || strcmp((from->name()).c_str(), "Procand") == 0 )
+        return proc_data_;
+      else if ( strcmp((from->name()).c_str(), "Demographics") == 0 || strcmp((from->name()).c_str(), "Demoand") == 0){
+        //LOG(INFO)<<"return demographics data now";
+        return demo_data_;
+      }
+      else{
+        //LOG(ERROR)<<"no data returned in the MultiSrcDatalayer return data_";
         return data_;
       }
     }

@@ -67,10 +67,12 @@ message Record {
   enum Type {
     // each record contains image raw feature and its label.
     kSingleLabelImage = 0;
+    kSingleLabelVector = 1;
   }
   optional Type type = 1 [default = kSingleLabelImage];
   // configuration for
   optional SingleLabelImageRecord image = 2;
+  optional SingleLabelVectorRecord vector = 3;
 }
 
 message SingleLabelImageRecord {
@@ -78,4 +80,10 @@ message SingleLabelImageRecord {
   optional int32 label = 2;
   optional bytes pixel = 3;
   repeated float data = 4;
+}
+
+message SingleLabelVectorRecord {
+  repeated int32 shape = 1;
+  optional int32 label = 2;
+  repeated float data = 3;
 }

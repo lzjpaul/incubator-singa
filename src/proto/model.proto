@@ -161,6 +161,7 @@ message LayerProto {
     kMultiSrcSingle = 23;
     kLogisticLoss = 24;
     kMultiSrcInnerProduct = 25;
+    kMultiSrcFData = 26;
   }
   // source layer names
   repeated string srclayers = 3;
@@ -182,6 +183,8 @@ message LayerProto {
   optional InnerProductProto innerproduct_conf = 34;
   // configuration for MultiSrcDataLayer
   optional MultiSrcDataProto multisrcdata_conf = 46;
+  // configuration for MultiSrcFDataLayer
+  optional MultiSrcFDataProto multisrcfdata_conf = 52;
   // configuration for SoftmaxProbLayer
   optional SoftmaxProbProto softmaxeprob_conf = 47;
   // configuration for MultiSrcSingleLayer
@@ -351,6 +354,23 @@ message MultiSrcDataProto {
   optional int32 demo_dim = 6 [default = 0];
   optional int32 resize = 7 [default = 0] ;
 }
+
+message MultiSrcFDataProto {
+  // diagnosis dimension
+  optional int32 diag_dim = 1 [default = 0];
+  // lab test dimension
+  optional int32 lab_dim = 2 [default = 0];
+  // radiology dimension
+  optional int32 rad_dim = 3 [default = 0];
+  // medication dimension
+  optional int32 med_dim = 4 [default = 0];
+  // procedure dimension
+  optional int32 proc_dim = 5 [default = 0];
+  // demographics dimension
+  optional int32 demo_dim = 6 [default = 0];
+  optional int32 resize = 7 [default = 0] ;
+}
+
 
 message SoftmaxProbProto {
   // number of outputs for the layer
