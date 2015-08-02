@@ -211,6 +211,52 @@ class InnerProductLayer: public Layer {
   shared_ptr<Param> weight_, bias_;
 };
 
+/**
+  * fully connected layer with regularization
+  */
+class InnerRegularizLayer: public Layer {
+ public:
+  using Layer::Setup;
+  using Layer::SetupAfterPartition;
+  using Layer::ComputeFeature;
+  using Layer::ComputeGradient;
+
+  virtual void Setup(const LayerProto& proto,
+      const vector<SLayer>& srclayers);
+
+  /**
+   * need to reset weight matrix in case of LayerPartition
+   */
+  virtual void SetupAfterPartition(const LayerProto& proto,
+      const vector<int> &shape,
+      const vector<SLayer>& srclayers);
+  virtual ConnectionType connection_type(int k) const {
+    CHECK_LT(k, srclayers_.size());
+    return kOneToAll;
+  }
+
+  virtual void ComputeFeature(Phase phase, const vector<shared_ptr<Layer>>& srclayers);
+  virtual void ComputeGradient(const vector<shared_ptr<Layer>>& srclayers);
+  //virtual void ToProto(LayerProto *layer_proto, bool copyData);
+  virtual vector<shared_ptr<Param>> GetParams() {
+    return vector<shared_ptr<Param>>{weight_, bias_};
+  }
+
+ private:
+  //! dimension of the hidden layer
+  int hdim_;
+  //! dimension of the visible layer
+  int vdim_;
+  // dimension for regularzation matrix
+  int regdim_;
+  // coeffeicient for regularization
+  float regcoefficient_;
+  int batchsize_;
+  Blob<float> similarity_matrix_;
+  shared_ptr<Param> weight_, bias_;
+};
+
+
 class LabelLayer: public ParserLayer {
  public:
   using ParserLayer::Setup;

@@ -144,6 +144,7 @@ message LayerProto {
     kShardData = 3;
     kDropout = 4;
     kInnerProduct = 5;
+    kInnerRegulariz = 28;
     kLabel = 18;
     kFLabel = 27;
     kLMDBData = 17;
@@ -182,6 +183,8 @@ message LayerProto {
   optional DropoutProto dropout_conf = 33;
   // configuration for inner product layer
   optional InnerProductProto innerproduct_conf = 34;
+ // configuration for inner regularization layer
+  optional InnerRegularizProto innerregulariz_conf = 53;
   // configuration for MultiSrcDataLayer
   optional MultiSrcDataProto multisrcdata_conf = 46;
   // configuration for MultiSrcFDataLayer
@@ -322,6 +325,20 @@ message MnistProto {
 message DropoutProto {
   // dropout ratio
   optional float dropout_ratio = 30 [default = 0.5];
+}
+
+// Message that stores parameters used by InnerRegularizLayer
+message InnerRegularizProto {
+  // number of outputs for the layer
+  required int32 num_output = 1;
+  // use bias vector or not
+  optional bool bias_term = 30 [default = true];
+ // dimension for the similarity matrix
+  required int32 regdim = 2;
+ // path to the data file/folder, absolute or relative to the workspace
+  required string path = 3;
+ // similarity regularization coefficient
+  optional float regcoefficient = 4 [default = 1];
 }
 
 // Message that stores parameters used by InnerProductLayer

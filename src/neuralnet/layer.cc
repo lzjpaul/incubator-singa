@@ -291,6 +291,95 @@ void MultiSrcSingleLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   }
 }
 
+/**************** Implementation for InnerRegularizLayer********************/
+void InnerRegularizLayer::Setup(const LayerProto& proto,
+      const vector<SLayer>& srclayers){
+
+  std::ifstream file(proto.innerregulariz_conf().path(), std::ios::in | std::ios::binary);
+  CHECK(file) << "Unable to open file " << proto.innerregulariz_conf().path();
+  LOG(ERROR)<<"similarity matrix path: "<< proto.innerregulariz_conf().path();
+
+  LOG(ERROR)<<"innereg setup begin ";
+  CHECK_EQ(srclayers.size(),1);
+  LOG(ERROR)<<"layer name from inner reg layer"<<(this->name());
+  const auto& src=srclayers[0]->data(this);
+  LOG(ERROR)<<"fetch data ends ";
+  batchsize_=src.shape()[0];
+  LOG(ERROR)<<"batchsize "<<batchsize_;
+  vdim_=src.count()/batchsize_;
+  LOG(ERROR)<<"vdim_ "<<vdim_;
+  hdim_=proto.innerregulariz_conf().num_output();
+  LOG(ERROR)<<"hdim "<<hdim_;
+  regdim_ = proto.innerregulariz_conf().regdim();
+  regcoefficient_ = proto.innerregulariz_conf().regcoefficient();
+  LOG(ERROR)<< "reg coefficient: "<<regcoefficient_;
+  ////////////read in sim matrix
+  similarity_matrix_.Reshape(vector<int>{regdim_, regdim_});
+  float* simmatrix = similarity_matrix_.mutable_cpu_data();
+  float sim_value;
+  string value;
+  int sim_index;
+  for (sim_index = 0; sim_index < ((regdim_ * regdim_) - 1); sim_index++){
+    getline (file, value, ',');
+    sim_value = atof(value.c_str());
+    simmatrix[sim_index] = sim_value;
+  }
+  LOG(ERROR)<<"sim_index: "<<sim_index;
+  getline (file, value, '\n');
+  sim_value = atof(value.c_str());
+  simmatrix[sim_index] = sim_value;
+  //////////////read in sim matrix ends
+  data_.Reshape(vector<int>{batchsize_, hdim_});
+  grad_.ReshapeLike(data_);
+  LOG(ERROR)<<"data_ and grad_ ";
+  Factory<Param>* factory=Singleton<Factory<Param>>::Instance();
+  weight_=shared_ptr<Param>(factory->Create("Param"));
+  bias_=shared_ptr<Param>(factory->Create("Param"));
+  weight_->Setup(proto.param(0), vector<int>{vdim_, hdim_});
+  bias_->Setup(proto.param(1), vector<int>{hdim_});
+  LOG(ERROR)<<"innerreg setup end ";
+}
+void InnerRegularizLayer::SetupAfterPartition(const LayerProto& proto,
+      const vector<int> &shape,
+      const vector<SLayer>& srclayers){
+  LOG(ERROR)<<"No partition after setup in innerregulariz";
+}
+
+void InnerRegularizLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclayers) {
+  Tensor<cpu, 2> data(data_.mutable_cpu_data(), Shape2(batchsize_,hdim_));
+  CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_);
+  Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
+      Shape2(batchsize_,vdim_));
+  float* srcdptr = src.dptr;
+
+  Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
+  Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(hdim_));
+  data=dot(src, weight);
+  // repmat: repeat bias vector into batchsize rows
+  data+=repmat(bias, batchsize_);
+}
+
+void InnerRegularizLayer::ComputeGradient(const vector<SLayer>& srclayers) {
+  Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
+      Shape2(batchsize_,vdim_));
+  Tensor<cpu, 2> grad(grad_.mutable_cpu_data(),Shape2(batchsize_,hdim_));
+  Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
+  Tensor<cpu, 2> gweight(weight_->mutable_cpu_grad(), Shape2(vdim_,hdim_));
+  Tensor<cpu, 2> similarity_matrix(similarity_matrix_.mutable_cpu_data(),Shape2(regdim_,regdim_));
+  Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(hdim_));
+
+  gbias=sum_rows(grad);
+  gweight = dot(similarity_matrix, weight);
+  gweight *= regcoefficient_/(1.0f);
+  gweight += dot(src.T(), grad);
+  // will affect backpropagation ?
+  if(srclayers[0]->mutable_grad(this)!=nullptr){
+    Tensor<cpu, 2> gsrc(srclayers[0]->mutable_grad(this)->mutable_cpu_data(),
+        Shape2(batchsize_,vdim_));
+    gsrc=dot(grad, weight.T());
+  }
+}
+
 /**************** Implementation for InnerProductLayer********************/
 void InnerProductLayer::Setup(const LayerProto& proto,
       const vector<SLayer>& srclayers){
