@@ -473,7 +473,7 @@ void CDWorker::NegativePhase(int step,
 // for negative phase, gibbs sampling only concerns RBM bottom and top layer
   auto& layers = net->layers();
   // LOG(ERROR)<<"Negative Phase";
-  for (int i = 0; i < modelproto_.pcd_k(); i++) {
+  //for (int i = 0; i < modelproto_.pcd_k(); i++) {
     for (auto& layer : layers) {
       if (layer->is_vislayer() || layer->is_hidlayer()){
         layer->ComputeFeature(kNegative, perf);
@@ -486,7 +486,7 @@ void CDWorker::NegativePhase(int step,
 
       }
     }
-  }
+  //}
 }
 
 void CDWorker::GradientPhase(int step, shared_ptr<NeuralNet> net) {
