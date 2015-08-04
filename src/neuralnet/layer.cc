@@ -251,13 +251,15 @@ void RBMVisLayer::ComputeFeature(Phase phase, Metric* perf) {
     auto src = Tensor2(srclayers_[data_idx_]->mutable_data(this));
     Copy(data, src);
   } else if (phase == kNegative) {   /*negative phase*/
-      if (is_first_iteration_vis_) {
+
+      /*if (is_first_iteration_vis_) {
         CHECK_EQ(srclayers_[data_idx_]->data(this).count(), batchsize_*vdim_);
         auto src = Tensor2(srclayers_[data_idx_]->mutable_data(this));
         auto vis_sample = Tensor2(&vis_sample_);
         Copy(vis_sample, src);
         is_first_iteration_vis_ = false;
-      } else {
+      } else {*/
+
           auto hid_sample =
                 Tensor2(srclayers_[hid_idx_]->mutable_data(this, kNegative));
           // fetch sampling results from hidden layer
@@ -267,8 +269,10 @@ void RBMVisLayer::ComputeFeature(Phase phase, Metric* perf) {
           vis_sample = dot(hid_sample, weight.T());
           vis_sample+=repmat(bias, neg_batchsize_);
           vis_sample = F<op::sigmoid>(vis_sample);
-          TSingleton<Random<cpu>>::Instance()->SampleBinary(vis_sample);
-        }
+
+          //TSingleton<Random<cpu>>::Instance()->SampleBinary(vis_sample);
+
+        /*}*/
     }
 }
 
@@ -345,13 +349,34 @@ void RBMHidLayer::Setup(const LayerProto& proto,
 void RBMHidLayer::ComputeFeature(Phase phase, Metric* perf) {
   if (phase == kPositive) {  /*postive phase*/
     auto data = Tensor2(&data_);
+
+    auto hid_sample = Tensor2(&hid_sample_);
+
     CHECK_EQ(srclayers_[0]->data(this, kPositive).count(), batchsize_*vdim_);
     auto src = Tensor2(srclayers_[0]->mutable_data(this, kPositive));
     auto weight = Tensor2(weight_->mutable_data());
     auto bias = Tensor1(bias_->mutable_data());
     data = dot(src, weight);
     data += repmat(bias, batchsize_);
-    data = F<op::sigmoid>(data);
+
+    if (gaussian_) //calculate u
+      ;
+    else
+      data = F<op::sigmoid>(data);
+
+    Copy(hid_sample, data);
+
+    if (gaussian_) { //first gibss
+      Tensor<cpu, 2> gaussian_sample(Shape2(batchsize_, hdim_));
+      AllocSpace(gaussian_sample);
+      auto random = TSingleton<Random<cpu>>::Instance();
+      random->SampleGaussian(gaussian_sample, 0.0f, 1.0f);
+      hid_sample += gaussian_sample;
+      FreeSpace(gaussian_sample);
+    } else{
+        TSingleton<Random<cpu>>::Instance()->SampleBinary(hid_sample);
+    }
+
   } else if (phase == kNegative) {   /*negative phase*/
       CHECK_EQ(srclayers_[0]->data(this, kNegative).count(),
          neg_batchsize_*vdim_);
@@ -362,15 +387,13 @@ void RBMHidLayer::ComputeFeature(Phase phase, Metric* perf) {
       hid_sample = dot(src_sample, weight);
       hid_sample += repmat(bias, neg_batchsize_);
       if (gaussian_){
-        Tensor<cpu, 2> gaussian_sample(Shape2(batchsize_, hdim_));
-        AllocSpace(gaussian_sample);
-        auto random = TSingleton<Random<cpu>>::Instance();
-        random->SampleGaussian(gaussian_sample, 0.0f, 1.0f);
-        hid_sample += gaussian_sample;
-        FreeSpace(gaussian_sample);
+        ;
       } else {
+          //LOG(ERROR)<<"not gaussian";
           hid_sample = F<op::sigmoid>(hid_sample);
-          TSingleton<Random<cpu>>::Instance()->SampleBinary(hid_sample);
+          //LOG(ERROR)<<"new Hinton";
+          // TSingleton<Random<cpu>>::Instance()->SampleBinary(hid_sample);
+
         }
     } else if (phase == kLoss) {   /*test phase*/
        auto data = Tensor2(&data_);  // data: sigmoid(Wv+b)
