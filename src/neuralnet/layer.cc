@@ -291,6 +291,7 @@ void RBMVisLayer::ComputeGradient(Phase phase) {
 
 void RBMVisLayer::ComputeLoss(Metric* perf) {
   float loss = (0.0f);
+  float loss_sqr = (0.0f);
   CHECK_EQ(srclayers_[data_idx_]->data(this).count(), batchsize_*vdim_);
   auto src = Tensor2(srclayers_[data_idx_]->mutable_data(this));
   auto hid_data = Tensor2(srclayers_[hid_idx_]->mutable_data(this, kPositive));
@@ -307,11 +308,13 @@ void RBMVisLayer::ComputeLoss(Metric* perf) {
   for (int i = 0; i < vdim_*batchsize_; i++){
       loss += -(src_dptr[i]*log(std::max(reconstruct_dptr[i], FLT_MIN))
             +(1-src_dptr[i])*log(std::max(1-reconstruct_dptr[i], FLT_MIN)));
+      loss_sqr += (src_dptr[i] - reconstruct_dptr[i]) * (src_dptr[i] - reconstruct_dptr[i]);
   }
   loss/=batchsize_;
   FreeSpace(reconstruct);
   perf->Reset();
-  perf->Add("reconstruct_error", loss);
+  //perf->Add("reconstruct_error", loss);
+  perf->Add("sqr_reconstruct_error", loss_sqr);
 }
 /**************** Implementation for RBMHidLayer********************/
 RBMHidLayer::~RBMHidLayer() {
