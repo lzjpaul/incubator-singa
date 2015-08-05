@@ -372,7 +372,7 @@ void InnerRegularizLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   gweight = dot(similarity_matrix, weight);
   gweight *= regcoefficient_/(1.0f);
   gweight += dot(src.T(), grad);
-  // will affect backpropagation ?
+  // will affect backpropagation ? minus or add this regularization?
   if(srclayers[0]->mutable_grad(this)!=nullptr){
     Tensor<cpu, 2> gsrc(srclayers[0]->mutable_grad(this)->mutable_cpu_data(),
         Shape2(batchsize_,vdim_));
