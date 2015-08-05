@@ -497,7 +497,7 @@ void CDWorker::GradientPhase(int step, shared_ptr<NeuralNet> net) {
       layer->ComputeGradient(kTrain);
      //  LOG(ERROR)<<"layer: "<<layer->name();
 
-      /*if(layer->mutable_grad(nullptr)!=nullptr){
+      if(layer->mutable_grad(nullptr)!=nullptr){
         LOG(INFO)<<StringPrintf("Gradient layer %10s grad norm1 %13.9f\t",
             layer->name().c_str(), layer->grad(nullptr).asum_data());
         for(Param* p: layer->GetParams())
@@ -505,7 +505,7 @@ void CDWorker::GradientPhase(int step, shared_ptr<NeuralNet> net) {
               value norm1 %13.9f, grad norm1 %13.9f",
               p->id(), p->name().c_str(),
               p->data().asum_data(), p->grad().asum_data());
-      }*/
+      }
 
       for (Param* p : layer->GetParams()) {
         Update(p, step);
