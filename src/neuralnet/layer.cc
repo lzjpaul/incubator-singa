@@ -251,15 +251,6 @@ void RBMVisLayer::ComputeFeature(Phase phase, Metric* perf) {
     auto src = Tensor2(srclayers_[data_idx_]->mutable_data(this));
     Copy(data, src);
   } else if (phase == kNegative) {   /*negative phase*/
-
-      /*if (is_first_iteration_vis_) {
-        CHECK_EQ(srclayers_[data_idx_]->data(this).count(), batchsize_*vdim_);
-        auto src = Tensor2(srclayers_[data_idx_]->mutable_data(this));
-        auto vis_sample = Tensor2(&vis_sample_);
-        Copy(vis_sample, src);
-        is_first_iteration_vis_ = false;
-      } else {*/
-
           auto hid_sample =
                 Tensor2(srclayers_[hid_idx_]->mutable_data(this, kNegative));
           // fetch sampling results from hidden layer
@@ -269,10 +260,6 @@ void RBMVisLayer::ComputeFeature(Phase phase, Metric* perf) {
           vis_sample = dot(hid_sample, weight.T());
           vis_sample+=repmat(bias, neg_batchsize_);
           vis_sample = F<op::sigmoid>(vis_sample);
-
-          //TSingleton<Random<cpu>>::Instance()->SampleBinary(vis_sample);
-
-        /*}*/
     }
 }
 
@@ -304,11 +291,21 @@ void RBMVisLayer::ComputeLoss(Metric* perf) {
   auto bias = Tensor1(bias_->mutable_data());
   Tensor<cpu, 2> reconstruct(Shape2(batchsize_, vdim_)); /*reconstruct error*/
   AllocSpace(reconstruct);
+  float *reconstruct_dptr_prior = reconstruct.dptr;
   reconstruct = dot(hid_data, weight.T());
+  LOG (ERROR) << "hid_data shape[1]: "<< srclayers_[hid_idx_]->mutable_data(this, kPositive)->shape()[1];
+  LOG (ERROR) << "weight shape[0]: " << weight_->mutable_data()->shape()[0] << " weight shape[1]: " << weight_->mutable_data()->shape()[1];
+  LOG (ERROR)<< "layer bias: "<< bias_->mutable_data()->asum_data();
+  LOG (ERROR)<< "reconstruct norm before bias: "<< cblas_sasum(vdim_*batchsize_, reconstruct_dptr_prior, 1)/ (vdim_*batchsize_);
   reconstruct+=repmat(bias, batchsize_);
+  LOG (ERROR)<< "layer weight: "<< weight_->mutable_data()->asum_data();
+  LOG (ERROR)<< "hid_data gaussian: "<< srclayers_[hid_idx_]->mutable_data(this, kPositive)->asum_data();
+  LOG (ERROR)<< "reconstruct norm before sigmoid: "<< cblas_sasum(vdim_*batchsize_, reconstruct_dptr_prior, 1)/ (vdim_*batchsize_);
   reconstruct = F<op::sigmoid>(reconstruct);
   float *src_dptr = src.dptr;
   float *reconstruct_dptr = reconstruct.dptr;
+  LOG (ERROR)<< "src norm: "<< srclayers_[data_idx_]->mutable_data(this)->asum_data();
+  LOG (ERROR)<< "reconstruct norm: "<< cblas_sasum(vdim_*batchsize_, reconstruct_dptr, 1)/ (vdim_*batchsize_);
   for (int i = 0; i < vdim_*batchsize_; i++){
       loss += -(src_dptr[i]*log(std::max(reconstruct_dptr[i], FLT_MIN))
             +(1-src_dptr[i])*log(std::max(1-reconstruct_dptr[i], FLT_MIN)));
