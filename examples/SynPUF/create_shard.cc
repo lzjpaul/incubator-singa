@@ -24,10 +24,13 @@ using singa::WriteProtoToBinaryFile;
 using std::string;
 
 
-void create_shard(const char* image_filename, const char* output) {
+void create_shard(const char* feature_filename, const char* label_filename, const char* output) {
   // Open files
-  std::ifstream file(image_filename, std::ios::in | std::ios::binary);
-  CHECK(file) << "Unable to open file " << image_filename;
+  std::ifstream ffile(feature_filename, std::ios::in | std::ios::binary); //feature file
+  CHECK(ffile) << "Unable to open file " << feature_filename;
+
+  std::ifstream lfile(label_filename, std::ios::in | std::ios::binary);   //label file
+  CHECK(lfile) << "Unable to open file " << label_filename;
 
   string value;
   float n; //read in vector element
@@ -36,12 +39,16 @@ void create_shard(const char* image_filename, const char* output) {
   int num_items;
   int rows;
   int cols;
-  getline (file, value, ',');  // to check whether int will overflow if there are too many records
+  getline (ffile, value, ',');  // to check whether int will overflow if there are too many records
   num_items = atoi (value.c_str());
-  getline (file, value, ',');
+  std::cout << "num_items: " << num_items;
+  getline (ffile, value, ',');
   rows = atoi (value.c_str());
-  getline (file, value, '\n');
+  std::cout << "rows: " << rows;
+  getline (ffile, value, '\n');
   cols = atoi (value.c_str());
+  std::cout << "cols: " << cols;
+  std::cout << "\n";
 
 
 
@@ -58,8 +65,8 @@ void create_shard(const char* image_filename, const char* output) {
   LOG(INFO) << "A total of " << num_items << " items.";
   LOG(INFO) << "Rows: " << rows << " Cols: " << cols;
   for (int item_id = 0; item_id < num_items; ++item_id) {
-    for (int i = 0; i < rows * cols; i++){
-	    getline (file, value, ',');
+    for (int i = 0; i < (rows * cols -1); i++){
+	    getline (ffile, value, ',');
 	    n = atof(value.c_str());
       if (i < 20)
         std::cout << "data: " << n;
@@ -68,7 +75,12 @@ void create_shard(const char* image_filename, const char* output) {
 		 LOG(INFO) << "zj: item_id" << item_id << "element " << (int)pixels[i];*/
 	/*	LOG(INFO) << StringPrintf("zj: item_id %d element %d\n", item_id,(int)pixels[i]);*/
     }
-    getline (file, value, '\n');
+    getline (ffile, value, '\n');
+	  n = atof(value.c_str());
+    std::cout << "data: " << n;
+	  vector->add_data(n); //remember to add here !!!!!!
+
+    getline (lfile, value, '\n');
     m = atoi(value.c_str());
     label = (char)m;
     std::cout << "label: " << m;
@@ -100,7 +112,7 @@ int main(int argc, char** argv) {
         "examples/mnist/create_shard.bin");
 */
 
-  if (argc != 3) {
+  if (argc != 4) {
     std::cout<<"This program create a DataShard for a MNIST dataset\n"
         "Usage:\n"
         "    create_shard.bin  input_image_file input_label_file output_db_file\n"
@@ -109,7 +121,7 @@ int main(int argc, char** argv) {
         "You should gunzip them after downloading.";
   } else {
     google::InitGoogleLogging(argv[0]);
-    create_shard(argv[1], argv[2]);
+    create_shard(argv[1], argv[2], argv[3]);
   }
   return 0;
 }
