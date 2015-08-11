@@ -309,7 +309,10 @@ void RBMVisLayer::ComputeLoss(Metric* perf) {
   for (int i = 0; i < vdim_*batchsize_; i++){
       loss += -(src_dptr[i]*log(std::max(reconstruct_dptr[i], FLT_MIN))
             +(1-src_dptr[i])*log(std::max(1-reconstruct_dptr[i], FLT_MIN)));
-      loss_sqr += (src_dptr[i] - reconstruct_dptr[i]) * (src_dptr[i] - reconstruct_dptr[i]);
+      //loss_sqr += (src_dptr[i] - reconstruct_dptr[i]) * (src_dptr[i] - reconstruct_dptr[i]);
+      int recon_row = i / vdim_;
+      int recon_col = i - recon_row * vdim_;
+      loss_sqr += (src_dptr[i] - reconstruct[recon_row][recon_col]) * (src_dptr[i] - reconstruct[recon_row][recon_col]);
   }
   loss/=batchsize_;
   FreeSpace(reconstruct);
@@ -393,8 +396,17 @@ void RBMHidLayer::ComputeFeature(Phase phase, Metric* perf) {
 
         }
     } else if (phase == kLoss) {   /*test phase*/
-       auto data = Tensor2(&data_);  // data: sigmoid(Wv+b)
-       TSingleton<Random<cpu>>::Instance()->SampleBinary(data);
+        auto data = Tensor2(&data_);  // data: sigmoid(Wv+b)
+        if (gaussian_) {
+          Tensor<cpu, 2> gaussian_sample(Shape2(batchsize_, hdim_));
+          AllocSpace(gaussian_sample);
+          auto random = TSingleton<Random<cpu>>::Instance();
+          random->SampleGaussian(gaussian_sample, 0.0f, 1.0f);
+          data += gaussian_sample;
+          FreeSpace(gaussian_sample);
+        }
+        else
+          TSingleton<Random<cpu>>::Instance()->SampleBinary(data);
       }
 }
 void RBMHidLayer::ComputeGradient(Phase phase) {
