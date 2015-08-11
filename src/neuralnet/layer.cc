@@ -321,13 +321,18 @@ void InnerRegularizLayer::Setup(const LayerProto& proto,
   int sim_index;
   for (sim_index = 0; sim_index < ((regdim_ * regdim_) - 1); sim_index++){
     getline (file, value, ',');
+    if (strcmp((value).c_str(), "") == 0)
+      LOG(ERROR)<<"empty string!!";
     sim_value = atof(value.c_str());
     simmatrix[sim_index] = sim_value;
+    if (sim_index < 10)
+      LOG(ERROR)<<"sim value: "<<sim_value;
   }
   LOG(ERROR)<<"sim_index: "<<sim_index;
   getline (file, value, '\n');
   sim_value = atof(value.c_str());
   simmatrix[sim_index] = sim_value;
+  LOG(ERROR)<<"last sim value: "<<sim_value;
   //////////////read in sim matrix ends
   data_.Reshape(vector<int>{batchsize_, hdim_});
   grad_.ReshapeLike(data_);
