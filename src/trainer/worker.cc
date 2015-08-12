@@ -224,7 +224,7 @@ BPWorker::BPWorker(int thread_id, int group_id, int worker_id):
 }
 
 void BPWorker::Forward(int step, Phase phase, shared_ptr<NeuralNet> net){
-  //LOG(ERROR)<<"Forward begins";
+  // LOG(INFO)<<"Forward begins";
   auto& layers=net->layers();
   for(auto& layer: layers){
     if(layer->partitionid()==worker_id_){
@@ -250,9 +250,9 @@ void BPWorker::Forward(int step, Phase phase, shared_ptr<NeuralNet> net){
         }
       }
       //clock_t s=clock();
-     // LOG(ERROR)<<"Forward layer name: "<<layer->name();
+      // LOG(INFO)<< "in worker.cc before compute feature " <<"Forward layer name: "<<layer->name();
       layer->ComputeFeature(phase);
-      //LOG(INFO)<< "in worker.cc" << " Forward layer name: "<<layer->name();
+      // LOG(INFO)<< "in worker.cc after compute feature " << " Forward layer name: "<<layer->name();
       //LOG(ERROR)<<layer->name()<<":"<<(clock()-s)*1.0/CLOCKS_PER_SEC;
       if(layer->is_bridgesrclayer()){
         auto dst=layer->dstlayers().at(0);
@@ -271,7 +271,7 @@ void BPWorker::Forward(int step, Phase phase, shared_ptr<NeuralNet> net){
       }
     }
   }
-  //LOG(ERROR)<<"Forward ends";
+  // LOG(INFO)<<"Forward ends";
 }
 
 void BPWorker::Backward(int step, shared_ptr<NeuralNet> net){

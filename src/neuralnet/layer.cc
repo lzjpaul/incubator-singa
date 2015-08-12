@@ -357,6 +357,25 @@ void InnerRegularizLayer::ComputeFeature(Phase phase, const vector<SLayer>& srcl
       Shape2(batchsize_,vdim_));
   float* srcdptr = src.dptr;
 
+  /*LOG(INFO) << "begin print diag_data";
+  if (strcmp((this->name()).c_str(), "Diagnosis") == 0){
+    for (int i = 0; i < 131; i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 1st round";
+    for (int i = 692; i < (692+131); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 2nd round";
+    for (int i = 1384; i < (1384+131); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 3rd round";
+    for (int i = 2076; i < (2076+131); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 4th round";
+    for (int i = 2768; i < (2768+131); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 5th round";
+  }*/
+
   Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
   Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(hdim_));
   data=dot(src, weight);
@@ -376,6 +395,8 @@ void InnerRegularizLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   gbias=sum_rows(grad);
   gweight = dot(similarity_matrix, weight);
   gweight *= regcoefficient_/(1.0f);
+  LOG(ERROR)<<"coefficient: "<<regcoefficient_/(1.0f);
+  LOG(ERROR)<<"gweight norm after coefficient: "<<weight_->mutable_grad()->asum_data();
   gweight += dot(src.T(), grad);
   // will affect backpropagation ? minus or add this regularization?
   if(srclayers[0]->mutable_grad(this)!=nullptr){
@@ -446,7 +467,7 @@ void InnerProductLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
       LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
     LOG(INFO)<<"finish 5th round";
   }*/
-  LOG(INFO)<<" layer name: "<<(this->name())<<" src finish";
+  // LOG(INFO)<<" layer name: "<<(this->name())<<" src finish";
   if (strcmp((this->name()).c_str(), "fc1") == 0){
     for (int i = 12434; i < 12444; i++)
       LOG(INFO)<<" layer name: "<<(this->name())<<" proc: "<<srcdptr[i];
@@ -1448,6 +1469,7 @@ void LogisticLossLayer::Setup(const LayerProto& proto,
   dim_=data_.count()/batchsize_;
   metric_.Reshape(vector<int>{2});
   scale_=proto.logisticloss_conf().scale();
+  LOG(ERROR)<<"logistic scale_: "<<scale_;
   //LOG(ERROR)<<"Logistic layer set up ends ";
 }
 void LogisticLossLayer::SetupAfterPartition(const LayerProto& proto,
@@ -1460,15 +1482,15 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
   // LOG(ERROR)<<"logistic dimension "<<dim_; //dimension should be 1
   Tensor<cpu, 2> prob(data_.mutable_cpu_data(), s);
   Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(), s);
-  float* srcdptr_presigmoid = src.dptr;
+  /*float* srcdptr_presigmoid = src.dptr;
   for (int n =0; n<batchsize_;n++ ){
-   /* if (n < 10)
-      LOG(INFO)<<"before -0.5 "<<srcdptr_presigmoid[0];*/
+    if (n < 10)
+      LOG(INFO)<<"before -0.5 "<<srcdptr_presigmoid[0];
     srcdptr_presigmoid[0] -= 0.5f;
-    /*if (n < 10)
-      LOG(INFO)<<"after -0.5 "<<srcdptr_presigmoid[0];*/
+    if (n < 10)
+      LOG(INFO)<<"after -0.5 "<<srcdptr_presigmoid[0];
     srcdptr_presigmoid+=dim_;
-  }
+  }*/
   prob=F<op::sigmoid>(src);
   const float* label=srclayers[1]->data(this).cpu_data();
   const float* probptr=prob.dptr;
@@ -1479,8 +1501,8 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
     CHECK_LT(ilabel,10);
     CHECK_GE(ilabel,0);
     loss += -ilabel*log(probptr[0])-(1-ilabel)*log(1-probptr[0]);//is this correct?
-    if (n < 10)
-      LOG(INFO)<<"ilabel "<<ilabel<<" predict prob-1 "<<probptr[0]<<"src pre-sigmoid"<<srcdptr[0]<<" loss "<<loss;
+    /*if (n < 30)
+      LOG(INFO)<<"ilabel "<<ilabel<<" predict prob-1 "<<probptr[0]<<"src pre-sigmoid"<<srcdptr[0]<<" loss "<<loss;*/
     if (ilabel == 0){
       if (static_cast<float>(probptr[0]) < (1.0f - static_cast<float>(probptr[0])))
         precision++;
