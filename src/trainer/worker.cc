@@ -456,15 +456,15 @@ void CDWorker::PositivePhase(int step,
   auto& layers = net->layers();
   // LOG(ERROR)<<"Positive Phase";
   for (auto& layer : layers) {
-      // clock_t s=clock();
     // LOG(ERROR)<<"layer: "<<layer->name();
+    for (Param* p : layer->GetParams()) {  // wait until param is updated
+      Collect(p, step);
+    }
     layer->ComputeFeature(kPositive, perf);
-
     /*if( layer->is_hidlayer() || layer->name().compare("sigmoid3")==0 ){
         LOG(INFO)<<StringPrintf("layer name %10s data norm1 %13.9f\t",
             layer->name().c_str(), layer->data(nullptr).asum_data());
      }*/
-
   }
 }
 
