@@ -15,10 +15,18 @@ Server::Server(int thread_id,int group_id, int server_id):
   thread_id_(thread_id),grp_id_(group_id), id_(server_id){
 }
 
+void Server::RegisterUpdaters() {
+  auto updater_factory = Singleton<Factory<singa::Updater>>::Instance();
+  updater_factory->Register("kSGD", CreateInstance(SGDUpdater, Updater));
+  updater_factory->Register("kAdaGrad", CreateInstance(AdaGradUpdater, Updater));
+  // updater_factory->Register("kRMSProp", CreateInstance(RMSPropUpdater, Updater));
+  updater_factory->Register("kNesterov", CreateInstance(NesterovUpdater, Updater));
+}
+
 void Server::Setup(const UpdaterProto& proto,
     std::unordered_map<int, ParamEntry*>* shard,
     const vector<int>& slice2group) {
-  updater_ = Singleton<Factory<Updater>>::Instance()->Create("Updater");
+  updater_ = Singleton<Factory<Updater>>::Instance()->Create(proto.type());
   updater_->Init(proto);
   shard_ = shard;
   slice2group_ = slice2group;

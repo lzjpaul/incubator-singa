@@ -20,6 +20,11 @@ namespace singa {
   */
 class Server{
  public:
+  public:
+  /**
+   * Register Updaters, i.e., kAdaGrad, kNesterov
+   */
+  static void RegisterUpdaters();
   Server(int thread_id, int group_id, int server_id);
   virtual ~Server();
   void Setup(const UpdaterProto& proto,
