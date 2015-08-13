@@ -17,10 +17,10 @@ Server::Server(int thread_id,int group_id, int server_id):
 
 void Server::RegisterUpdaters() {
   auto updater_factory = Singleton<Factory<singa::Updater>>::Instance();
-  updater_factory->Register("kSGD", CreateInstance(SGDUpdater, Updater));
-  updater_factory->Register("kAdaGrad", CreateInstance(AdaGradUpdater, Updater));
+  updater_factory->Register(UpdaterProto_UpdaterType_kSGD, CreateInstance(SGDUpdater, Updater));
+  updater_factory->Register(UpdaterProto_UpdaterType_kAdaGrad, CreateInstance(AdaGradUpdater, Updater));
   // updater_factory->Register("kRMSProp", CreateInstance(RMSPropUpdater, Updater));
-  updater_factory->Register("kNesterov", CreateInstance(NesterovUpdater, Updater));
+  updater_factory->Register(UpdaterProto_UpdaterType_kNesterov, CreateInstance(NesterovUpdater, Updater));
 }
 
 void Server::Setup(const UpdaterProto& proto,
