@@ -21,12 +21,15 @@ message ClusterProto {
   // local workspace, train/val/test shards, checkpoint files
   required string workspace = 14;
 
-  // port number is used by ZeroMQ
-  optional int32 start_port = 64 [default = 6723];
   // conduct updates at server side; otherwise do it at worker side
-  optional bool server_update = 65 [default = true];
+    optional bool server_update = 40 [default = true];
   // share memory space between worker groups in one procs
-  optional bool share_memory = 66 [default = true];
+    optional bool share_memory = 41 [default = true];
+  /*
+  // bandwidth of ethernet, Bytes per second, default is 1 Gbps
+     optional int32 bandwidth=50 [default=134217728];
+  // poll time in milliseconds
+     optional int32 poll_time=51 [default =100];*/
 }
 
 
@@ -94,7 +97,7 @@ message ModelProto {
   // last snapshot step
   optional int32 step = 65 [default = 0];
   // display debug info
-  optional bool debug = 66 [default = false];
+  optional bool debug = 70 [default = false];
   // checkpoint files
   repeated string checkpoint = 66;
   // reset the version of params loaded from checkpoint file to step

@@ -839,6 +839,7 @@ ShardDataLayer::~ShardDataLayer() {
   if (shard_ != nullptr)
     delete shard_;
   shard_ = nullptr;
+}
 /*******************Implementation of SigmoidLayer***************************/
 void SigmoidLayer::Setup(const LayerProto& proto, int npartitions){
   Layer::Setup(proto, npartitions);
@@ -857,7 +858,6 @@ void SigmoidLayer::ComputeGradient(Phase phase) {
   auto grad = Tensor1(&grad_);
   auto gsrc = Tensor1(srclayers_[0]->mutable_grad(this));
   gsrc=F<op::sigmoid_grad>(data)*grad;
->>>>>>> debug over
 }
 /*******************Implementation of TanLayer***************************/
 void TanhLayer::Setup(const LayerProto& proto, int npartitions){
