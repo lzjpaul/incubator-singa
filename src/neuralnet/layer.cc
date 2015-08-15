@@ -391,11 +391,15 @@ void InnerRegularizLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   Tensor<cpu, 2> gweight(weight_->mutable_cpu_grad(), Shape2(vdim_,hdim_));
   Tensor<cpu, 2> similarity_matrix(similarity_matrix_.mutable_cpu_data(),Shape2(regdim_,regdim_));
   Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(hdim_));
+  LOG(ERROR)<< "regdim_: "<< regdim_;
 
   gbias=sum_rows(grad);
   gweight = dot(similarity_matrix, weight);
-  gweight *= regcoefficient_/(1.0f);
+  LOG(ERROR)<<"weight norm: "<<weight_->mutable_data()->asum_data();
+  LOG(ERROR)<<"simmatrix norm: "<<similarity_matrix_.asum_data();
   LOG(ERROR)<<"coefficient: "<<regcoefficient_/(1.0f);
+  LOG(ERROR)<<"gweight norm before coefficient: "<<weight_->mutable_grad()->asum_data();
+  gweight *= regcoefficient_/(1.0f);
   LOG(ERROR)<<"gweight norm after coefficient: "<<weight_->mutable_grad()->asum_data();
   gweight += dot(src.T(), grad);
   // will affect backpropagation ? minus or add this regularization?
@@ -1501,8 +1505,8 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
     CHECK_LT(ilabel,10);
     CHECK_GE(ilabel,0);
     loss += -ilabel*log(probptr[0])-(1-ilabel)*log(1-probptr[0]);//is this correct?
-    /*if (n < 30)
-      LOG(INFO)<<"ilabel "<<ilabel<<" predict prob-1 "<<probptr[0]<<"src pre-sigmoid"<<srcdptr[0]<<" loss "<<loss;*/
+    /*if (n < 10)
+      LOG(ERROR)<<"ilabel "<<ilabel<<" predict prob-1 "<<probptr[0]<<"src pre-sigmoid"<<srcdptr[0]<<" loss "<<loss;*/
     if (ilabel == 0){
       if (static_cast<float>(probptr[0]) < (1.0f - static_cast<float>(probptr[0])))
         precision++;
