@@ -33,8 +33,7 @@ void Trainer::RegisterDefaultClasses(const singa::ModelProto& model_conf) {
   singa::NeuralNet::RegisterLayers();
   auto param_factory = Singleton<Factory<singa::Param>>::Instance();
   param_factory->Register("Param", CreateInstance(Param, Param));
-  auto updater_factory = Singleton<Factory<singa::Updater>>::Instance();
-  updater_factory->Register("Updater", CreateInstance(SGDUpdater, Updater));
+  Server::RegisterUpdaters();
 }
 
 const vector<int> SliceParams(const vector<Param*>& params) {

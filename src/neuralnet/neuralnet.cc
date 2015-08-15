@@ -37,7 +37,7 @@ void NeuralNet::RegisterLayers() {
   RegisterLayer(factory, Sigmoid);
   RegisterLayer(factory, RBMVis);
   RegisterLayer(factory, RBMHid);
-
+  RegisterLayer(factory, ReconstructLoss);
 #ifdef USE_LMDB
   RegisterLayer(factory, LMDBData);
 #endif
