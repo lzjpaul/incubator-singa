@@ -391,16 +391,16 @@ void InnerRegularizLayer::ComputeGradient(const vector<SLayer>& srclayers) {
   Tensor<cpu, 2> gweight(weight_->mutable_cpu_grad(), Shape2(vdim_,hdim_));
   Tensor<cpu, 2> similarity_matrix(similarity_matrix_.mutable_cpu_data(),Shape2(regdim_,regdim_));
   Tensor<cpu, 1> gbias(bias_->mutable_cpu_grad(), Shape1(hdim_));
-  LOG(ERROR)<< "regdim_: "<< regdim_;
+  // LOG(ERROR)<< "regdim_: "<< regdim_;
 
   gbias=sum_rows(grad);
   gweight = dot(similarity_matrix, weight);
-  LOG(ERROR)<<"weight norm: "<<weight_->mutable_data()->asum_data();
-  LOG(ERROR)<<"simmatrix norm: "<<similarity_matrix_.asum_data();
-  LOG(ERROR)<<"coefficient: "<<regcoefficient_/(1.0f);
-  LOG(ERROR)<<"gweight norm before coefficient: "<<weight_->mutable_grad()->asum_data();
+  // LOG(ERROR)<<"weight norm: "<<weight_->mutable_data()->asum_data();
+  // LOG(ERROR)<<"simmatrix norm: "<<similarity_matrix_.asum_data();
+  // LOG(ERROR)<<"coefficient: "<<regcoefficient_/(1.0f);
+  // LOG(ERROR)<<"gweight norm before coefficient: "<<weight_->mutable_grad()->asum_data();
   gweight *= regcoefficient_/(1.0f);
-  LOG(ERROR)<<"gweight norm after coefficient: "<<weight_->mutable_grad()->asum_data();
+  // LOG(ERROR)<<"gweight norm after coefficient: "<<weight_->mutable_grad()->asum_data();
   gweight += dot(src.T(), grad);
   // will affect backpropagation ? minus or add this regularization?
   if(srclayers[0]->mutable_grad(this)!=nullptr){
@@ -1471,7 +1471,7 @@ void LogisticLossLayer::Setup(const LayerProto& proto,
   data_.Reshape(srclayers[0]->data(this).shape());
   batchsize_=data_.shape()[0];
   dim_=data_.count()/batchsize_;
-  metric_.Reshape(vector<int>{2});
+  metric_.Reshape(vector<int>{8});
   scale_=proto.logisticloss_conf().scale();
   LOG(ERROR)<<"logistic scale_: "<<scale_;
   //LOG(ERROR)<<"Logistic layer set up ends ";
@@ -1486,20 +1486,13 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
   // LOG(ERROR)<<"logistic dimension "<<dim_; //dimension should be 1
   Tensor<cpu, 2> prob(data_.mutable_cpu_data(), s);
   Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(), s);
-  /*float* srcdptr_presigmoid = src.dptr;
-  for (int n =0; n<batchsize_;n++ ){
-    if (n < 10)
-      LOG(INFO)<<"before -0.5 "<<srcdptr_presigmoid[0];
-    srcdptr_presigmoid[0] -= 0.5f;
-    if (n < 10)
-      LOG(INFO)<<"after -0.5 "<<srcdptr_presigmoid[0];
-    srcdptr_presigmoid+=dim_;
-  }*/
   prob=F<op::sigmoid>(src);
   const float* label=srclayers[1]->data(this).cpu_data();
   const float* probptr=prob.dptr;
   const float* srcdptr=src.dptr;
-  float loss=0.0f, precision=0.0f;
+  float loss=0, precision=0;
+  float predict_0 = 0, true_0 = 0, correct_0 = 0;
+  float predict_1 = 0, true_1 = 0, correct_1 = 0;
   for(int n=0;n<batchsize_;n++){
     int ilabel=static_cast<int>(label[n]);
     CHECK_LT(ilabel,10);
@@ -1507,14 +1500,25 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
     loss += -ilabel*log(probptr[0])-(1-ilabel)*log(1-probptr[0]);//is this correct?
     /*if (n < 10)
       LOG(ERROR)<<"ilabel "<<ilabel<<" predict prob-1 "<<probptr[0]<<"src pre-sigmoid"<<srcdptr[0]<<" loss "<<loss;*/
+    if (static_cast<float>(probptr[0]) < (1.0f - static_cast<float>(probptr[0])))
+      predict_0++;
+    else
+      predict_1++;
+
     if (ilabel == 0){
-      if (static_cast<float>(probptr[0]) < (1.0f - static_cast<float>(probptr[0])))
+      true_0 ++;
+      if (static_cast<float>(probptr[0]) < (1.0f - static_cast<float>(probptr[0]))){
+        correct_0++;
         precision++;
+      }
       //LOG(INFO)<<"ilabel 0"<<" prob_1: "<<static_cast<float>(probptr[0])<<" prob_0: "<<(1.0f - static_cast<float>(probptr[0]));
     }
     else if (ilabel ==1){
-      if (static_cast<float>(probptr[0]) >= (1.0f - static_cast<float>(probptr[0])))
+      true_1 ++;
+      if (static_cast<float>(probptr[0]) >= (1.0f - static_cast<float>(probptr[0]))){
+        correct_1++;
         precision++;
+      }
       //LOG(INFO)<<"ilabel 1"<<" prob_1: "<<static_cast<float>(probptr[0])<<" prob_0: "<<(1.0f - static_cast<float>(probptr[0]));
     }
     //LOG(INFO)<<"precision "<<precision;
@@ -1525,6 +1529,14 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
   float *metric=metric_.mutable_cpu_data();
   metric[0]=loss*scale_/(1.0f*batchsize_);
   metric[1]=precision*scale_/(1.0f*batchsize_);
+  LOG(ERROR)<<"loss: "<<metric[0];
+  LOG(ERROR)<<"precision: "<<metric[1];
+  metric[2]=correct_0;
+  metric[3]=predict_0;
+  metric[4]=true_0;
+  metric[5]=correct_1;
+  metric[6]=predict_1;
+  metric[7]=true_1;
 }
 
 void LogisticLossLayer::ComputeGradient(const vector<SLayer>& srclayers) {
