@@ -188,10 +188,15 @@ message LayerProto {
   optional SplitProto split_conf = 42;
   // configuration for tanh layer
   optional TanhProto tanh_conf = 43;
+  // configuration for sigmoid layer
+  optional SigmoidProto sigmoid_conf = 51;
   // configuration for rbmvis layer
   optional RBMVisProto rbmvis_conf = 48;
   // configuration for rbmhid layer
   optional RBMHidProto rbmhid_conf = 49;
+  // configuration for euclideanloss layer
+  optional EuclideanLossProto euclideanloss_conf = 50;
+
 
   // overrides the partition dimension for neural net
   optional int32 partition_dim = 60 [default = -1];
@@ -260,12 +265,20 @@ message SplitProto {
   optional int32 num_splits = 1 [default = 1];
 }
 
+message SigmoidProto {
+  optional float outer_scale = 1 [default = 1.0];
+  optional float inner_scale = 2 [default = 1.0];
+}
+
 // scaled tan: A*tan(B*x)
 message TanhProto {
   // A of A*tan(B*x)
   optional float outer_scale = 1 [default = 1.0];
   // B of A*tan(B*x)
   optional float inner_scale = 2 [default = 1.0];
+}
+
+message EuclideanLossProto {
 }
 
 message SoftmaxLossProto {
@@ -336,6 +349,7 @@ message RBMVisProto {
 message RBMHidProto {
   optional int32 hid_dim = 1; // The number of outputs for the layer
   optional bool bias_term = 2 [default = true]; // whether to have bias terms
+  optional bool gaussian = 3 [default = false]; // whether to have bias terms
 }
 
 // Message that stores parameters used by InnerProductLayer
@@ -344,6 +358,8 @@ message InnerProductProto {
   required int32 num_output = 1;
   // use bias vector or not
   optional bool bias_term = 30 [default = true];
+  // transpose or not
+  optional bool transpose = 31 [default = false];
 }
 
 message LRNProto {
@@ -489,12 +505,14 @@ enum LayerType {
   kLRN = 6;
   kPooling = 8;
   kReLU = 9;
-  kRBMHid = 24;
   kRBMVis = 23;
+  kRBMHid = 24;
+  kSigmoid = 26;
   kTanh = 14;
   // Loss layers
   //  - Compute objective loss
   kSoftmaxLoss = 11;
+  kEuclideanLoss = 25;
   // Other layers
   //  - Connect layers when neural net is partitioned
   kBridgeDst = 16;

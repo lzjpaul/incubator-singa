@@ -35,6 +35,9 @@ void Driver::Init(int argc, char **argv) {
   RegisterLayer<TanhLayer>(kTanh);
   RegisterLayer<RBMVisLayer>(kRBMVis);
   RegisterLayer<RBMHidLayer>(kRBMHid);
+  RegisterLayer<SigmoidLayer>(kSigmoid);
+  RegisterLayer<EuclideanLossLayer>(kEuclideanLoss);
+
 #ifdef USE_LMDB
   RegisterLayer<LMDBDataLayer>(kLMDBData);
 #endif
