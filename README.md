@@ -1,3 +1,4 @@
+No convertion and no modification for wangwei's advice
 ##Apache SINGA
 
 Distributed deep learning system
