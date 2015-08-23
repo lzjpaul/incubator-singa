@@ -289,10 +289,10 @@ class BridgeSrcLayer: public Layer {
 
   virtual void ComputeFeature(Phase phase, const vector<SLayer>& srclayers);
   virtual void ComputeGradient(const vector<SLayer>& srclayers);
-  virtual const Blob<float>& data(const Layer* from) const {
+  const Blob<float>& data(const Layer* from, Phase phase) const override {
     return srclayers_[0]->data(this);
   }
-  virtual Blob<float>* mutable_data(const Layer* from){
+  Blob<float>* mutable_data(const Layer* from, Phase phase) override {
     return srclayers_[0]->mutable_data(this);
   }
 
@@ -410,7 +410,7 @@ class DataLayer: public Layer{
     return sample_;
   }
 
-  virtual Blob<float>* mutable_data(const Layer* layer) {
+  Blob<float>* mutable_data(const Layer* layer, Phase phase) override {
     return nullptr;
   }
   virtual Blob<float>* mutable_grad(const Layer* layer) {
@@ -445,8 +445,8 @@ class PrefetchLayer : public Layer {
       const vector<int> &shape,
       const vector<SLayer>& srclayers){}
 
-  virtual const Blob<float>& data(const Layer* from) const ;
-  virtual Blob<float>* mutable_data(const Layer* layer) ;
+  const Blob<float>& data(const Layer* from, Phase phase) const override;
+  Blob<float>* mutable_data(const Layer* layer, Phase phase) override;
 
   virtual Blob<float>* mutable_grad(const Layer* layer){
     return nullptr;
@@ -483,9 +483,9 @@ class SliceLayer: public Layer {
       const vector<int> &shape,
       const vector<SLayer>& srclayers){}
 
-  virtual const Blob<float>& data(const Layer* layer) const;
+  const Blob<float>& data(const Layer* layer, Phase phase) const override;
   virtual const Blob<float>& grad(const Layer* layer) const;
-  virtual Blob<float>* mutable_data(const Layer* layer);
+  Blob<float>* mutable_data(const Layer* layer, Phase phase) override;
   virtual Blob<float>* mutable_grad(const Layer* layer);
  protected:
   int SliceID(const Layer* layer) const;

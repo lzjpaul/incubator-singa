@@ -219,8 +219,8 @@ void MultiSrcSingleLayer::ComputeFeature(Phase phase, const vector<SLayer>& srcl
   LOG(INFO)<<"weight: "<<weighttest[0]<<" "<<weighttest[1]<<" "<<weighttest[2];
   LOG(INFO)<<"hdim_: "<<hdim_<<" vdim_: "<<vdim_;
   LOG(INFO)<<"bias: "<<biastest[0];
-  float* datatest = data.dptr;
-  float* concattest = concat_src.dptr;
+  //float* datatest = data.dptr;
+  //float* concattest = concat_src.dptr;
   /*for (int i = 0; i < 10; i++){
     LOG(INFO)<<"concattest: "<<concattest[0]<<" "<<concattest[1]<<" "<<concattest[2];
     concattest+=vdim_;
@@ -242,8 +242,8 @@ void MultiSrcSingleLayer::ComputeFeature(Phase phase, const vector<SLayer>& srcl
   }*/
   data+=repmat(bias, batchsize_);
   //LOG(INFO)<<"weight: "<<weighttest[0];
-  concattest = concat_src.dptr;
-  datatest = data.dptr;
+  //concattest = concat_src.dptr;
+  //datatest = data.dptr;
   /*for (int i = 0; i < 30; i++){
     LOG(INFO)<<"concattest: "<<concattest[0]<<" "<<concattest[1]<<" "<<concattest[2];
     concattest+=vdim_;
@@ -355,23 +355,24 @@ void InnerRegularizLayer::ComputeFeature(Phase phase, const vector<SLayer>& srcl
   CHECK_EQ(srclayers[0]->data(this).count(), batchsize_*vdim_);
   Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
       Shape2(batchsize_,vdim_));
-  float* srcdptr = src.dptr;
+  /*float* srcdptr = src.dptr;
 
-  /*LOG(INFO) << "begin print diag_data";
+  LOG(ERROR) << "regularize vdim_: "<< vdim_;
+  LOG(INFO) << "begin print diag_data";
   if (strcmp((this->name()).c_str(), "Diagnosis") == 0){
-    for (int i = 0; i < 131; i++)
-      LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
+    for (int i = 0; i < 318; i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i] << "i: "<<i;
     LOG(INFO)<<"finish 1st round";
-    for (int i = 692; i < (692+131); i++)
+    for (int i = 318; i < (318+131); i++)
       LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
     LOG(INFO)<<"finish 2nd round";
-    for (int i = 1384; i < (1384+131); i++)
+    for (int i = 636; i < (636+131); i++)
       LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
     LOG(INFO)<<"finish 3rd round";
-    for (int i = 2076; i < (2076+131); i++)
+    for (int i = 954; i < (954+131); i++)
       LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
     LOG(INFO)<<"finish 4th round";
-    for (int i = 2768; i < (2768+131); i++)
+    for (int i = 1272; i < (1272+131); i++)
       LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
     LOG(INFO)<<"finish 5th round";
   }*/
@@ -1498,7 +1499,7 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
     CHECK_LT(ilabel,10);
     CHECK_GE(ilabel,0);
     loss += -ilabel*log(probptr[0])-(1-ilabel)*log(1-probptr[0]);//is this correct?
-    if (n < 10)
+    if (phase == kTest)
       LOG(INFO)<<"ilabel "<<ilabel<<" predict prob-1 "<<probptr[0]<<" src pre-sigmoid"<<srcdptr[0]<<" loss "<<loss;
     if (static_cast<float>(probptr[0]) < (1.0f - static_cast<float>(probptr[0])))
       predict_0++;
@@ -1529,14 +1530,17 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
   float *metric=metric_.mutable_cpu_data();
   metric[0]=loss*scale_/(1.0f*batchsize_);
   metric[1]=precision*scale_/(1.0f*batchsize_);
-  LOG(ERROR)<<"loss: "<<metric[0];
-  LOG(ERROR)<<"precision: "<<metric[1];
+  // LOG(ERROR)<<"loss: "<<metric[0];
+  // LOG(ERROR)<<"precision: "<<metric[1];
   metric[2]=correct_0;
   metric[3]=predict_0;
   metric[4]=true_0;
   metric[5]=correct_1;
   metric[6]=predict_1;
   metric[7]=true_1;
+  // LOG(INFO) << " loss: "<<metric[0]<<" precision: "<<metric[1];
+  // LOG(INFO)<<" correct_0: "<<metric[2]<<" predict_0: "<<metric[3]<<" true_0: "<<metric[4];
+  // LOG(INFO)<<" correct_1: "<<metric[5]<<" predict_1: "<<metric[6]<<" true_1: "<<metric[7];
 }
 
 void LogisticLossLayer::ComputeGradient(const vector<SLayer>& srclayers) {
