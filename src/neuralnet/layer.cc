@@ -1498,7 +1498,9 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
     int ilabel=static_cast<int>(label[n]);
     CHECK_LT(ilabel,10);
     CHECK_GE(ilabel,0);
-    loss += -ilabel*log(probptr[0])-(1-ilabel)*log(1-probptr[0]);//is this correct?
+    loss += -ilabel*log(std::max(probptr[0], FLT_MIN))-(1-ilabel)*log(std::max(1-probptr[0], FLT_MIN));//is this correct?
+    // LOG(INFO)<< "ilabel*log(probptr[0]): "<<ilabel*log(probptr[0]);
+    // LOG(INFO)<< "(1-ilabel)*log(1-probptr[0]): "<<(1-ilabel)*log(1-probptr[0]);
     if (phase == kTest)
       LOG(INFO)<<"ilabel "<<ilabel<<" predict prob-1 "<<probptr[0]<<" src pre-sigmoid"<<srcdptr[0]<<" loss "<<loss;
     if (static_cast<float>(probptr[0]) < (1.0f - static_cast<float>(probptr[0])))
@@ -1591,6 +1593,8 @@ void SoftmaxLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclaye
       LOG(INFO)<<"n: "<<n<<" dim_: "<<dim_<<" prob of 1: "<<probptr[1];*/
     /*if (n < 30)
       LOG(INFO)<<"ilabel "<<ilabel<<" prob of 1: "<<probptr[1];*/
+    if (phase == kTest)
+      LOG(INFO)<<"ilabel "<<ilabel<<" predict prob-1 "<<probptr[1];
 
     loss-=log(std::max(prob_of_truth, FLT_MIN));
     vector<std::pair<float, int> > probvec;

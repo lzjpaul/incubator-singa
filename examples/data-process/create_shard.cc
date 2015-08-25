@@ -65,7 +65,7 @@ void create_shard(int num_items_argv, int rows_argv, int cols_argv, const char* 
     for (int i = 0; i < (rows * cols -1); i++){
 	    getline (ffile, value, ',');
 	    n = atof(value.c_str());
-      if (i < 6 && (item_id < 10 || item_id == 16000 || item_id == 6338))
+      if (i < 6 && (item_id < 10 || item_id == (num_items-1)))
         std::cout << " data: " << n;
 	    vector->add_data(n);
 	/*if (item_id < 10)
@@ -74,14 +74,14 @@ void create_shard(int num_items_argv, int rows_argv, int cols_argv, const char* 
     }
     getline (ffile, value, '\n');
 	  n = atof(value.c_str());
-    if (item_id < 10)
+    if (item_id < 10 || item_id == (num_items-1))
       std::cout << "data: " << n;
 	  vector->add_data(n); //remember to add here !!!!!!
 
     getline (lfile, value, '\n');
     m = atoi(value.c_str());
     label = (char)m;
-    if (item_id < 10)
+    if (item_id < 10 || item_id == (num_items-1))
       std::cout << "label: " << m << std::endl;
   /*  if (item_id < 10)
                  LOG(INFO) << "zj: item_id" << item_id << "label " << (int)label;*/
