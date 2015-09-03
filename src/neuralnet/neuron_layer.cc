@@ -192,8 +192,8 @@ void RBMVisLayer::Setup(const LayerProto& proto, int npartitions) {
   bias_ = Param::Create(proto.param(1));
   bias_->Setup(vector<int>{src.count() / batchsize_});
 }
-Blob<float>* RBMVisLayer::Sample(int flag) {
-  Tensor<cpu, 2> sample, data;
+Blob<float>* RBMVisLayer::Sample(int flag) {  /*modify here*/
+  /*Tensor<cpu, 2> sample, data;
   if ((flag & kPositive) == kPositive) {
     LOG(FATAL) << "RBMVisLayer can not be sampled for positive flag";
   } else {
@@ -201,7 +201,7 @@ Blob<float>* RBMVisLayer::Sample(int flag) {
     sample = Tensor2(&neg_sample_);
   }
   auto random = TSingleton<Random<cpu>>::Instance();
-  random->SampleBinary(sample, data);
+  random->SampleBinary(sample, data);*/
   return &neg_sample_;
 }
 void RBMVisLayer::ComputeFeature(int flag, Metric* perf) {
@@ -289,7 +289,7 @@ void RBMHidLayer::ComputeFeature(int flag, Metric* perf) {
     src = Tensor2(vis_layer_->mutable_data(this));
   } else {
     data = Tensor2(&neg_data_);
-    src = Tensor2(vis_layer_->Sample(flag));
+    src = Tensor2(vis_layer_->mutable_neg_data(this)); /*modify here*/
   }
   data = dot(src, weight.T());
   data += expr::repmat(bias, batchsize_);
@@ -302,7 +302,7 @@ void RBMHidLayer::ComputeGradient(int flag, Metric* perf) {
   auto hid_pos = Tensor2(&data_);
   auto hid_neg = Tensor2(&neg_data_);
   auto vis_pos = Tensor2(vis_layer_->mutable_data(this));
-  auto vis_neg = Tensor2(vis_layer_->mutable_data(this));
+  auto vis_neg = Tensor2(vis_layer_->mutable_neg_data(this));  /*modify here*/
 
   auto gbias = Tensor1(bias_->mutable_grad());
   gbias = expr::sum_rows(hid_neg);
