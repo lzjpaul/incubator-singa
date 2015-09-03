@@ -192,7 +192,7 @@ void RBMVisLayer::Setup(const LayerProto& proto, int npartitions) {
   bias_ = Param::Create(proto.param(1));
   bias_->Setup(vector<int>{src.count() / batchsize_});
 }
-Blob<float>* RBMVisLayer::Sample(int flag) {  /*modify here*/
+Blob<float>* RBMVisLayer::Sample(int flag) {  /*RBMVis does not need to sample*/
   /*Tensor<cpu, 2> sample, data;
   if ((flag & kPositive) == kPositive) {
     LOG(FATAL) << "RBMVisLayer can not be sampled for positive flag";
@@ -260,9 +260,9 @@ void RBMHidLayer::Setup(const LayerProto& proto,
   vis_layer_ = static_cast<RBMVisLayer*> (srclayers_[0]);
 }
 
-Blob<float>* RBMHidLayer::Sample(int flag) {
+Blob<float>* RBMHidLayer::Sample(int flag) { /*RBMHid layer only samples in negative phase*/
   Tensor<cpu, 2> sample, data;
-  if ((flag & kPositive) == kPositive) {
+  /*if ((flag & kPositive) == kPositive) {
     data = Tensor2(&data_);
     sample = Tensor2(&sample_);
   } else {
@@ -276,7 +276,17 @@ Blob<float>* RBMHidLayer::Sample(int flag) {
   } else {
     random->SampleBinary(sample, data);
   }
-  return (flag & kPositive) == kPositive ? &sample_ : &neg_sample_;
+  return (flag & kPositive) == kPositive ? &sample_ : &neg_sample_;*/
+  data = Tensor2(&data_);
+  sample = Tensor2(&neg_sample_);
+  auto random = TSingleton<Random<cpu>>::Instance();
+  if (gaussian_) {  // first gibbs
+    random->SampleGaussian(sample, 0.0f, 1.0f);
+    sample += data;
+  } else {
+    random->SampleBinary(sample, data);
+  }
+  return &neg_sample_;
 }
 
 void RBMHidLayer::ComputeFeature(int flag, Metric* perf) {
@@ -289,7 +299,7 @@ void RBMHidLayer::ComputeFeature(int flag, Metric* perf) {
     src = Tensor2(vis_layer_->mutable_data(this));
   } else {
     data = Tensor2(&neg_data_);
-    src = Tensor2(vis_layer_->mutable_neg_data(this)); /*modify here*/
+    src = Tensor2(vis_layer_->mutable_neg_data(this)); /*modify here, using neg_data_ of vis layer*/
   }
   data = dot(src, weight.T());
   data += expr::repmat(bias, batchsize_);
@@ -302,7 +312,7 @@ void RBMHidLayer::ComputeGradient(int flag, Metric* perf) {
   auto hid_pos = Tensor2(&data_);
   auto hid_neg = Tensor2(&neg_data_);
   auto vis_pos = Tensor2(vis_layer_->mutable_data(this));
-  auto vis_neg = Tensor2(vis_layer_->mutable_neg_data(this));  /*modify here*/
+  auto vis_neg = Tensor2(vis_layer_->mutable_neg_data(this));  /*modify here, vis_neg should be neg_data_*/
 
   auto gbias = Tensor1(bias_->mutable_grad());
   gbias = expr::sum_rows(hid_neg);
