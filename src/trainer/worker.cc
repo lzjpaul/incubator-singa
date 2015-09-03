@@ -269,10 +269,7 @@ void BPWorker::Forward(int step, Phase phase, shared_ptr<NeuralNet> net){
         LOG(INFO)<<StringPrintf("Forward layer  %10s data norm1 %13.9f",
             layer->name().c_str(), layer->data(nullptr).asum_data());
       }
-      //  print weight matrix
-      if (step!= 0 && phase == kTest){
 
-      }
     }
   }
   // LOG(INFO)<<"Forward ends";
