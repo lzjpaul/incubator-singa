@@ -167,6 +167,8 @@ class MultiSrcInnerProductLayer: public Layer {
   int vdim_;
   int batchsize_;
   int srclayer_num_;
+  int weight_file_version_;
+  int activation_file_version_;
   shared_ptr<Param> bias_;
   vector<shared_ptr<Param>> weight_;
 };

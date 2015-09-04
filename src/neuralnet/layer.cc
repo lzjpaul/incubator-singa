@@ -8,9 +8,13 @@
 #include "neuralnet/layer.h"
 #include "utils/singleton.h"
 #include "utils/factory.h"
+#include <time.h>
+#include <fstream>
+#include <iostream>
 
 using namespace mshadow;
 using namespace mshadow::expr;
+using namespace std;
 
 namespace singa {
 
@@ -433,6 +437,9 @@ void InnerProductLayer::Setup(const LayerProto& proto,
   bias_=shared_ptr<Param>(factory->Create("Param"));
   weight_->Setup(proto.param(0), vector<int>{vdim_, hdim_});
   bias_->Setup(proto.param(1), vector<int>{hdim_});
+  srand((unsigned)time(NULL));
+  weight_file_version_ = rand()%1000;
+  activation_file_version_ = rand()%1000;
   LOG(ERROR)<<"inner setup end ";
 }
 void InnerProductLayer::SetupAfterPartition(const LayerProto& proto,
@@ -487,6 +494,25 @@ void InnerProductLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
   data=dot(src, weight);
   // repmat: repeat bias vector into batchsize rows
   data+=repmat(bias, batchsize_);
+
+
+  // print activation and weight
+  if (strcmp((this->name()).c_str(), "Diagfc2") == 0 && phase == kTest){
+    ofstream weightout("/data/zhaojing/SynPUF-regularization/visualization/weight" + std::to_string(static_cast<int>(weight_file_version_)) + ".txt");
+    ofstream activationout("/data/zhaojing/SynPUF-regularization/visualization/activation" + std::to_string(static_cast<int>(activation_file_version_)) + ".txt");
+    weightout << vdim_ << "," << hdim_ << "\n";
+    for (int i = 0; i < (vdim_-1); i++)
+      for (int j = 0; j < hdim; j++)
+        weightout << weight[i][j] << ",";
+    weightout << weight[vdim_-1][hdim_-1] << "\n";
+
+    activationout << batchsize_ << "," << vdim_ << "\n";
+    for (int i = 0; i < batchsize_; i++){
+      for (int j = 0; j < (vdim_ - 1); j++)
+        activationout << src[i][j] << ",";
+      activationout << src[i][vdim_-1] << "\n";
+    }
+  }
 }
 
 void InnerProductLayer::ComputeGradient(const vector<SLayer>& srclayers) {
