@@ -502,7 +502,7 @@ void InnerProductLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
     ofstream activationout("/data/zhaojing/SynPUF-regularization/visualization/activation" + std::to_string(static_cast<int>(activation_file_version_)) + ".txt");
     weightout << vdim_ << "," << hdim_ << "\n";
     for (int i = 0; i < (vdim_-1); i++)
-      for (int j = 0; j < hdim; j++)
+      for (int j = 0; j < hdim_; j++)
         weightout << weight[i][j] << ",";
     weightout << weight[vdim_-1][hdim_-1] << "\n";
 
