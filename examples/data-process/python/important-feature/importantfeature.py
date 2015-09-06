@@ -33,6 +33,7 @@ selected_activation_num = int (sys.argv[2])
 selected_activation_index = np.zeros(selected_activation_num)
 print selected_activation_index.shape
 
+print "sorted weight\n"
 print sorted(weight, reverse = True)
 
 batchsize = len(data[:,0])
@@ -53,9 +54,7 @@ for k in range(len(weight)):
 scaler = preprocessing.StandardScaler().fit(np.matrix(data_selected_activation_col[:,:]).T)
 data_selected_activation_mean_dup = scaler.mean_
 print "data_selected_activation transpose shape = \n", (np.matrix(data_selected_activation_col[:,:]).T).shape
-print "data_selected_activation_mean = \n", data_selected_activation_mean
 
-selected_sample = np.empty([selected_sample_num,vdim])
 print "duplicated_data_mean"
 for i in range(len(data_selected_activation_mean_dup)):
     print i, data_selected_activation_mean_dup[i]
@@ -65,8 +64,10 @@ print "not duplicated_data_mean"
 for i in range(len(data_selected_activation_mean)):
     print i, data_selected_activation_mean[i]
 
-selected_sample_num = int(sys.argv[4])
+print "data_selected_activation_mean = \n", data_selected_activation_mean
 
+selected_sample_num = int(sys.argv[4])
+selected_sample = np.empty([selected_sample_num,vdim])
 print sorted(data_selected_activation_mean, reverse = True)
 j = 0
 for k in range(len(data_selected_activation_mean)):
@@ -88,7 +89,7 @@ print "not duplicated"
 for i in range(len(selected_sample_std)):
     print i, selected_sample_std[i]
 
-selected_feature_num = int (sys.argv[4])
+selected_feature_num = int (sys.argv[5])
 selected_feature_index = np.zeros(selected_feature_num)
 print selected_feature_index.shape
 
@@ -105,7 +106,7 @@ for k in range(len(selected_sample_std)):
 
 print selected_feature_index
 # Write fitting result into output file
-file = open(sys.argv[3], "w")
+file = open(sys.argv[6], "w")
 np.savetxt(file, selected_feature_index, "%d", ",")
 file.close()
 #python importantfeature.py importantfeatureinputsample.csv importantfeaturesampleindex.csv importantfeatureindex.txt 2
