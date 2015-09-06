@@ -13,10 +13,17 @@ weight_dup = np.genfromtxt(file, delimiter=",")
 file.close()
 print "weight_dup shape = \n", weight_dup.shape
 
+#activation matrix
 file = open(sys.argv[3])
 data = np.genfromtxt(file, delimiter=",")
 file.close()
 print "data shape = \n", data.shape
+
+file = open(sys.argv[6])
+sample = np.genfromtxt(file, delimiter=",")
+file.close()
+print "sample shape = \n", sample.shape
+
 
 # Arrange data into D matrix and v vector.
 print "duplicated weight"
@@ -37,9 +44,9 @@ print "sorted weight\n"
 print sorted(weight, reverse = True)
 
 batchsize = len(data[:,0])
-vdim = len(data[0,:])
+#vdim = len(data[0,:])
 print "batchsize = \n", batchsize
-print "vdim = \n", vdim
+#print "vdim = \n", vdim
 
 data_selected_activation_col = np.empty([batchsize,selected_activation_num])
 
@@ -51,6 +58,10 @@ for k in range(len(weight)):
             data_selected_activation_col[:,j] = data[:,i]
             j = j + 1
 
+print "not transpose"
+print data_selected_activation_col
+print "transpose"
+print np.matrix(data_selected_activation_col[:,:]).T
 scaler = preprocessing.StandardScaler().fit(np.matrix(data_selected_activation_col[:,:]).T)
 data_selected_activation_mean_dup = scaler.mean_
 print "data_selected_activation transpose shape = \n", (np.matrix(data_selected_activation_col[:,:]).T).shape
@@ -66,6 +77,7 @@ for i in range(len(data_selected_activation_mean)):
 
 print "data_selected_activation_mean = \n", data_selected_activation_mean
 
+vdim = len(sample[0,:])
 selected_sample_num = int(sys.argv[4])
 selected_sample = np.empty([selected_sample_num,vdim])
 print sorted(data_selected_activation_mean, reverse = True)
@@ -74,8 +86,9 @@ for k in range(len(data_selected_activation_mean)):
     mean_value = sorted(data_selected_activation_mean, reverse = True)[k]
     for i in range(len(data_selected_activation_mean_dup)):
         if data_selected_activation_mean_dup[i] == mean_value and j < selected_sample_num:
-            selected_sample[j,:] = data[i,:]
+            selected_sample[j,:] = sample[i,:]
             j = j + 1
+print "selected_sample = \n", selected_sample
 
 scaler = preprocessing.StandardScaler().fit(selected_sample)
 selected_sample_std_dup = scaler.std_
@@ -106,7 +119,7 @@ for k in range(len(selected_sample_std)):
 
 print selected_feature_index
 # Write fitting result into output file
-file = open(sys.argv[6], "w")
+file = open(sys.argv[7], "w")
 np.savetxt(file, selected_feature_index, "%d", ",")
 file.close()
-#python importantfeature.py importantfeatureinputsample.csv importantfeaturesampleindex.csv importantfeatureindex.txt 2
+#python importantfeature.py tryimportantfeatureweight.csv 3 tryimportantfeatureactivation.csv 3 4 tryimportantfeatureinputsample.csv tryimportantfeature_selected_feature_index.csv
