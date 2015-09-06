@@ -1,5 +1,4 @@
 # important feature
-
 import numpy as np
 import numpy.linalg as la
 import numpy
@@ -10,22 +9,72 @@ import sys
 
 # Read data in input file, which is in CSV format.
 file = open(sys.argv[1])
+weight_dup = np.genfromtxt(file, delimiter=",")
+file.close()
+print "weight_dup shape = \n", weight_dup.shape
+
+file = open(sys.argv[3])
 data = np.genfromtxt(file, delimiter=",")
 file.close()
 print "data shape = \n", data.shape
 
-file = open(sys.argv[2])
-index = np.genfromtxt(file, delimiter=",")
-file.close()
-print "data index = \n", index
-
 # Arrange data into D matrix and v vector.
-select_sample_n = len(index)
-col = len(data[0, :])
-selected_sample = np.matrix(np.empty([select_sample_n,col]))
+print "duplicated weight"
+for i in range(len(weight_dup)):
+    print i, weight_dup[i]
 
-for i in range(len(index)):
-	selected_sample[i,:] = data[index[i],:]
+#not duplicate
+weight = list(set(weight_dup))
+print "not duplicated weight"
+for i in range(len(weight)):
+    print i, weight[i]
+
+selected_activation_num = int (sys.argv[2])
+selected_activation_index = np.zeros(selected_activation_num)
+print selected_activation_index.shape
+
+print sorted(weight, reverse = True)
+
+batchsize = len(data[:,0])
+vdim = len(data[0,:])
+print "batchsize = \n", batchsize
+print "vdim = \n", vdim
+
+data_selected_activation_col = np.empty([batchsize,selected_activation_num])
+
+j = 0
+for k in range(len(weight)):
+    weight_value = sorted(weight, reverse = True)[k]
+    for i in range(len(weight_dup)):
+        if weight_dup[i] == weight_value and j < selected_activation_num:
+            data_selected_activation_col[:,j] = data[:,i]
+            j = j + 1
+
+scaler = preprocessing.StandardScaler().fit(np.matrix(data_selected_activation_col[:,:]).T)
+data_selected_activation_mean_dup = scaler.mean_
+print "data_selected_activation transpose shape = \n", (np.matrix(data_selected_activation_col[:,:]).T).shape
+print "data_selected_activation_mean = \n", data_selected_activation_mean
+
+selected_sample = np.empty([selected_sample_num,vdim])
+print "duplicated_data_mean"
+for i in range(len(data_selected_activation_mean_dup)):
+    print i, data_selected_activation_mean_dup[i]
+
+data_selected_activation_mean = list(set(data_selected_activation_mean_dup))
+print "not duplicated_data_mean"
+for i in range(len(data_selected_activation_mean)):
+    print i, data_selected_activation_mean[i]
+
+selected_sample_num = int(sys.argv[4])
+
+print sorted(data_selected_activation_mean, reverse = True)
+j = 0
+for k in range(len(data_selected_activation_mean)):
+    mean_value = sorted(data_selected_activation_mean, reverse = True)[k]
+    for i in range(len(data_selected_activation_mean_dup)):
+        if data_selected_activation_mean_dup[i] == mean_value and j < selected_sample_num:
+            selected_sample[j,:] = data[i,:]
+            j = j + 1
 
 scaler = preprocessing.StandardScaler().fit(selected_sample)
 selected_sample_std_dup = scaler.std_
