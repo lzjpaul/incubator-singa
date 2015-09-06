@@ -28,8 +28,14 @@ for i in range(len(index)):
 	selected_sample[i,:] = data[index[i],:]
 
 scaler = preprocessing.StandardScaler().fit(selected_sample)
-selected_sample_std = scaler.std_
+selected_sample_std_dup = scaler.std_
 #print selected_sample_std
+print "duplicated"
+for i in range(len(selected_sample_std_dup)):
+    print i, selected_sample_std_dup[i]
+
+selected_sample_std = list(set(selected_sample_std_dup))
+print "not duplicated"
 for i in range(len(selected_sample_std)):
     print i, selected_sample_std[i]
 
@@ -37,13 +43,14 @@ selected_feature_num = int (sys.argv[4])
 selected_feature_index = np.zeros(selected_feature_num)
 print selected_feature_index.shape
 
+#print selected_sample_std.shape
 print sorted(selected_sample_std)
 
 j = 0
 for k in range(len(selected_sample_std)):
     feature_std_value = sorted(selected_sample_std)[k]
-    for i in range(len(selected_sample_std)):
-	if selected_sample_std[i] == feature_std_value and j < selected_feature_num:
+    for i in range(len(selected_sample_std_dup)):
+	if selected_sample_std_dup[i] == feature_std_value and j < selected_feature_num:
 	    selected_feature_index[j] = i
 	    j = j + 1
 
