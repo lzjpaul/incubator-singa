@@ -17,7 +17,7 @@
 
 #include "utils/data_shard.h"
 #include "utils/common.h"
-#include "proto/common.pb.h"
+#include "proto/model.pb.h"
 
 using singa::DataShard;
 using singa::WriteProtoToBinaryFile;
@@ -61,15 +61,10 @@ void create_shard(const char* image_filename, const char* output) {
 	getline (file, value, ',');
 	n = atoi(value.c_str());
 	pixels[i] = (char)n;
-	/*if (item_id < 10)
-		 LOG(INFO) << "zj: item_id" << item_id << "element " << (int)pixels[i];*/
-	/*	LOG(INFO) << StringPrintf("zj: item_id %d element %d\n", item_id,(int)pixels[i]);*/
     }
     getline (file, value, '\n');
     n = atoi(value.c_str());
     label = (char)n;
-  /*  if (item_id < 10)
-                 LOG(INFO) << "zj: item_id" << item_id << "label " << (int)label;*/
     image->set_pixel(pixels, rows*cols);
     image->set_label(label);
     snprintf(key, kMaxKeyLength, "%08d", item_id);

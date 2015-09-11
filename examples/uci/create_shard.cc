@@ -42,7 +42,7 @@ void create_shard(const char* image_filename, const char* output) {
   getline (file, value, '\n');
   cols = atoi (value.c_str());
 
-  
+
 
   DataShard shard(output, DataShard::kCreate);
   char label;
@@ -54,22 +54,24 @@ void create_shard(const char* image_filename, const char* output) {
   singa::SingleLabelImageRecord* image=record.mutable_image();
   image->add_shape(rows);
   image->add_shape(cols);
-  LOG(INFO) << "A total of " << num_items << " items.";
-  LOG(INFO) << "Rows: " << rows << " Cols: " << cols;
+  std::cout << "A total of " << num_items << " items.";
+  std::cout << "Rows: " << rows << " Cols: " << cols;
   for (int item_id = 0; item_id < num_items; ++item_id) {
     for (int i = 0; i < rows * cols; i++){
-	getline (file, value, ',');
-	n = atoi(value.c_str());
-	pixels[i] = (char)n;
+	    getline (file, value, ',');
+	    n = atoi(value.c_str());
+	    pixels[i] = (char)n;
 	/*if (item_id < 10)
 		 LOG(INFO) << "zj: item_id" << item_id << "element " << (int)pixels[i];*/
-	/*	LOG(INFO) << StringPrintf("zj: item_id %d element %d\n", item_id,(int)pixels[i]);*/
+      if (i < 10 && (item_id < 10 || item_id == (num_items-1))){
+		    std::cout << " element: " << (int)pixels[i];
+      }
     }
     getline (file, value, '\n');
     n = atoi(value.c_str());
     label = (char)n;
-  /*  if (item_id < 10)
-                 LOG(INFO) << "zj: item_id" << item_id << "label " << (int)label;*/
+    if (item_id < 10 || item_id == (num_items-1))
+      std::cout << "item_id: " << item_id << "label " << (int)label << "\n";
     image->set_pixel(pixels, rows*cols);
     image->set_label(label);
     snprintf(key, kMaxKeyLength, "%08d", item_id);
