@@ -458,10 +458,10 @@ void InnerProductLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
   Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
       Shape2(batchsize_,vdim_));
   float* srcdptr = src.dptr;
-  if (strcmp((this->name()).c_str(), "Demographics") == 0 || strcmp((this->name()).c_str(), "Procedure") == 0){
+  /*if (strcmp((this->name()).c_str(), "Demographics") == 0 || strcmp((this->name()).c_str(), "Procedure") == 0){
     for (int i = 0; i < 10; i++)
       LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
-  }
+  }*/
   /*if (strcmp((this->name()).c_str(), "Diagnosis") == 0){
     for (int i = 0; i < 50; i++)
       LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
