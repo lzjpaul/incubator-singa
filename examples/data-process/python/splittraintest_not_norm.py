@@ -24,10 +24,8 @@ print testdata_matrix.shape
 print "testlabel_matrix.shape"
 print testlabel_matrix.shape
 #output
-a = numpy.asarray(testdata_matrix, dtype = float)
-b= numpy.asarray(testlabel_matrix, dtype = int)
+a = numpy.asarray(testdata_matrix, dtype = int)
+b = numpy.asarray(testlabel_matrix, dtype = int)
 numpy.savetxt(sys.argv[5], a, fmt = '%d', delimiter=",") #modify here
 numpy.savetxt(sys.argv[6], b, fmt = '%d', delimiter=",") #modify here
-#python splittraintest.py 18 28 test_script_traintestdata.csv test_script_traintestlabel.csv
-#test_script_traindata.csv test_script_trainlabel.csv test_script_testdata.csv test_script_testlabel.csv
-
+#python splittraintest_not_norm.py 65000 90319 1143 /data/zhaojing/SynPUF-regularization/SynPUF_2009_Carrier_Claims_Vector_Regulariz_longvector.txt /data/zhaojing/SynPUF-regularization/SynPUF_2009_Carrier_Claims_Vector_Regulariz_important_feature_test_data.csv /data/zhaojing/SynPUF-regularization/SynPUF_2009_Carrier_Claims_Vector_Regulariz_important_feature_test_label.csv
