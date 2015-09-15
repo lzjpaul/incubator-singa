@@ -51,13 +51,17 @@ j = 0
 for k in range(len(presigmoid)):
     sigmoid_value = sorted(presigmoid, reverse = True)[k]
     for i in range(len(presigmoid_dup)):
-        if presigmoid_dup[i] == sigmoid_value and label[i] == 1 and j < selected_sample_num:
-            selected_sample[j,:] = sample[i,:]
-            selected_sample_index[j] = i
-            j = j + 1
+        if j >= selected_sample_num:
+            break
+        else:
+            if presigmoid_dup[i] == sigmoid_value and label[i] == 1 and j < selected_sample_num:
+                selected_sample[j,:] = sample[i,:]
+                selected_sample_index[j] = i
+                j = j + 1
 
 # print "selected_sample_index = \n", selected_sample_index
 # print "selected_sample = \n", selected_sample
+print "diabetes selected_sample = \n", selected_sample[:,226]
 
 scaler = preprocessing.StandardScaler().fit(sample)
 all_sample_feature_mean = scaler.mean_
@@ -67,6 +71,8 @@ selected_sample_featue_max = np.zeros(vdim)
 for i in range(len(selected_sample[0,:])):
     selected_sample_featue_max[i] = max(selected_sample[:,i])
 
+print "diabetes selected_sample mean = \n", selected_sample_feature_mean[226]
+print "diabetes selected_sample max = \n", selected_sample_featue_max[226]
 # print "all_sample_feature_mean = \n", all_sample_feature_mean
 # print "selected_sample_feature_mean = \n", selected_sample_feature_mean
 # print "selected_sample_featue_max = \n", selected_sample_featue_max
@@ -92,9 +98,13 @@ j = 0
 for k in range(len(all_and_selected_mean_difference)):
     difference_value = sorted(all_and_selected_mean_difference, reverse = True)[k]
     for i in range(len(all_and_selected_mean_difference_dup)):
-	if all_and_selected_mean_difference_dup[i] == difference_value and j < selected_feature_num:
-	    selected_feature_index[j] = i
-	    j = j + 1
+        if j >= selected_feature_num:
+            break
+        else:
+	    if all_and_selected_mean_difference_dup[i] == difference_value and j < selected_feature_num:
+                print " = ", difference_value
+	        selected_feature_index[j] = i
+	        j = j + 1
 
 print selected_feature_index
 # Write fitting result into output file
