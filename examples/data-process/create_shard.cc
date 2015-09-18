@@ -124,3 +124,7 @@ int main(int argc, char** argv) {
   }
   return 0;
 }
+
+//./create_shard.bin 65000 1 1143 /data/zhaojing/SynPUF-regularization/SynPUF_2009_Carrier_Claims_Vector_Regulariz_train_data_norm.csv
+///data/zhaojing/SynPUF-regularization/SynPUF_2009_refer_2010_Car_Cla_Vec_Regulariz_train_label.csv
+///data/zhaojing/SynPUF-regularization/SynPUF_2009_refer_2010_Car_Cla_Vec_Regulariz_train_shard/
