@@ -364,19 +364,19 @@ void InnerRegularizLayer::ComputeFeature(Phase phase, const vector<SLayer>& srcl
   LOG(ERROR) << "regularize vdim_: "<< vdim_;
   LOG(INFO) << "begin print diag_data";
   if (strcmp((this->name()).c_str(), "Diagnosis") == 0){
-    for (int i = 0; i < 318; i++)
+    for (int i = 0; i < 131; i++)
       LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i] << "i: "<<i;
     LOG(INFO)<<"finish 1st round";
-    for (int i = 318; i < (318+131); i++)
+    for (int i = vdim_; i < (vdim_+131); i++)
       LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
     LOG(INFO)<<"finish 2nd round";
-    for (int i = 636; i < (636+131); i++)
+    for (int i = 2 * vdim_; i < (2 * vdim_+131); i++)
       LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
     LOG(INFO)<<"finish 3rd round";
-    for (int i = 954; i < (954+131); i++)
+    for (int i = 3 * vdim_; i < (3 * vdim_+131); i++)
       LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
     LOG(INFO)<<"finish 4th round";
-    for (int i = 1272; i < (1272+131); i++)
+    for (int i = 4 * vdim_; i < (4 * vdim_+131); i++)
       LOG(INFO)<<" layer name: "<<(this->name())<<" src: "<<srcdptr[i];
     LOG(INFO)<<"finish 5th round";
   }*/
