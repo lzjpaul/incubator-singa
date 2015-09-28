@@ -355,7 +355,7 @@ class MultiSrcDataLayer: public ParserLayer {
       else if ( strcmp((from->name()).c_str(), "Demographics") == 0 || strcmp((from->name()).c_str(), "Demoand") == 0)
         return &demo_data_;
       else{
-        // LOG(ERROR)<<"no mutable_data returned in the MultiSrcDatalayer return &data_";
+        LOG(ERROR)<<"no mutable_data returned in the MultiSrcDatalayer return &data_";
         return &data_;
       }
     }
@@ -384,7 +384,7 @@ class MultiSrcDataLayer: public ParserLayer {
         return demo_data_;
       }
       else{
-        // LOG(ERROR)<<"no data returned in the MultiSrcDatalayer return data_";
+        LOG(ERROR)<<"no data returned in the MultiSrcDatalayer return data_";
         return data_;
       }
     }
@@ -430,7 +430,7 @@ class MultiSrcFDataLayer: public ParserLayer {
       else if ( strcmp((from->name()).c_str(), "Demographics") == 0 || strcmp((from->name()).c_str(), "Demoand") == 0)
         return &demo_data_;
       else{
-        //LOG(ERROR)<<"no mutable_data returned in the MultiSrcDatalayer return &data_";
+        // LOG(ERROR)<<"no mutable_data returned in the MultiSrcFDatalayer return &data_";
         return &data_;
       }
     }
@@ -461,7 +461,7 @@ class MultiSrcFDataLayer: public ParserLayer {
         return demo_data_;
       }
       else{
-        //LOG(ERROR)<<"no data returned in the MultiSrcDatalayer return data_";
+        // LOG(ERROR)<<"no data returned in the MultiSrcFDatalayer return data_";
         return data_;
       }
     }

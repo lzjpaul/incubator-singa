@@ -1,0 +1,2 @@
+nohup: ignoring input
+./rank_50.sh: line 1: 22657 Terminated              python marbleTests_zj_rank50.py

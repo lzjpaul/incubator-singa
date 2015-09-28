@@ -480,14 +480,17 @@ void InnerProductLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
     LOG(INFO)<<"finish 5th round";
   }*/
   // LOG(INFO)<<" layer name: "<<(this->name())<<" src finish";
-  if (strcmp((this->name()).c_str(), "fc1") == 0){
-    for (int i = 12434; i < 12444; i++)
-      LOG(INFO)<<" layer name: "<<(this->name())<<" proc: "<<srcdptr[i];
-    for (int j = 19527; j < 19537; j++)
-      LOG(INFO)<<" layer name: "<<(this->name())<<" demo: "<<srcdptr[j];
-    for (int j = 39087; j < 39097; j++)
-      LOG(INFO)<<" layer name: "<<(this->name())<<" next demo: "<<srcdptr[j];
-  }
+  /*if (strcmp((this->name()).c_str(), "AllSources") == 0){
+    for (int i = 0; i < 13; i++)
+      LOG(ERROR)<<" layer name: "<<(this->name())<<" first round data: "<<srcdptr[i];
+    for (int j = 338; j < (338 + 13); j++)
+      LOG(ERROR)<<" layer name: "<<(this->name())<<" second round data: "<<srcdptr[j];
+    for (int j = 676; j < (676 + 13); j++)
+      LOG(ERROR)<<" layer name: "<<(this->name())<<" third round data: "<<srcdptr[j];
+    for (int j = 1014; j < (1014 + 13); j++)
+      LOG(ERROR)<<" layer name: "<<(this->name())<<" third round data: "<<srcdptr[j];
+
+  }*/
 
   Tensor<cpu, 2> weight(weight_->mutable_cpu_data(), Shape2(vdim_,hdim_));
   Tensor<cpu, 1> bias(bias_->mutable_cpu_data(), Shape1(hdim_));
