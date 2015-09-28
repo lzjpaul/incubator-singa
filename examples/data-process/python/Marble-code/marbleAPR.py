@@ -169,6 +169,9 @@ class MarbleAPR(Marble):
             print "Iteration " + str(iteration) + ": " + str(ll)
             print(debug_log.format(iteration, xi, np.abs(lastLL - ll),
                                    time.time() - startIter))
+            print "lastLL = \n", lastLL
+            print "ll = \n", ll
+            print "abs(lastLL - ll) = \n", np.abs(lastLL - ll)
             if np.abs(lastLL - ll) < delta_tol and xi >= 0.99:
                 break
             lastLL = ll
