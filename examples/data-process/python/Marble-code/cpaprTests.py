@@ -40,4 +40,5 @@ Y.normalize_sort(1)
 
 """ Test factorization of regular tensor """
 XT = dtensor.dtensor(range(1, 25), [3, 4, 2])
-CP_APR.cp_apr(XT, 4)
+M, iter_info = CP_APR.cp_apr(XT, 4)
+print "M = \n", M

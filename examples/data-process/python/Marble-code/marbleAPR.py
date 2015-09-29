@@ -123,8 +123,14 @@ class MarbleAPR(Marble):
         M = kwargs.pop('init', _DEF_MINIT)
         max_inner = kwargs.pop('max_inner', _DEF_MAXINNER)
         max_iters = kwargs.pop('max_iter', _DEF_MAXITER)
-        delta_tol = kwargs.pop('delta_tol', _DEF_DELTATOL)
+        delta_tol = kwargs.pop('del_tol', _DEF_DELTATOL)
         debug_log = "Iteration {0}: Xi = {1}, dll = {2}, time = {3}"
+        print "delta_tol = \n", delta_tol
+        print "gradual = \n", gradual
+        print "max_inner = \n", max_inner
+        print "max_iters = \n", max_iters
+        print "gamma = \n", gamma
+
         print "begin initialize\n"
         self.initialize(M)
         # Dictionary to manage iteration information
@@ -182,6 +188,9 @@ class MarbleAPR(Marble):
         max_inner = kwargs.pop('max_inner', _DEF_MAXINNER)
         delta_tol = kwargs.pop('delta_tol', _DEF_DELTATOL)
 
+        print "max_iters = \n", max_iters
+        print "max_inner = \n", max_inner
+        print "delta_tol = \n", delta_tol
         # store off the old ones
         origM = {REG_LOCATION: self.cp_decomp[REG_LOCATION].copy(),
                  AUG_LOCATION: self.cp_decomp[AUG_LOCATION].copy()}

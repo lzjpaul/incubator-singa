@@ -11,16 +11,15 @@ Test file associated with the MARBLE decomposition using APR
 """
 
 """ Test factorization of sparse tensor """
-print "open subs file\n"
+print "open subs1\n"
 file = open("/data/zhaojing/marble/tensor/subs1.csv")
 subs = np.genfromtxt(file, delimiter=",")
 subs = subs.astype(np.int)
-print "open vals file\n"
+print "open vlas1\n"
 file = open("/data/zhaojing/marble/tensor/vals1.csv")
 vals = np.genfromtxt(file, delimiter=",")
 vals = np.matrix(vals).T
 vals = vals.astype(np.int)
-print "open siz file\n"
 file = open("/data/zhaojing/marble/tensor/siz.csv")
 siz = np.genfromtxt(file, delimiter=",")
 siz = siz.astype(np.int)
@@ -31,9 +30,9 @@ print "siz = \n", siz
 
 X = sptensor.sptensor(subs, vals, siz)
 
-marble = MarbleAPR(X, 50, 0.1);
+marble = MarbleAPR(X, 75, 0.7);
 
-iterInfo, ll = marble.compute_decomp(gamma = [0.0001, 0.01, 0.01], gradual = True, max_inner = 10, max_iter = 360, del_tol = 1e-10)
+iterInfo, ll = marble.compute_decomp(gamma = [0.0001, 0.01, 0.01], gradual = True, max_inner = 10, max_iter = 240, del_tol = 1e-10)
 
 # signal_factors = marble.get_signal_factors()
 # print "signal_factors = \n\n", signal_factors
@@ -56,14 +55,14 @@ print "siz2 = \n", siz2
 Xhat = sptensor.sptensor(subs2, vals2, siz2)
 
 np.random.seed(10)
-projMat_test, biasMat_test = marble.project_data(Xhat, 0, max_iter = 360, max_inner = 10, delta_tol = 1e-10)
-projMat_train, biasMat_train = marble.project_data(X, 0, max_iter = 360, max_inner = 10, delta_tol = 1e-10)
+projMat_test, biasMat_test = marble.project_data(Xhat, 0, max_iter = 240, max_inner = 10, delta_tol = 1e-10)
+projMat_train, biasMat_train = marble.project_data(X, 0, max_iter = 240, max_inner = 10, delta_tol = 1e-10)
 # print "projMat = \n\n", projMat
 # print "biasMat = \n\n", biasMat
 
-file = open("/data/zhaojing/marble/tensor/membership_test_50_10_360.txt", "w")
+file = open("/data/zhaojing/marble/tensor/membership_test_75_10_07_240.txt", "w")
 np.savetxt(file, projMat_test, "%f", ",")
 file.close()
-file = open("/data/zhaojing/marble/tensor/membership_train_50_10_360.txt", "w")
+file = open("/data/zhaojing/marble/tensor/membership_train_75_10_07_240.txt", "w")
 np.savetxt(file, projMat_train, "%f", ",")
 file.close()

@@ -33,7 +33,8 @@ X = sptensor.sptensor(subs, vals, siz)
 
 marble = MarbleAPR(X, 3, 0.1);
 
-iterInfo, ll = marble.compute_decomp(gamma = [0.0001, 0.01, 0.01], gradual = True, max_inner = 5, max_iter = 180, del_tol = 0.01)
+# iterInfo, ll = marble.compute_decomp(gamma = [0.0001, 0.01, 0.01], gradual = True, max_inner = 5, max_iter = 180, del_tol = 1e-10)
+iterInfo, ll = marble.compute_decomp(gradual = True, max_inner = 5, max_iter = 5, del_tol = 1e-10)
 
 # signal_factors = marble.get_signal_factors()
 # print "signal_factors = \n\n", signal_factors
@@ -56,8 +57,8 @@ print "siz2 = \n", siz2
 Xhat = sptensor.sptensor(subs2, vals2, siz2)
 
 np.random.seed(10)
-projMat_test, biasMat_test = marble.project_data(Xhat, 0, max_iter = 180, max_inner = 5, delta_tol = 0.01)
-projMat_train, biasMat_train = marble.project_data(X, 0, max_iter = 180, max_inner = 5, delta_tol = 0.01)
+projMat_test, biasMat_test = marble.project_data(Xhat, 0, max_iter = 180, max_inner = 5, delta_tol = 1e-10)
+projMat_train, biasMat_train = marble.project_data(X, 0, max_iter = 180, max_inner = 5, delta_tol = 1e-10)
 # print "projMat = \n\n", projMat
 # print "biasMat = \n\n", biasMat
 

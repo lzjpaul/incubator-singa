@@ -32,7 +32,7 @@ X = sptensor.sptensor(subs, vals, siz)
 
 marble = MarbleAPR(X, 75, 0.1);
 
-iterInfo, ll = marble.compute_decomp(gamma = [0.0001, 0.01, 0.01], gradual = True, max_inner = 5, max_iter = 150, del_tol = 1e-10)
+iterInfo, ll = marble.compute_decomp(gamma = [0.0001, 0.01, 0.01], gradual = True, max_inner = 5, max_iter = 450, del_tol = 1e-10)
 
 # signal_factors = marble.get_signal_factors()
 # print "signal_factors = \n\n", signal_factors
@@ -55,14 +55,14 @@ print "siz2 = \n", siz2
 Xhat = sptensor.sptensor(subs2, vals2, siz2)
 
 np.random.seed(10)
-projMat_test, biasMat_test = marble.project_data(Xhat, 0, max_iter = 150, max_inner = 5, delta_tol = 1e-10)
-projMat_train, biasMat_train = marble.project_data(X, 0, max_iter = 150, max_inner = 5, delta_tol = 1e-10)
+projMat_test, biasMat_test = marble.project_data(Xhat, 0, max_iter = 450, max_inner = 5, delta_tol = 1e-10)
+projMat_train, biasMat_train = marble.project_data(X, 0, max_iter = 450, max_inner = 5, delta_tol = 1e-10)
 # print "projMat = \n\n", projMat
 # print "biasMat = \n\n", biasMat
 
-file = open("/data/zhaojing/marble/tensor/membership_test.txt", "w")
+file = open("/data/zhaojing/marble/tensor/membership_test_75_5_450.txt", "w")
 np.savetxt(file, projMat_test, "%f", ",")
 file.close()
-file = open("/data/zhaojing/marble/tensor/membership_train.txt", "w")
+file = open("/data/zhaojing/marble/tensor/membership_train_75_5_450.txt", "w")
 np.savetxt(file, projMat_train, "%f", ",")
 file.close()
