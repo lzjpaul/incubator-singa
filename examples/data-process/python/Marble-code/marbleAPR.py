@@ -199,7 +199,8 @@ class MarbleAPR(Marble):
         # randomize the nth
         aug_fact = np.random.rand(self.obs_tensor.shape[n], 1)
         self.cp_decomp[REG_LOCATION].lmbda = np.ones(self.cp_rank)
-        self.cp_decomp[AUG_LOCATION].U[n] = aug_fact
+        # self.cp_decomp[AUG_LOCATION].U[n] = aug_fact
+        self.cp_decomp[REG_LOCATION].U[n] = np.random.rand(self.obs_tensor.shape[n], self.cp_rank)
         self.cp_decomp[AUG_LOCATION].lmbda = np.ones(1)
         # renormalize
         self.cp_decomp[REG_LOCATION].normalize(1)

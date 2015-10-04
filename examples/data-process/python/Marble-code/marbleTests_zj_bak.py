@@ -13,7 +13,7 @@ Test file associated with the MARBLE decomposition using APR
 """ Test factorization of sparse tensor """
 subs = np.array([[0, 3, 1], [1, 0, 1], [1, 2, 1], [1, 3, 1], [3, 0, 0]])
 vals = np.array([[1], [1], [1], [1], [3]])
-siz = np.array([10, 5, 2])  # 4x5x2 tensor
+siz = np.array([5, 5, 2])  # 4x5x2 tensor
 X = sptensor.sptensor(subs, vals, siz)
 
 marble = MarbleAPR(X, 5, 0.1);

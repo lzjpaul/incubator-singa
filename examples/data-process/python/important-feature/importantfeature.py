@@ -59,40 +59,53 @@ for k in range(len(presigmoid)):
                 selected_sample_index[j] = i
                 j = j + 1
 
-# print "selected_sample_index = \n", selected_sample_index
+print "selected_sample_index = \n", selected_sample_index
 # print "selected_sample = \n", selected_sample
-print "diabetes selected_sample = \n", selected_sample[:,226]
+# print "diabetes selected_sample = \n", selected_sample[:,226]
 
 scaler = preprocessing.StandardScaler().fit(sample)
 all_sample_feature_mean = scaler.mean_
+all_sample_feature_max = np.zeros(vdim)
+all_sample_feature_min = np.zeros(vdim)
+for i in range(vdim):
+    all_sample_feature_max[i] = max(sample[:,i])
+    all_sample_feature_min[i] = min(sample[:,i])
+
 scaler = preprocessing.StandardScaler().fit(selected_sample)
 selected_sample_feature_mean = scaler.mean_
-selected_sample_featue_max = np.zeros(vdim)
+selected_sample_feature_max = np.zeros(vdim)
+selected_sample_feature_min = np.zeros(vdim)
 for i in range(len(selected_sample[0,:])):
-    selected_sample_featue_max[i] = max(selected_sample[:,i])
+    selected_sample_feature_max[i] = max(selected_sample[:,i])
+    selected_sample_feature_min[i] = min(selected_sample[:,i])
 
-print "diabetes selected_sample mean = \n", selected_sample_feature_mean[226]
-print "diabetes selected_sample max = \n", selected_sample_featue_max[226]
-# print "all_sample_feature_mean = \n", all_sample_feature_mean
-# print "selected_sample_feature_mean = \n", selected_sample_feature_mean
+# print "diabetes selected_sample mean = \n", selected_sample_feature_mean[226]
+# print "diabetes selected_sample max = \n", selected_sample_featue_max[226]
+for i in range(len(all_sample_feature_mean)):
+    if all_sample_feature_mean[i] < 1.0000000e-10:
+        all_sample_feature_mean[i] = 100000000
+print "all_sample_feature_mean = \n", all_sample_feature_mean
+print "selected_sample_feature_mean = \n", selected_sample_feature_mean
+# impossible value because it never appears in this sample
 # print "selected_sample_featue_max = \n", selected_sample_featue_max
-all_and_selected_mean_difference_dup = selected_sample_feature_mean - all_sample_feature_mean
+all_and_selected_mean_difference_dup = [float(c)/t for c,t in zip((selected_sample_feature_mean - all_sample_feature_mean), all_sample_feature_mean)]
+print "all_and_selected_mean_difference_dup = \n", all_and_selected_mean_difference_dup
 #print selected_sample_std
 # print "all_and_selected_mean_difference_dup"
 # for i in range(len(all_and_selected_mean_difference_dup)):
 #     print i, all_and_selected_mean_difference_dup[i]
 
 all_and_selected_mean_difference = list(set(all_and_selected_mean_difference_dup))
-# print "not duplicated"
+print "not duplicated_difference = \n", all_and_selected_mean_difference
 # for i in range(len(all_and_selected_mean_difference)):
 #     print i, all_and_selected_mean_difference[i]
 
 selected_feature_num = int (sys.argv[4])
 selected_feature_index = np.zeros(selected_feature_num)
-print "selected_feature_index.shape", selected_feature_index.shape
+print "selected_feature_index.shape = \n", selected_feature_index.shape
 
 #print selected_sample_std.shape
-# print "sorted_all_and_selected_mean_difference", sorted(all_and_selected_mean_difference, reverse = True)
+print "sorted_all_and_selected_mean_difference", sorted(all_and_selected_mean_difference, reverse = True)
 
 j = 0
 for k in range(len(all_and_selected_mean_difference)):
@@ -102,17 +115,52 @@ for k in range(len(all_and_selected_mean_difference)):
             break
         else:
 	    if all_and_selected_mean_difference_dup[i] == difference_value and j < selected_feature_num:
-                print " = ", difference_value
+                print "difference_value = ", difference_value
 	        selected_feature_index[j] = i
 	        j = j + 1
+selected_feature_index = selected_feature_index.astype(np.int)
+print "selected_feature_index = \n", selected_feature_index
 
-print selected_feature_index
+selected_feature_all_sample_mean = np.zeros(selected_feature_num)
+selected_feature_all_sample_max = np.zeros(selected_feature_num)
+selected_feature_all_sample_min = np.zeros(selected_feature_num)
+selected_feature_selected_sample_mean = np.zeros(selected_feature_num)
+selected_feature_selected_sample_max = np.zeros(selected_feature_num)
+selected_feature_selected_sample_min = np.zeros(selected_feature_num)
+selected_feature_difference = np.zeros(selected_feature_num)
+for i in range(len(selected_feature_index)):
+    selected_feature_all_sample_mean[i] = all_sample_feature_mean[selected_feature_index[i]]
+    selected_feature_all_sample_max[i] = all_sample_feature_max[selected_feature_index[i]]
+    selected_feature_all_sample_min[i] = all_sample_feature_min[selected_feature_index[i]]
+    selected_feature_selected_sample_mean[i] = selected_sample_feature_mean[selected_feature_index[i]]
+    selected_feature_selected_sample_max[i] = selected_sample_feature_max[selected_feature_index[i]]
+    selected_feature_selected_sample_min[i] = selected_sample_feature_min[selected_feature_index[i]]
+    selected_feature_difference[i] = all_and_selected_mean_difference_dup[selected_feature_index[i]]
 # Write fitting result into output file
 file = open(sys.argv[5], "w")
 np.savetxt(file, selected_feature_index, "%d", ",")
 file.close()
 
+print "selected_feature_difference = \n", selected_feature_difference
 file = open(sys.argv[6], "w")
-np.savetxt(file, all_and_selected_mean_difference_dup, "%5f", ",")
+np.savetxt(file, selected_feature_difference, "%5f", ",")
 file.close()
+
+print "selected_feature_all_sample_mean = \n", selected_feature_all_sample_mean
+file = open(sys.argv[7], "w")
+np.savetxt(file, selected_feature_all_sample_mean, "%f", ",")
+file.close()
+
+print "selected_feature_all_sample_max = \n", selected_feature_all_sample_max
+print "selected_feature_all_sample_min = \n", selected_feature_all_sample_min
+
+print "selected_feature_selected_sample_mean = \n", selected_feature_selected_sample_mean
+file = open(sys.argv[8], "w")
+np.savetxt(file, selected_feature_selected_sample_mean, "%5f", ",")
+file.close()
+
+print "selected_feature_selected_sample_max = \n", selected_feature_selected_sample_max
+print "selected_feature_selected_sample_min = \n", selected_feature_selected_sample_min
+# top 10 features that have higher proportion of mean
 #python importantfeature.py tryimportantfeaturepresigmoid.csv tryimportantfeatureinputsample.csv 3 3 tryimportantfeature_selected_feature_index.csv tryimportantfeature_feature_interestness.csv
+# python importantfeature.py MarbleResult/01-500-2.csv /data/zhaojing/marble/importantfeature/Marble_08_09_Car_Cla_UMLS_important_features_test_data.csv 100 10 MarbleResult/Marble_08_09_Car_Cla_UMLS_important_features_feature_index.csv MarbleResult/Marble_08_09_Car_Cla_UMLS_important_features_intereness.csv MarbleResult/Marble_08_09_Car_Cla_UMLS_important_features_all_sample_mean.csv MarbleResult/Marble_08_09_Car_Cla_UMLS_important_features_selected_sample_mean.csv
