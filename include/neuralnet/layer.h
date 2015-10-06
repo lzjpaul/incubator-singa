@@ -592,6 +592,8 @@ class LogisticLossLayer: public LossLayer {
   int batchsize_;
   int dim_;
   float scale_;
+  int print_step_;
+  int run_version_;
 };
 
 class SoftmaxLossLayer: public LossLayer {

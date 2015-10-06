@@ -400,10 +400,29 @@ void InnerRegularizLayer::ComputeGradient(const vector<SLayer>& srclayers) {
 
   gbias=sum_rows(grad);
   gweight = dot(similarity_matrix, weight);
-  // LOG(ERROR)<<"weight norm: "<<weight_->mutable_data()->asum_data();
+  // print weight norm and regularizaed norm
+  LOG(INFO)<<"weight norm: "<<weight_->mutable_data()->asum_data();
+  Tensor<cpu, 2> regularized_middle(Shape2(hdim_, regdim_));
+  Tensor<cpu, 2> regularized_final(Shape2(hdim_, hdim_));
+  AllocSpace(regularized_middle);
+  AllocSpace(regularized_final);
+  regularized_middle = dot(weight.T(), similarity_matrix);
+  regularized_final = dot(regularized_middle, weight);
+  float trace_value = 0;
+  for (int i = 0; i < hdim_; i++)
+    trace_value += regularized_final[i][i];
+  LOG(INFO)<<"trace before coefficient: "<<trace_value;
+  regularized_final *= regcoefficient_/(1.0f);
+  trace_value = 0;
+  for (int i = 0; i < hdim_; i++)
+    trace_value += regularized_final[i][i];
+  LOG(INFO)<<"trace after coefficient: "<<trace_value;
+  FreeSpace(regularized_middle);
+  FreeSpace(regularized_final);
   // LOG(ERROR)<<"simmatrix norm: "<<similarity_matrix_.asum_data();
   // LOG(ERROR)<<"coefficient: "<<regcoefficient_/(1.0f);
   // LOG(ERROR)<<"gweight norm before coefficient: "<<weight_->mutable_grad()->asum_data();
+
   gweight *= regcoefficient_/(1.0f);
   // LOG(ERROR)<<"gweight norm after coefficient: "<<weight_->mutable_grad()->asum_data();
   gweight += dot(src.T(), grad);
@@ -1503,6 +1522,9 @@ void LogisticLossLayer::Setup(const LayerProto& proto,
   dim_=data_.count()/batchsize_;
   metric_.Reshape(vector<int>{8});
   scale_=proto.logisticloss_conf().scale();
+  print_step_ = 0;
+  srand((unsigned)time(NULL));
+  run_version_ = rand()%1000;
   LOG(ERROR)<<"logistic scale_: "<<scale_;
   //LOG(ERROR)<<"Logistic layer set up ends ";
 }
@@ -1523,6 +1545,7 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
   float loss=0, precision=0;
   float predict_0 = 0, true_0 = 0, correct_0 = 0;
   float predict_1 = 0, true_1 = 0, correct_1 = 0;
+
   for(int n=0;n<batchsize_;n++){
     int ilabel=static_cast<int>(label[n]);
     CHECK_LT(ilabel,10);
@@ -1557,6 +1580,22 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
     probptr+=dim_; //!!!!!!!!!!!!add 1 to next sample!!!
     srcdptr+=dim_;
   }
+
+  // write out probability matrix
+  if (phase == kTest){
+    const float* probptr_writeout=prob.dptr;
+    ofstream probmatout;
+    probmatout.open("/data/zhaojing/marble/AUC/version" + std::to_string(static_cast<int>(run_version_)) + "step" + std::to_string(static_cast<int>(print_step_)) + ".csv");
+    print_step_ ++;
+    for(int n=0;n<batchsize_;n++){
+      int label_writeout=static_cast<int>(label[n]);
+      probmatout << label_writeout << "," << probptr_writeout[0] << "\n";
+      probptr_writeout+=dim_;
+    }
+    probmatout.close();
+  }
+
+
   CHECK_EQ(probptr, prob.dptr+prob.shape.Size());
   float *metric=metric_.mutable_cpu_data();
   metric[0]=loss*scale_/(1.0f*batchsize_);

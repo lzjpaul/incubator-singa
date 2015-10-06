@@ -318,12 +318,12 @@ void BPWorker::TrainOneBatch(int step, Metric* perf){
         // hard code display info
         perf->AddMetric(std::to_string(0)+"#loss", ptr[0]);
         perf->AddMetric(std::to_string(1)+"#accuracy", ptr[1]);
-        perf->AddMetric(std::to_string(2)+"#correct_0", ptr[2]);
-        perf->AddMetric(std::to_string(3)+"#predict_0", ptr[3]);
-        perf->AddMetric(std::to_string(4)+"#true_0", ptr[4]);
-        perf->AddMetric(std::to_string(5)+"#correct_1", ptr[5]);
-        perf->AddMetric(std::to_string(6)+"#predict_1", ptr[6]);
-        perf->AddMetric(std::to_string(7)+"#true_1", ptr[7]);
+        // perf->AddMetric(std::to_string(2)+"#correct_0", ptr[2]);
+        // perf->AddMetric(std::to_string(3)+"#predict_0", ptr[3]);
+        // perf->AddMetric(std::to_string(4)+"#true_0", ptr[4]);
+        // perf->AddMetric(std::to_string(5)+"#correct_1", ptr[5]);
+        // perf->AddMetric(std::to_string(6)+"#predict_1", ptr[6]);
+        // perf->AddMetric(std::to_string(7)+"#true_1", ptr[7]);
       }
     }
 }
@@ -341,12 +341,12 @@ void BPWorker::TestOneBatch(int step, Phase phase, shared_ptr<NeuralNet> net, Me
         // hard code display info
         perf->AddMetric(std::to_string(0)+"#loss", ptr[0]);
         perf->AddMetric(std::to_string(1)+"#accuracy", ptr[1]);
-        perf->AddMetric(std::to_string(2)+"#correct_0", ptr[2]);
-        perf->AddMetric(std::to_string(3)+"#predict_0", ptr[3]);
-        perf->AddMetric(std::to_string(4)+"#true_0", ptr[4]);
-        perf->AddMetric(std::to_string(5)+"#correct_1", ptr[5]);
-        perf->AddMetric(std::to_string(6)+"#predict_1", ptr[6]);
-        perf->AddMetric(std::to_string(7)+"#true_1", ptr[7]);
+        // perf->AddMetric(std::to_string(2)+"#correct_0", ptr[2]);
+        // perf->AddMetric(std::to_string(3)+"#predict_0", ptr[3]);
+        // perf->AddMetric(std::to_string(4)+"#true_0", ptr[4]);
+        // perf->AddMetric(std::to_string(5)+"#correct_1", ptr[5]);
+        // perf->AddMetric(std::to_string(6)+"#predict_1", ptr[6]);
+        // perf->AddMetric(std::to_string(7)+"#true_1", ptr[7]);
       }
     }
 }
