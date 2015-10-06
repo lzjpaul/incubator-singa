@@ -1,0 +1,15 @@
+./bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-1-sub8.conf -cluster=examples/marble/cluster.conf
+./bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-2-sub8.conf -cluster=examples/marble/cluster.conf
+./bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-3-sub8.conf -cluster=examples/marble/cluster.conf
+./bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-4-sub8.conf -cluster=examples/marble/cluster.conf
+./bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-5-sub8.conf -cluster=examples/marble/cluster.conf
+./bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-1-sub8.conf -cluster=examples/marble/cluster.conf
+./bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-2-sub8.conf -cluster=examples/marble/cluster.conf
+./bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-3-sub8.conf -cluster=examples/marble/cluster.conf
+./bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-4-sub8.conf -cluster=examples/marble/cluster.conf
+./bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-5-sub8.conf -cluster=examples/marble/cluster.conf
+./bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-1-sub8.conf -cluster=examples/marble/cluster.conf
+./bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-2-sub8.conf -cluster=examples/marble/cluster.conf
+./bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-3-sub8.conf -cluster=examples/marble/cluster.conf
+./bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-4-sub8.conf -cluster=examples/marble/cluster.conf
+./bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-5-sub8.conf -cluster=examples/marble/cluster.conf

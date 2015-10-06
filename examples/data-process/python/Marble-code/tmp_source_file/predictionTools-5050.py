@@ -21,15 +21,12 @@ print "trainX shape = \n", trainX.shape
 
 # test_data = readData("/data/zhaojing/marble/membership_test_50_5.txt")
 file = open(sys.argv[3])
-testX_all = np.genfromtxt(file, delimiter=",")
-testX = testX_all[0:3000,:]
+testX = np.genfromtxt(file, delimiter=",")
 print "testX shape = \n", testX.shape
 
 # test_label = readData("/data/zhaojing/marble/Marble_08_09_Car_Cla_UMLS_test_label.csv")
 file = open(sys.argv[4])
-testY_all = np.genfromtxt(file, delimiter=",")
-print "testY_all shape = \n", testY_all.shape
-testY = testY_all[0:3000]
+testY = np.genfromtxt(file, delimiter=",")
 print "testY shape = \n", testY.shape
 
 model = LogisticRegression(penalty = 'l1', tol=0.000001)
