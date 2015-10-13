@@ -15,5 +15,6 @@ do
         # ssh $i "scp -r singa@logbase-a05:/data/zhaojing/CMSHF-regularization/ /data/zhaojing/"
         # ssh $i  "scp -r singa@logbase-a05:/data/zhaojing/SynPUF-regularization/SynPUF_2009_refer_2010_Car_Cla_Vec_Regulariz_test_shard/ /data/zhaojing/SynPUF-regularization/"
         # ssh $i "scp -r singa@logbase-gw:/data/zhaojing/software/ /data/zhaojing/"
-        ssh $i "scp -r singa@logbase-gw:/data/zhaojing/marble/ /data/zhaojing/"
+        # ssh $i "scp -r singa@logbase-gw:/data/zhaojing/marble/ /data/zhaojing/"
+        ssh $i "scp -r singa@logbase-gw:/data/zhaojing/marble/CMSHF/ /data/zhaojing/marble/"
       done

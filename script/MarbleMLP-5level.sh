@@ -1,0 +1,16 @@
+ssh logbase-a05 nohup ./zhaojing/NUH-singa/incubator-singa/bin/singa-run.sh -model=examples/marble/mlp-subsamples/200-2000/mlp-decay-01-batch-500-level-5-sub1.conf -cluster=examples/marble/cluster.conf &
+ssh logbase-a06 nohup ./zhaojing/NUH-singa/incubator-singa/bin/singa-run.sh -model=examples/marble/mlp-subsamples/200-2000/mlp-decay-01-batch-500-level-5-sub2.conf -cluster=examples/marble/cluster.conf &
+ssh logbase-a07 nohup ./zhaojing/NUH-singa/incubator-singa/bin/singa-run.sh -model=examples/marble/mlp-subsamples/200-2000/mlp-decay-01-batch-500-level-5-sub3.conf -cluster=examples/marble/cluster.conf &
+ssh logbase-a08 nohup ./zhaojing/NUH-singa/incubator-singa/bin/singa-run.sh -model=examples/marble/mlp-subsamples/200-2000/mlp-decay-01-batch-500-level-5-sub4.conf -cluster=examples/marble/cluster.conf &
+ssh logbase-a09 nohup ./zhaojing/NUH-singa/incubator-singa/bin/singa-run.sh -model=examples/marble/mlp-subsamples/200-2000/mlp-decay-01-batch-500-level-5-sub5.conf -cluster=examples/marble/cluster.conf &
+ssh logbase-a10 nohup ./zhaojing/NUH-singa/incubator-singa/bin/singa-run.sh -model=examples/marble/mlp-subsamples/200-2000/mlp-decay-01-batch-500-level-5-sub6.conf -cluster=examples/marble/cluster.conf &
+ssh logbase-a11 nohup ./zhaojing/NUH-singa/incubator-singa/bin/singa-run.sh -model=examples/marble/mlp-subsamples/200-2000/mlp-decay-01-batch-500-level-5-sub7.conf -cluster=examples/marble/cluster.conf &
+ssh logbase-a12 nohup ./zhaojing/NUH-singa/incubator-singa/bin/singa-run.sh -model=examples/marble/mlp-subsamples/200-2000/mlp-decay-01-batch-500-level-5-sub8.conf -cluster=examples/marble/cluster.conf &
+ssh logbase-a13 nohup ./zhaojing/NUH-singa/incubator-singa/bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-5-sub1.conf -cluster=examples/marble/cluster.conf &
+ssh logbase-a14 nohup ./zhaojing/NUH-singa/incubator-singa/bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-5-sub2.conf -cluster=examples/marble/cluster.conf &
+ssh logbase-a15 nohup ./zhaojing/NUH-singa/incubator-singa/bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-5-sub3.conf -cluster=examples/marble/cluster.conf &
+ssh logbase-a16 nohup ./zhaojing/NUH-singa/incubator-singa/bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-5-sub4.conf -cluster=examples/marble/cluster.conf &
+ssh logbase-a17 nohup ./zhaojing/NUH-singa/incubator-singa/bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-5-sub5.conf -cluster=examples/marble/cluster.conf &
+ssh logbase-a18 nohup ./zhaojing/NUH-singa/incubator-singa/bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-5-sub6.conf -cluster=examples/marble/cluster.conf &
+ssh logbase-a19 nohup ./zhaojing/NUH-singa/incubator-singa/bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-5-sub7.conf -cluster=examples/marble/cluster.conf &
+ssh logbase-a20 nohup ./zhaojing/NUH-singa/incubator-singa/bin/singa-run.sh -model=examples/marble/mlp-subsamples/600-30/mlp-decay-01-batch-500-level-5-sub8.conf -cluster=examples/marble/cluster.conf &

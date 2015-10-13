@@ -501,13 +501,13 @@ void InnerProductLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
   // LOG(INFO)<<" layer name: "<<(this->name())<<" src finish";
   /*if (strcmp((this->name()).c_str(), "AllSources") == 0){
     for (int i = 0; i < 13; i++)
-      LOG(ERROR)<<" layer name: "<<(this->name())<<" first round data: "<<srcdptr[i];
-    for (int j = 338; j < (338 + 13); j++)
-      LOG(ERROR)<<" layer name: "<<(this->name())<<" second round data: "<<srcdptr[j];
-    for (int j = 676; j < (676 + 13); j++)
-      LOG(ERROR)<<" layer name: "<<(this->name())<<" third round data: "<<srcdptr[j];
-    for (int j = 1014; j < (1014 + 13); j++)
-      LOG(ERROR)<<" layer name: "<<(this->name())<<" third round data: "<<srcdptr[j];
+      LOG(INFO)<<" layer name: "<<(this->name())<<" first round diag data: "<<srcdptr[i];
+    for (int j = 540; j < (540 + 16); j++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<" first round proc data: "<<srcdptr[j];
+    for (int j = 557; j < (557 + 13); j++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<" second round diag data: "<<srcdptr[j];
+    for (int j = 1104; j < (1104 + 10); j++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<" second round proc data: "<<srcdptr[j];
 
   }*/
 
@@ -1585,7 +1585,7 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
   if (phase == kTest){
     const float* probptr_writeout=prob.dptr;
     ofstream probmatout;
-    probmatout.open("/data/zhaojing/marble/AUC/version" + std::to_string(static_cast<int>(run_version_)) + "step" + std::to_string(static_cast<int>(print_step_)) + ".csv");
+    probmatout.open("/data/zhaojing/marble/CMSHF/AUC/version" + std::to_string(static_cast<int>(run_version_)) + "step" + std::to_string(static_cast<int>(print_step_)) + ".csv");
     print_step_ ++;
     for(int n=0;n<batchsize_;n++){
       int label_writeout=static_cast<int>(label[n]);

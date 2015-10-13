@@ -1,0 +1,439 @@
+kill singa @ localhost ...
+lt-singa: no process killed
+Stopping zookeeper ... no zookeeper to stop (could not find file /tmp/zookeeper/zookeeper_server.pid)
+cleanning metadata in zookeeper ...
+Starting zookeeper ... STARTED
+starting singa ...
+executing : ./singa -model=examples/marble/CMSHF/250-15/mlp-decay-01-batch-200-level-1-sub6.conf -cluster=examples/marble/cluster.conf
+E1012 22:26:06.984938  1305 graph.cc:83] begin sorting graph 
+E1012 22:26:06.985046  1305 graph.cc:122] nodes: data
+E1012 22:26:06.985054  1305 graph.cc:122] nodes: MultisrcFData
+E1012 22:26:06.985060  1305 graph.cc:122] nodes: flabel
+E1012 22:26:06.985065  1305 graph.cc:122] nodes: AllSources
+E1012 22:26:06.985070  1305 graph.cc:122] nodes: tanh
+E1012 22:26:06.985074  1305 graph.cc:122] nodes: fc1
+E1012 22:26:06.985080  1305 graph.cc:122] nodes: loss
+E1012 22:26:06.985185  1305 layer.cc:1428] data path /data/zhaojing/marble/CMSHF/mlp-subsamples/subsample6/CMS_HF_VECTOR_DIAG_LAB_COOCCUR_train_shard_6
+E1012 22:26:06.985764  1305 layer.cc:1172] MultiSrcFData batchsize: 200
+E1012 22:26:06.985776  1305 layer.cc:1174] ndim: 2
+E1012 22:26:06.985781  1305 layer.cc:1176] parse set up
+E1012 22:26:06.985787  1305 layer.cc:1181] rows: 1 columns: 557
+E1012 22:26:06.985792  1305 layer.cc:1183] diag_dim: 318
+E1012 22:26:06.985802  1305 layer.cc:1196] diag_data: batchsize: 200
+E1012 22:26:06.985807  1305 layer.cc:1209] MultiSrcFData Setup ends
+E1012 22:26:06.985821  1305 layer.cc:440] inner setup begin 
+E1012 22:26:06.985826  1305 layer.cc:442] layer name from inner product layerAllSources
+E1012 22:26:06.985832  1305 layer.cc:444] fetch data ends 
+E1012 22:26:06.985836  1305 layer.cc:446] batchsize 200
+E1012 22:26:06.985841  1305 layer.cc:448] vdim_ 557
+E1012 22:26:06.985846  1305 layer.cc:450] hdim 250
+E1012 22:26:06.985852  1305 layer.cc:453] data_ and grad_ 
+E1012 22:26:06.985875  1305 layer.cc:462] inner setup end 
+E1012 22:26:06.985882  1305 layer.cc:440] inner setup begin 
+E1012 22:26:06.985888  1305 layer.cc:442] layer name from inner product layerfc1
+E1012 22:26:06.985891  1305 layer.cc:444] fetch data ends 
+E1012 22:26:06.985896  1305 layer.cc:446] batchsize 200
+E1012 22:26:06.985900  1305 layer.cc:448] vdim_ 250
+E1012 22:26:06.985905  1305 layer.cc:450] hdim 1
+E1012 22:26:06.985910  1305 layer.cc:453] data_ and grad_ 
+E1012 22:26:06.985920  1305 layer.cc:462] inner setup end 
+E1012 22:26:06.985929  1305 layer.cc:1528] logistic scale_: 1
+E1012 22:26:06.988051  1305 graph.cc:83] begin sorting graph 
+E1012 22:26:06.988065  1305 graph.cc:122] nodes: data
+E1012 22:26:06.988070  1305 graph.cc:122] nodes: MultisrcFData
+E1012 22:26:06.988075  1305 graph.cc:122] nodes: flabel
+E1012 22:26:06.988078  1305 graph.cc:122] nodes: AllSources
+E1012 22:26:06.988083  1305 graph.cc:122] nodes: tanh
+E1012 22:26:06.988088  1305 graph.cc:122] nodes: fc1
+E1012 22:26:06.988093  1305 graph.cc:122] nodes: loss
+E1012 22:26:06.988129  1305 layer.cc:1428] data path /data/zhaojing/marble/CMSHF/mlp-subsamples/subsample6/CMS_HF_VECTOR_DIAG_LAB_COOCCUR_test_shard_6
+E1012 22:26:06.988524  1305 layer.cc:1172] MultiSrcFData batchsize: 240
+E1012 22:26:06.988536  1305 layer.cc:1174] ndim: 2
+E1012 22:26:06.988541  1305 layer.cc:1176] parse set up
+E1012 22:26:06.988546  1305 layer.cc:1181] rows: 1 columns: 557
+E1012 22:26:06.988550  1305 layer.cc:1183] diag_dim: 318
+E1012 22:26:06.988555  1305 layer.cc:1196] diag_data: batchsize: 240
+E1012 22:26:06.988561  1305 layer.cc:1209] MultiSrcFData Setup ends
+E1012 22:26:06.988569  1305 layer.cc:440] inner setup begin 
+E1012 22:26:06.988572  1305 layer.cc:442] layer name from inner product layerAllSources
+E1012 22:26:06.988579  1305 layer.cc:444] fetch data ends 
+E1012 22:26:06.988582  1305 layer.cc:446] batchsize 240
+E1012 22:26:06.988587  1305 layer.cc:448] vdim_ 557
+E1012 22:26:06.988592  1305 layer.cc:450] hdim 250
+E1012 22:26:06.988598  1305 layer.cc:453] data_ and grad_ 
+E1012 22:26:06.988607  1305 layer.cc:462] inner setup end 
+E1012 22:26:06.988613  1305 layer.cc:440] inner setup begin 
+E1012 22:26:06.988617  1305 layer.cc:442] layer name from inner product layerfc1
+E1012 22:26:06.988622  1305 layer.cc:444] fetch data ends 
+E1012 22:26:06.988626  1305 layer.cc:446] batchsize 240
+E1012 22:26:06.988631  1305 layer.cc:448] vdim_ 250
+E1012 22:26:06.988636  1305 layer.cc:450] hdim 1
+E1012 22:26:06.988765  1305 layer.cc:453] data_ and grad_ 
+E1012 22:26:06.988901  1305 layer.cc:462] inner setup end 
+E1012 22:26:06.988978  1305 layer.cc:1528] logistic scale_: 1
+E1012 22:26:06.990769  1305 graph.cc:83] begin sorting graph 
+E1012 22:26:06.990896  1305 graph.cc:122] nodes: data
+E1012 22:26:06.990978  1305 graph.cc:122] nodes: MultisrcFData
+E1012 22:26:06.991026  1305 graph.cc:122] nodes: flabel
+E1012 22:26:06.991076  1305 graph.cc:122] nodes: AllSources
+E1012 22:26:06.991124  1305 graph.cc:122] nodes: tanh
+E1012 22:26:06.991143  1305 graph.cc:122] nodes: fc1
+E1012 22:26:06.991163  1305 graph.cc:122] nodes: loss
+E1012 22:26:06.991219  1305 layer.cc:1428] data path /data/zhaojing/marble/CMSHF/mlp-subsamples/subsample6/CMS_HF_VECTOR_DIAG_LAB_COOCCUR_valid_shard_6
+E1012 22:26:06.991560  1305 layer.cc:1172] MultiSrcFData batchsize: 156
+E1012 22:26:06.991582  1305 layer.cc:1174] ndim: 2
+E1012 22:26:06.991603  1305 layer.cc:1176] parse set up
+E1012 22:26:06.991623  1305 layer.cc:1181] rows: 1 columns: 557
+E1012 22:26:06.991643  1305 layer.cc:1183] diag_dim: 318
+E1012 22:26:06.991664  1305 layer.cc:1196] diag_data: batchsize: 156
+E1012 22:26:06.991686  1305 layer.cc:1209] MultiSrcFData Setup ends
+E1012 22:26:06.991708  1305 layer.cc:440] inner setup begin 
+E1012 22:26:06.991729  1305 layer.cc:442] layer name from inner product layerAllSources
+E1012 22:26:06.991750  1305 layer.cc:444] fetch data ends 
+E1012 22:26:06.991770  1305 layer.cc:446] batchsize 156
+E1012 22:26:06.991789  1305 layer.cc:448] vdim_ 557
+E1012 22:26:06.991809  1305 layer.cc:450] hdim 250
+E1012 22:26:06.991829  1305 layer.cc:453] data_ and grad_ 
+E1012 22:26:06.991854  1305 layer.cc:462] inner setup end 
+E1012 22:26:06.991875  1305 layer.cc:440] inner setup begin 
+E1012 22:26:06.991896  1305 layer.cc:442] layer name from inner product layerfc1
+E1012 22:26:06.991916  1305 layer.cc:444] fetch data ends 
+E1012 22:26:06.991941  1305 layer.cc:446] batchsize 156
+E1012 22:26:06.991961  1305 layer.cc:448] vdim_ 250
+E1012 22:26:06.991981  1305 layer.cc:450] hdim 1
+E1012 22:26:06.992002  1305 layer.cc:453] data_ and grad_ 
+E1012 22:26:06.992025  1305 layer.cc:462] inner setup end 
+E1012 22:26:06.992046  1305 layer.cc:1528] logistic scale_: 1
+E1012 22:26:06.993764  1305 trainer.cc:288] before create servers 
+E1012 22:26:07.019057  1323 server.cc:28] Server (group_id = 0, id = 0) starts
+E1012 22:26:07.019069  1324 worker.cc:50] Worker (group_id = 0, id = 0) starts
+E1012 22:26:07.040643  1324 worker.cc:180] Test at step 0
+E1012 22:26:07.040772  1305 trainer.cc:382] Validation step-0, 2 fields, 0#loss : 0.875255	1#accuracy : 0.467949	
+E1012 22:26:07.048418  1305 trainer.cc:382] Test step-0, 2 fields, 0#loss : 0.774722	1#accuracy : 0.500000	
+E1012 22:26:07.056404  1305 trainer.cc:382] Train step-0, 2 fields, 0#loss : 0.779613	1#accuracy : 0.435000	
+E1012 22:26:07.116117  1324 worker.cc:180] Test at step 10
+E1012 22:26:07.116137  1305 trainer.cc:382] Validation step-10, 2 fields, 0#loss : 0.629955	1#accuracy : 0.692308	
+E1012 22:26:07.122510  1305 trainer.cc:382] Test step-10, 2 fields, 0#loss : 0.640954	1#accuracy : 0.700000	
+E1012 22:26:07.129096  1305 trainer.cc:382] Train step-10, 2 fields, 0#loss : 0.583576	1#accuracy : 0.768000	
+E1012 22:26:07.186295  1324 worker.cc:180] Test at step 20
+E1012 22:26:07.186342  1305 trainer.cc:382] Validation step-20, 2 fields, 0#loss : 0.627122	1#accuracy : 0.775641	
+E1012 22:26:07.192462  1305 trainer.cc:382] Test step-20, 2 fields, 0#loss : 0.638553	1#accuracy : 0.720833	
+E1012 22:26:07.198870  1305 trainer.cc:382] Train step-20, 2 fields, 0#loss : 0.583095	1#accuracy : 0.828500	
+E1012 22:26:07.254951  1324 worker.cc:180] Test at step 30
+E1012 22:26:07.255002  1305 trainer.cc:382] Validation step-30, 2 fields, 0#loss : 0.633615	1#accuracy : 0.782051	
+E1012 22:26:07.261085  1305 trainer.cc:382] Test step-30, 2 fields, 0#loss : 0.638373	1#accuracy : 0.758333	
+E1012 22:26:07.267455  1305 trainer.cc:382] Train step-30, 2 fields, 0#loss : 0.611072	1#accuracy : 0.790000	
+E1012 22:26:07.323369  1324 worker.cc:180] Test at step 40
+E1012 22:26:07.323398  1305 trainer.cc:382] Validation step-40, 2 fields, 0#loss : 0.638442	1#accuracy : 0.762821	
+E1012 22:26:07.329474  1305 trainer.cc:382] Test step-40, 2 fields, 0#loss : 0.638907	1#accuracy : 0.766667	
+E1012 22:26:07.335855  1305 trainer.cc:382] Train step-40, 2 fields, 0#loss : 0.625391	1#accuracy : 0.778500	
+E1012 22:26:07.391827  1324 worker.cc:180] Test at step 50
+E1012 22:26:07.391849  1305 trainer.cc:382] Validation step-50, 2 fields, 0#loss : 0.641685	1#accuracy : 0.743590	
+E1012 22:26:07.397897  1305 trainer.cc:382] Test step-50, 2 fields, 0#loss : 0.639541	1#accuracy : 0.770833	
+E1012 22:26:07.404247  1305 trainer.cc:382] Train step-50, 2 fields, 0#loss : 0.633108	1#accuracy : 0.771500	
+E1012 22:26:07.460192  1324 worker.cc:180] Test at step 60
+E1012 22:26:07.460222  1305 trainer.cc:382] Validation step-60, 2 fields, 0#loss : 0.643860	1#accuracy : 0.743590	
+E1012 22:26:07.466274  1305 trainer.cc:382] Test step-60, 2 fields, 0#loss : 0.640070	1#accuracy : 0.779167	
+E1012 22:26:07.472620  1305 trainer.cc:382] Train step-60, 2 fields, 0#loss : 0.637633	1#accuracy : 0.761500	
+E1012 22:26:07.528539  1324 worker.cc:180] Test at step 70
+E1012 22:26:07.528587  1305 trainer.cc:382] Validation step-70, 2 fields, 0#loss : 0.645328	1#accuracy : 0.743590	
+E1012 22:26:07.534607  1305 trainer.cc:382] Test step-70, 2 fields, 0#loss : 0.640467	1#accuracy : 0.779167	
+E1012 22:26:07.540978  1305 trainer.cc:382] Train step-70, 2 fields, 0#loss : 0.640444	1#accuracy : 0.756000	
+E1012 22:26:07.596886  1324 worker.cc:180] Test at step 80
+E1012 22:26:07.596916  1305 trainer.cc:382] Validation step-80, 2 fields, 0#loss : 0.646334	1#accuracy : 0.743590	
+E1012 22:26:07.602970  1305 trainer.cc:382] Test step-80, 2 fields, 0#loss : 0.640755	1#accuracy : 0.779167	
+E1012 22:26:07.609313  1305 trainer.cc:382] Train step-80, 2 fields, 0#loss : 0.642265	1#accuracy : 0.755000	
+E1012 22:26:07.665210  1324 worker.cc:180] Test at step 90
+E1012 22:26:07.665238  1305 trainer.cc:382] Validation step-90, 2 fields, 0#loss : 0.647031	1#accuracy : 0.743590	
+E1012 22:26:07.671288  1305 trainer.cc:382] Test step-90, 2 fields, 0#loss : 0.640961	1#accuracy : 0.779167	
+E1012 22:26:07.677628  1305 trainer.cc:382] Train step-90, 2 fields, 0#loss : 0.643482	1#accuracy : 0.755000	
+E1012 22:26:07.733530  1324 worker.cc:180] Test at step 100
+E1012 22:26:07.733558  1305 trainer.cc:382] Validation step-100, 2 fields, 0#loss : 0.647519	1#accuracy : 0.743590	
+E1012 22:26:07.739594  1305 trainer.cc:382] Test step-100, 2 fields, 0#loss : 0.641108	1#accuracy : 0.779167	
+E1012 22:26:07.745908  1305 trainer.cc:382] Train step-100, 2 fields, 0#loss : 0.644313	1#accuracy : 0.755000	
+E1012 22:26:07.801789  1324 worker.cc:180] Test at step 110
+E1012 22:26:07.801818  1305 trainer.cc:382] Validation step-110, 2 fields, 0#loss : 0.647863	1#accuracy : 0.743590	
+E1012 22:26:07.807808  1305 trainer.cc:382] Test step-110, 2 fields, 0#loss : 0.641213	1#accuracy : 0.779167	
+E1012 22:26:07.814142  1305 trainer.cc:382] Train step-110, 2 fields, 0#loss : 0.644889	1#accuracy : 0.755000	
+E1012 22:26:07.870046  1324 worker.cc:180] Test at step 120
+E1012 22:26:07.870092  1305 trainer.cc:382] Validation step-120, 2 fields, 0#loss : 0.648107	1#accuracy : 0.743590	
+E1012 22:26:07.876104  1305 trainer.cc:382] Test step-120, 2 fields, 0#loss : 0.641288	1#accuracy : 0.779167	
+E1012 22:26:07.882413  1305 trainer.cc:382] Train step-120, 2 fields, 0#loss : 0.645293	1#accuracy : 0.755000	
+E1012 22:26:07.938288  1324 worker.cc:180] Test at step 130
+E1012 22:26:07.938352  1305 trainer.cc:382] Validation step-130, 2 fields, 0#loss : 0.648280	1#accuracy : 0.743590	
+E1012 22:26:07.944350  1305 trainer.cc:382] Test step-130, 2 fields, 0#loss : 0.641341	1#accuracy : 0.779167	
+E1012 22:26:07.950686  1305 trainer.cc:382] Train step-130, 2 fields, 0#loss : 0.645578	1#accuracy : 0.755000	
+E1012 22:26:08.006597  1324 worker.cc:180] Test at step 140
+E1012 22:26:08.006626  1305 trainer.cc:382] Validation step-140, 2 fields, 0#loss : 0.648404	1#accuracy : 0.743590	
+E1012 22:26:08.012698  1305 trainer.cc:382] Test step-140, 2 fields, 0#loss : 0.641379	1#accuracy : 0.779167	
+E1012 22:26:08.019011  1305 trainer.cc:382] Train step-140, 2 fields, 0#loss : 0.645780	1#accuracy : 0.755000	
+E1012 22:26:08.074908  1324 worker.cc:180] Test at step 150
+E1012 22:26:08.074939  1305 trainer.cc:382] Validation step-150, 2 fields, 0#loss : 0.648493	1#accuracy : 0.743590	
+E1012 22:26:08.080971  1305 trainer.cc:382] Test step-150, 2 fields, 0#loss : 0.641407	1#accuracy : 0.779167	
+E1012 22:26:08.087301  1305 trainer.cc:382] Train step-150, 2 fields, 0#loss : 0.645925	1#accuracy : 0.755000	
+E1012 22:26:08.143198  1324 worker.cc:180] Test at step 160
+E1012 22:26:08.143227  1305 trainer.cc:382] Validation step-160, 2 fields, 0#loss : 0.648557	1#accuracy : 0.743590	
+E1012 22:26:08.149292  1305 trainer.cc:382] Test step-160, 2 fields, 0#loss : 0.641427	1#accuracy : 0.779167	
+E1012 22:26:08.155624  1305 trainer.cc:382] Train step-160, 2 fields, 0#loss : 0.646029	1#accuracy : 0.755000	
+E1012 22:26:08.211546  1324 worker.cc:180] Test at step 170
+E1012 22:26:08.211593  1305 trainer.cc:382] Validation step-170, 2 fields, 0#loss : 0.648603	1#accuracy : 0.743590	
+E1012 22:26:08.217622  1305 trainer.cc:382] Test step-170, 2 fields, 0#loss : 0.641442	1#accuracy : 0.779167	
+E1012 22:26:08.223973  1305 trainer.cc:382] Train step-170, 2 fields, 0#loss : 0.646104	1#accuracy : 0.755000	
+E1012 22:26:08.279911  1324 worker.cc:180] Test at step 180
+E1012 22:26:08.279939  1305 trainer.cc:382] Validation step-180, 2 fields, 0#loss : 0.648636	1#accuracy : 0.743590	
+E1012 22:26:08.285989  1305 trainer.cc:382] Test step-180, 2 fields, 0#loss : 0.641452	1#accuracy : 0.779167	
+E1012 22:26:08.292335  1305 trainer.cc:382] Train step-180, 2 fields, 0#loss : 0.646157	1#accuracy : 0.755000	
+E1012 22:26:08.348259  1324 worker.cc:180] Test at step 190
+E1012 22:26:08.348290  1305 trainer.cc:382] Validation step-190, 2 fields, 0#loss : 0.648660	1#accuracy : 0.743590	
+E1012 22:26:08.354317  1305 trainer.cc:382] Test step-190, 2 fields, 0#loss : 0.641459	1#accuracy : 0.779167	
+E1012 22:26:08.360653  1305 trainer.cc:382] Train step-190, 2 fields, 0#loss : 0.646196	1#accuracy : 0.755000	
+E1012 22:26:08.416553  1324 worker.cc:180] Test at step 200
+E1012 22:26:08.416582  1305 trainer.cc:382] Validation step-200, 2 fields, 0#loss : 0.648677	1#accuracy : 0.743590	
+E1012 22:26:08.422664  1305 trainer.cc:382] Test step-200, 2 fields, 0#loss : 0.641464	1#accuracy : 0.779167	
+E1012 22:26:08.428997  1305 trainer.cc:382] Train step-200, 2 fields, 0#loss : 0.646224	1#accuracy : 0.755000	
+E1012 22:26:08.484907  1324 worker.cc:180] Test at step 210
+E1012 22:26:08.484937  1305 trainer.cc:382] Validation step-210, 2 fields, 0#loss : 0.648690	1#accuracy : 0.743590	
+E1012 22:26:08.490998  1305 trainer.cc:382] Test step-210, 2 fields, 0#loss : 0.641468	1#accuracy : 0.779167	
+E1012 22:26:08.497319  1305 trainer.cc:382] Train step-210, 2 fields, 0#loss : 0.646244	1#accuracy : 0.755000	
+E1012 22:26:08.553230  1324 worker.cc:180] Test at step 220
+E1012 22:26:08.553258  1305 trainer.cc:382] Validation step-220, 2 fields, 0#loss : 0.648699	1#accuracy : 0.743590	
+E1012 22:26:08.559296  1305 trainer.cc:382] Test step-220, 2 fields, 0#loss : 0.641471	1#accuracy : 0.779167	
+E1012 22:26:08.565628  1305 trainer.cc:382] Train step-220, 2 fields, 0#loss : 0.646259	1#accuracy : 0.755000	
+E1012 22:26:08.621511  1324 worker.cc:180] Test at step 230
+E1012 22:26:08.621541  1305 trainer.cc:382] Validation step-230, 2 fields, 0#loss : 0.648705	1#accuracy : 0.743590	
+E1012 22:26:08.627622  1305 trainer.cc:382] Test step-230, 2 fields, 0#loss : 0.641473	1#accuracy : 0.779167	
+E1012 22:26:08.633971  1305 trainer.cc:382] Train step-230, 2 fields, 0#loss : 0.646269	1#accuracy : 0.755000	
+E1012 22:26:08.689867  1324 worker.cc:180] Test at step 240
+E1012 22:26:08.689898  1305 trainer.cc:382] Validation step-240, 2 fields, 0#loss : 0.648710	1#accuracy : 0.743590	
+E1012 22:26:08.695937  1305 trainer.cc:382] Test step-240, 2 fields, 0#loss : 0.641475	1#accuracy : 0.779167	
+E1012 22:26:08.702261  1305 trainer.cc:382] Train step-240, 2 fields, 0#loss : 0.646277	1#accuracy : 0.755000	
+E1012 22:26:08.758198  1324 worker.cc:180] Test at step 250
+E1012 22:26:08.758229  1305 trainer.cc:382] Validation step-250, 2 fields, 0#loss : 0.648713	1#accuracy : 0.743590	
+E1012 22:26:08.764319  1305 trainer.cc:382] Test step-250, 2 fields, 0#loss : 0.641476	1#accuracy : 0.779167	
+E1012 22:26:08.770645  1305 trainer.cc:382] Train step-250, 2 fields, 0#loss : 0.646282	1#accuracy : 0.755000	
+E1012 22:26:08.826547  1324 worker.cc:180] Test at step 260
+E1012 22:26:08.826577  1305 trainer.cc:382] Validation step-260, 2 fields, 0#loss : 0.648716	1#accuracy : 0.743590	
+E1012 22:26:08.832613  1305 trainer.cc:382] Test step-260, 2 fields, 0#loss : 0.641476	1#accuracy : 0.779167	
+E1012 22:26:08.838953  1305 trainer.cc:382] Train step-260, 2 fields, 0#loss : 0.646286	1#accuracy : 0.755000	
+E1012 22:26:08.894883  1324 worker.cc:180] Test at step 270
+E1012 22:26:08.894929  1305 trainer.cc:382] Validation step-270, 2 fields, 0#loss : 0.648718	1#accuracy : 0.743590	
+E1012 22:26:08.900962  1305 trainer.cc:382] Test step-270, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:08.907299  1305 trainer.cc:382] Train step-270, 2 fields, 0#loss : 0.646289	1#accuracy : 0.755000	
+E1012 22:26:08.963203  1324 worker.cc:180] Test at step 280
+E1012 22:26:08.963233  1305 trainer.cc:382] Validation step-280, 2 fields, 0#loss : 0.648719	1#accuracy : 0.743590	
+E1012 22:26:08.969308  1305 trainer.cc:382] Test step-280, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:08.975661  1305 trainer.cc:382] Train step-280, 2 fields, 0#loss : 0.646291	1#accuracy : 0.755000	
+E1012 22:26:09.031548  1324 worker.cc:180] Test at step 290
+E1012 22:26:09.031610  1305 trainer.cc:382] Validation step-290, 2 fields, 0#loss : 0.648719	1#accuracy : 0.743590	
+E1012 22:26:09.037623  1305 trainer.cc:382] Test step-290, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:09.043946  1305 trainer.cc:382] Train step-290, 2 fields, 0#loss : 0.646293	1#accuracy : 0.755000	
+E1012 22:26:09.099845  1324 worker.cc:180] Test at step 300
+E1012 22:26:09.099874  1305 trainer.cc:382] Validation step-300, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:09.105907  1305 trainer.cc:382] Test step-300, 2 fields, 0#loss : 0.641478	1#accuracy : 0.779167	
+E1012 22:26:09.112252  1305 trainer.cc:382] Train step-300, 2 fields, 0#loss : 0.646294	1#accuracy : 0.755000	
+E1012 22:26:09.168157  1324 worker.cc:180] Test at step 310
+E1012 22:26:09.168208  1305 trainer.cc:382] Validation step-310, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:09.174253  1305 trainer.cc:382] Test step-310, 2 fields, 0#loss : 0.641478	1#accuracy : 0.779167	
+E1012 22:26:09.180595  1305 trainer.cc:382] Train step-310, 2 fields, 0#loss : 0.646295	1#accuracy : 0.755000	
+E1012 22:26:09.236480  1324 worker.cc:180] Test at step 320
+E1012 22:26:09.236511  1305 trainer.cc:382] Validation step-320, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:09.242575  1305 trainer.cc:382] Test step-320, 2 fields, 0#loss : 0.641478	1#accuracy : 0.779167	
+E1012 22:26:09.248915  1305 trainer.cc:382] Train step-320, 2 fields, 0#loss : 0.646295	1#accuracy : 0.755000	
+E1012 22:26:09.304875  1324 worker.cc:180] Test at step 330
+E1012 22:26:09.304905  1305 trainer.cc:382] Validation step-330, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:09.311261  1305 trainer.cc:382] Test step-330, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:09.317577  1305 trainer.cc:382] Train step-330, 2 fields, 0#loss : 0.646295	1#accuracy : 0.755000	
+E1012 22:26:09.373503  1324 worker.cc:180] Test at step 340
+E1012 22:26:09.373533  1305 trainer.cc:382] Validation step-340, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:09.379578  1305 trainer.cc:382] Test step-340, 2 fields, 0#loss : 0.641478	1#accuracy : 0.779167	
+E1012 22:26:09.385931  1305 trainer.cc:382] Train step-340, 2 fields, 0#loss : 0.646295	1#accuracy : 0.755000	
+E1012 22:26:09.441851  1324 worker.cc:180] Test at step 350
+E1012 22:26:09.441903  1305 trainer.cc:382] Validation step-350, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:09.447952  1305 trainer.cc:382] Test step-350, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:09.454277  1305 trainer.cc:382] Train step-350, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:09.510154  1324 worker.cc:180] Test at step 360
+E1012 22:26:09.510206  1305 trainer.cc:382] Validation step-360, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:09.516237  1305 trainer.cc:382] Test step-360, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:09.522586  1305 trainer.cc:382] Train step-360, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:09.578452  1324 worker.cc:180] Test at step 370
+E1012 22:26:09.578500  1305 trainer.cc:382] Validation step-370, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:09.584501  1305 trainer.cc:382] Test step-370, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:09.590839  1305 trainer.cc:382] Train step-370, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:09.646734  1324 worker.cc:180] Test at step 380
+E1012 22:26:09.646780  1305 trainer.cc:382] Validation step-380, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:09.652825  1305 trainer.cc:382] Test step-380, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:09.659137  1305 trainer.cc:382] Train step-380, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:09.715021  1324 worker.cc:180] Test at step 390
+E1012 22:26:09.715085  1305 trainer.cc:382] Validation step-390, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:09.721093  1305 trainer.cc:382] Test step-390, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:09.727426  1305 trainer.cc:382] Train step-390, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:09.783303  1324 worker.cc:180] Test at step 400
+E1012 22:26:09.783332  1305 trainer.cc:382] Validation step-400, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:09.789407  1305 trainer.cc:382] Test step-400, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:09.795748  1305 trainer.cc:382] Train step-400, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:09.851640  1324 worker.cc:180] Test at step 410
+E1012 22:26:09.851702  1305 trainer.cc:382] Validation step-410, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:09.857722  1305 trainer.cc:382] Test step-410, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:09.864063  1305 trainer.cc:382] Train step-410, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:09.919951  1324 worker.cc:180] Test at step 420
+E1012 22:26:09.919981  1305 trainer.cc:382] Validation step-420, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:09.926069  1305 trainer.cc:382] Test step-420, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:09.932401  1305 trainer.cc:382] Train step-420, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:09.988268  1324 worker.cc:180] Test at step 430
+E1012 22:26:09.988299  1305 trainer.cc:382] Validation step-430, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:09.994334  1305 trainer.cc:382] Test step-430, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:10.000679  1305 trainer.cc:382] Train step-430, 2 fields, 0#loss : 0.646298	1#accuracy : 0.755000	
+E1012 22:26:10.056550  1324 worker.cc:180] Test at step 440
+E1012 22:26:10.056602  1305 trainer.cc:382] Validation step-440, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:10.062616  1305 trainer.cc:382] Test step-440, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:10.068938  1305 trainer.cc:382] Train step-440, 2 fields, 0#loss : 0.646297	1#accuracy : 0.755000	
+E1012 22:26:10.124799  1324 worker.cc:180] Test at step 450
+E1012 22:26:10.124827  1305 trainer.cc:382] Validation step-450, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:10.130899  1305 trainer.cc:382] Test step-450, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:10.137250  1305 trainer.cc:382] Train step-450, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:10.193116  1324 worker.cc:180] Test at step 460
+E1012 22:26:10.193167  1305 trainer.cc:382] Validation step-460, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:10.199190  1305 trainer.cc:382] Test step-460, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:10.205507  1305 trainer.cc:382] Train step-460, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:10.261397  1324 worker.cc:180] Test at step 470
+E1012 22:26:10.261464  1305 trainer.cc:382] Validation step-470, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:10.267530  1305 trainer.cc:382] Test step-470, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:10.273865  1305 trainer.cc:382] Train step-470, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:10.329725  1324 worker.cc:180] Test at step 480
+E1012 22:26:10.329756  1305 trainer.cc:382] Validation step-480, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:10.335819  1305 trainer.cc:382] Test step-480, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:10.342130  1305 trainer.cc:382] Train step-480, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:10.397975  1324 worker.cc:180] Test at step 490
+E1012 22:26:10.398020  1305 trainer.cc:382] Validation step-490, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:10.404074  1305 trainer.cc:382] Test step-490, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:10.410370  1305 trainer.cc:382] Train step-490, 2 fields, 0#loss : 0.646298	1#accuracy : 0.755000	
+E1012 22:26:10.466207  1324 worker.cc:180] Test at step 500
+E1012 22:26:10.466251  1305 trainer.cc:382] Validation step-500, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:10.472295  1305 trainer.cc:382] Test step-500, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:10.478628  1305 trainer.cc:382] Train step-500, 2 fields, 0#loss : 0.646298	1#accuracy : 0.755000	
+E1012 22:26:10.534448  1324 worker.cc:180] Test at step 510
+E1012 22:26:10.534479  1305 trainer.cc:382] Validation step-510, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:10.540556  1305 trainer.cc:382] Test step-510, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:10.546886  1305 trainer.cc:382] Train step-510, 2 fields, 0#loss : 0.646298	1#accuracy : 0.755000	
+E1012 22:26:10.602686  1324 worker.cc:180] Test at step 520
+E1012 22:26:10.602751  1305 trainer.cc:382] Validation step-520, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:10.608747  1305 trainer.cc:382] Test step-520, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:10.615051  1305 trainer.cc:382] Train step-520, 2 fields, 0#loss : 0.646298	1#accuracy : 0.755000	
+E1012 22:26:10.670842  1324 worker.cc:180] Test at step 530
+E1012 22:26:10.670873  1305 trainer.cc:382] Validation step-530, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:10.676925  1305 trainer.cc:382] Test step-530, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:10.683264  1305 trainer.cc:382] Train step-530, 2 fields, 0#loss : 0.646298	1#accuracy : 0.755000	
+E1012 22:26:10.739074  1324 worker.cc:180] Test at step 540
+E1012 22:26:10.739104  1305 trainer.cc:382] Validation step-540, 2 fields, 0#loss : 0.648722	1#accuracy : 0.743590	
+E1012 22:26:10.745123  1305 trainer.cc:382] Test step-540, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:10.751453  1305 trainer.cc:382] Train step-540, 2 fields, 0#loss : 0.646298	1#accuracy : 0.755000	
+E1012 22:26:10.807227  1324 worker.cc:180] Test at step 550
+E1012 22:26:10.807260  1305 trainer.cc:382] Validation step-550, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:10.813287  1305 trainer.cc:382] Test step-550, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:10.819617  1305 trainer.cc:382] Train step-550, 2 fields, 0#loss : 0.646298	1#accuracy : 0.755000	
+E1012 22:26:10.875396  1324 worker.cc:180] Test at step 560
+E1012 22:26:10.875425  1305 trainer.cc:382] Validation step-560, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:10.881477  1305 trainer.cc:382] Test step-560, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:10.887796  1305 trainer.cc:382] Train step-560, 2 fields, 0#loss : 0.646297	1#accuracy : 0.755000	
+E1012 22:26:10.943518  1324 worker.cc:180] Test at step 570
+E1012 22:26:10.943572  1305 trainer.cc:382] Validation step-570, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:10.949583  1305 trainer.cc:382] Test step-570, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:10.955912  1305 trainer.cc:382] Train step-570, 2 fields, 0#loss : 0.646297	1#accuracy : 0.755000	
+E1012 22:26:11.011601  1324 worker.cc:180] Test at step 580
+E1012 22:26:11.011629  1305 trainer.cc:382] Validation step-580, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:11.017616  1305 trainer.cc:382] Test step-580, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:11.023922  1305 trainer.cc:382] Train step-580, 2 fields, 0#loss : 0.646297	1#accuracy : 0.755000	
+E1012 22:26:11.079618  1324 worker.cc:180] Test at step 590
+E1012 22:26:11.079649  1305 trainer.cc:382] Validation step-590, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:11.085645  1305 trainer.cc:382] Test step-590, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:11.091960  1305 trainer.cc:382] Train step-590, 2 fields, 0#loss : 0.646297	1#accuracy : 0.755000	
+E1012 22:26:11.147562  1324 worker.cc:180] Test at step 600
+E1012 22:26:11.147591  1305 trainer.cc:382] Validation step-600, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:11.153620  1305 trainer.cc:382] Test step-600, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:11.159917  1305 trainer.cc:382] Train step-600, 2 fields, 0#loss : 0.646297	1#accuracy : 0.755000	
+E1012 22:26:11.215479  1324 worker.cc:180] Test at step 610
+E1012 22:26:11.215508  1305 trainer.cc:382] Validation step-610, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:11.221555  1305 trainer.cc:382] Test step-610, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:11.227843  1305 trainer.cc:382] Train step-610, 2 fields, 0#loss : 0.646298	1#accuracy : 0.755000	
+E1012 22:26:11.283474  1324 worker.cc:180] Test at step 620
+E1012 22:26:11.283504  1305 trainer.cc:382] Validation step-620, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:11.289538  1305 trainer.cc:382] Test step-620, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:11.295832  1305 trainer.cc:382] Train step-620, 2 fields, 0#loss : 0.646297	1#accuracy : 0.755000	
+E1012 22:26:11.351328  1324 worker.cc:180] Test at step 630
+E1012 22:26:11.351357  1305 trainer.cc:382] Validation step-630, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:11.357347  1305 trainer.cc:382] Test step-630, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:11.363642  1305 trainer.cc:382] Train step-630, 2 fields, 0#loss : 0.646297	1#accuracy : 0.755000	
+E1012 22:26:11.419071  1324 worker.cc:180] Test at step 640
+E1012 22:26:11.419101  1305 trainer.cc:382] Validation step-640, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:11.425065  1305 trainer.cc:382] Test step-640, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:11.431352  1305 trainer.cc:382] Train step-640, 2 fields, 0#loss : 0.646297	1#accuracy : 0.755000	
+E1012 22:26:11.486714  1324 worker.cc:180] Test at step 650
+E1012 22:26:11.486744  1305 trainer.cc:382] Validation step-650, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:11.492745  1305 trainer.cc:382] Test step-650, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:11.499033  1305 trainer.cc:382] Train step-650, 2 fields, 0#loss : 0.646297	1#accuracy : 0.755000	
+E1012 22:26:11.554338  1324 worker.cc:180] Test at step 660
+E1012 22:26:11.554368  1305 trainer.cc:382] Validation step-660, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:11.560300  1305 trainer.cc:382] Test step-660, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:11.566553  1305 trainer.cc:382] Train step-660, 2 fields, 0#loss : 0.646297	1#accuracy : 0.755000	
+E1012 22:26:11.621808  1324 worker.cc:180] Test at step 670
+E1012 22:26:11.621841  1305 trainer.cc:382] Validation step-670, 2 fields, 0#loss : 0.648721	1#accuracy : 0.743590	
+E1012 22:26:11.627778  1305 trainer.cc:382] Test step-670, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:11.634018  1305 trainer.cc:382] Train step-670, 2 fields, 0#loss : 0.646297	1#accuracy : 0.755000	
+E1012 22:26:11.689162  1324 worker.cc:180] Test at step 680
+E1012 22:26:11.689191  1305 trainer.cc:382] Validation step-680, 2 fields, 0#loss : 0.648720	1#accuracy : 0.743590	
+E1012 22:26:11.695575  1305 trainer.cc:382] Test step-680, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:11.701839  1305 trainer.cc:382] Train step-680, 2 fields, 0#loss : 0.646297	1#accuracy : 0.755000	
+E1012 22:26:11.756937  1324 worker.cc:180] Test at step 690
+E1012 22:26:11.756968  1305 trainer.cc:382] Validation step-690, 2 fields, 0#loss : 0.648720	1#accuracy : 0.743590	
+E1012 22:26:11.762897  1305 trainer.cc:382] Test step-690, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:11.769145  1305 trainer.cc:382] Train step-690, 2 fields, 0#loss : 0.646297	1#accuracy : 0.755000	
+E1012 22:26:11.824121  1324 worker.cc:180] Test at step 700
+E1012 22:26:11.824168  1305 trainer.cc:382] Validation step-700, 2 fields, 0#loss : 0.648720	1#accuracy : 0.743590	
+E1012 22:26:11.830063  1305 trainer.cc:382] Test step-700, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:11.836277  1305 trainer.cc:382] Train step-700, 2 fields, 0#loss : 0.646297	1#accuracy : 0.755000	
+E1012 22:26:11.891136  1324 worker.cc:180] Test at step 710
+E1012 22:26:11.891166  1305 trainer.cc:382] Validation step-710, 2 fields, 0#loss : 0.648720	1#accuracy : 0.743590	
+E1012 22:26:11.897049  1305 trainer.cc:382] Test step-710, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:11.903261  1305 trainer.cc:382] Train step-710, 2 fields, 0#loss : 0.646297	1#accuracy : 0.755000	
+E1012 22:26:11.958020  1324 worker.cc:180] Test at step 720
+E1012 22:26:11.958060  1305 trainer.cc:382] Validation step-720, 2 fields, 0#loss : 0.648720	1#accuracy : 0.743590	
+E1012 22:26:11.973639  1305 trainer.cc:382] Test step-720, 2 fields, 0#loss : 0.641477	1#accuracy : 0.779167	
+E1012 22:26:11.979866  1305 trainer.cc:382] Train step-720, 2 fields, 0#loss : 0.646297	1#accuracy : 0.755000	
+E1012 22:26:12.034495  1324 worker.cc:180] Test at step 730
+E1012 22:26:12.034548  1305 trainer.cc:382] Validation step-730, 2 fields, 0#loss : 0.648719	1#accuracy : 0.743590	
+E1012 22:26:12.040392  1305 trainer.cc:382] Test step-730, 2 fields, 0#loss : 0.641475	1#accuracy : 0.779167	
+E1012 22:26:12.046568  1305 trainer.cc:382] Train step-730, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:12.101091  1324 worker.cc:180] Test at step 740
+E1012 22:26:12.101120  1305 trainer.cc:382] Validation step-740, 2 fields, 0#loss : 0.648719	1#accuracy : 0.743590	
+E1012 22:26:12.106959  1305 trainer.cc:382] Test step-740, 2 fields, 0#loss : 0.641475	1#accuracy : 0.779167	
+E1012 22:26:12.113159  1305 trainer.cc:382] Train step-740, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:12.167482  1324 worker.cc:180] Test at step 750
+E1012 22:26:12.167513  1305 trainer.cc:382] Validation step-750, 2 fields, 0#loss : 0.648719	1#accuracy : 0.743590	
+E1012 22:26:12.173319  1305 trainer.cc:382] Test step-750, 2 fields, 0#loss : 0.641475	1#accuracy : 0.779167	
+E1012 22:26:12.179497  1305 trainer.cc:382] Train step-750, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:12.233659  1324 worker.cc:180] Test at step 760
+E1012 22:26:12.233690  1305 trainer.cc:382] Validation step-760, 2 fields, 0#loss : 0.648719	1#accuracy : 0.743590	
+E1012 22:26:12.239511  1305 trainer.cc:382] Test step-760, 2 fields, 0#loss : 0.641475	1#accuracy : 0.779167	
+E1012 22:26:12.245632  1305 trainer.cc:382] Train step-760, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:12.299639  1324 worker.cc:180] Test at step 770
+E1012 22:26:12.299688  1305 trainer.cc:382] Validation step-770, 2 fields, 0#loss : 0.648719	1#accuracy : 0.743590	
+E1012 22:26:12.305430  1305 trainer.cc:382] Test step-770, 2 fields, 0#loss : 0.641475	1#accuracy : 0.779167	
+E1012 22:26:12.311544  1305 trainer.cc:382] Train step-770, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:12.365170  1324 worker.cc:180] Test at step 780
+E1012 22:26:12.365198  1305 trainer.cc:382] Validation step-780, 2 fields, 0#loss : 0.648719	1#accuracy : 0.743590	
+E1012 22:26:12.370951  1305 trainer.cc:382] Test step-780, 2 fields, 0#loss : 0.641475	1#accuracy : 0.779167	
+E1012 22:26:12.377063  1305 trainer.cc:382] Train step-780, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:12.430384  1324 worker.cc:180] Test at step 790
+E1012 22:26:12.430414  1305 trainer.cc:382] Validation step-790, 2 fields, 0#loss : 0.648719	1#accuracy : 0.743590	
+E1012 22:26:12.436141  1305 trainer.cc:382] Test step-790, 2 fields, 0#loss : 0.641475	1#accuracy : 0.779167	
+E1012 22:26:12.442211  1305 trainer.cc:382] Train step-790, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:12.495200  1324 worker.cc:180] Test at step 800
+E1012 22:26:12.495230  1305 trainer.cc:382] Validation step-800, 2 fields, 0#loss : 0.648719	1#accuracy : 0.743590	
+E1012 22:26:12.500874  1305 trainer.cc:382] Test step-800, 2 fields, 0#loss : 0.641475	1#accuracy : 0.779167	
+E1012 22:26:12.506897  1305 trainer.cc:382] Train step-800, 2 fields, 0#loss : 0.646296	1#accuracy : 0.755000	
+E1012 22:26:12.534236  1324 worker.cc:94] Worker (group_id = 0, id = 0) stops
+E1012 22:26:12.534745  1323 server.cc:117] Server (group_id = 0, id = 0) stops
+kill singa @ localhost ...
+lt-singa: no process killed
+Stopping zookeeper ... STOPPED
+cleanning metadata in zookeeper ...
