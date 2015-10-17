@@ -1585,7 +1585,7 @@ void LogisticLossLayer::ComputeFeature(Phase phase, const vector<SLayer>& srclay
   if (phase == kTest){
     const float* probptr_writeout=prob.dptr;
     ofstream probmatout;
-    probmatout.open("/data/zhaojing/marble/CMSHF/AUC/version" + std::to_string(static_cast<int>(run_version_)) + "step" + std::to_string(static_cast<int>(print_step_)) + ".csv");
+    probmatout.open("/data/zhaojing/marble/AUC/version" + std::to_string(static_cast<int>(run_version_)) + "step" + std::to_string(static_cast<int>(print_step_)) + ".csv");
     print_step_ ++;
     for(int n=0;n<batchsize_;n++){
       int label_writeout=static_cast<int>(label[n]);

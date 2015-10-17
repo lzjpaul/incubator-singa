@@ -1,0 +1,3 @@
+./bin/singa-run.sh -model=examples/marble/regularized/mlp2level-01-decay-001-level5-sub1.conf -cluster=examples/marble/cluster.conf 2>&1 | tee /home/singa/zhaojing/NUH-singa/incubator-singa/examples/marble/regularized/redirect/p01-w001-l5-s1-levelcomp
+./bin/singa-run.sh -model=examples/marble/regularized/mlp2level-01-decay-001-level5-sub2.conf -cluster=examples/marble/cluster.conf 2>&1 | tee /home/singa/zhaojing/NUH-singa/incubator-singa/examples/marble/regularized/redirect/p01-w001-l5-s2-levelcomp
+./bin/singa-run.sh -model=examples/marble/regularized/mlp2level-01-decay-001-level5-sub3.conf -cluster=examples/marble/cluster.conf 2>&1 | tee /home/singa/zhaojing/NUH-singa/incubator-singa/examples/marble/regularized/redirect/p01-w001-l5-s3-levelcomp
