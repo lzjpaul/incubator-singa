@@ -34,7 +34,7 @@ rank = int(sys.argv[1])
 print "rank num = \n", rank
 maxiternum = int(sys.argv[5])
 print "maxiternum = \n", maxiternum
-marble = MarbleAPR(X, rank, 15000);
+marble = MarbleAPR(X, rank, 10000);
 
 iterInfo, ll = marble.compute_decomp(gamma = [0.0001, 0.01, 0.01], gradual = True, max_inner = 15, max_iter = maxiternum, del_tol = 1e-20)
 
