@@ -374,13 +374,15 @@ void CDWorker::TrainOneBatch(int step, NeuralNet* net) {
   }
   for (auto* layer : layers)
     if (typeid(*layer) == typeid(RBMVisLayer)
-          || typeid(*layer) == typeid(RBMHidLayer))
+          || typeid(*layer) == typeid(RBMHidLayer)){
       layer->ComputeFeature(kNegative | kTest, net->srclayers(layer));
+    }
   for (int i = 1; i < job_conf_.train_one_batch().cd_conf().cd_k(); i++) {
     for (auto* layer : layers) {
       if (typeid(*layer) == typeid(RBMVisLayer)
-          || typeid(*layer) == typeid(RBMHidLayer))
+          || typeid(*layer) == typeid(RBMHidLayer)){
       layer->ComputeFeature(kNegative, net->srclayers(layer));
+      }
     }
   }
   for (auto* layer : layers) {

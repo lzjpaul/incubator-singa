@@ -182,11 +182,21 @@ class Layer {
   virtual const Blob<float>& data(const Layer* from) const {
     return data_;
   }
+
+  virtual const vector<Blob<float>>& data() const {
+    return data_vector_;
+  }
+  virtual const Blob<float>& data(int k) const {
+    return data_;
+  }
   /**
    * @see data().
    * @return the pointer to the Blob storing feature values of this layer.
    */
   virtual Blob<float>* mutable_data(const Layer* from) {
+    return &data_;
+  }
+  virtual Blob<float>* mutable_data(int k) {
     return &data_;
   }
   /**
@@ -216,6 +226,7 @@ class Layer {
   LayerProto layer_conf_;
   Blob<float> data_, grad_;
   vector<AuxType> aux_data_;
+  vector<Blob<float>> data_vector_;
 };
 
 /**
