@@ -377,6 +377,7 @@ void NeuralNet::CreateNetFromGraph(Graph* graph, int npartitions) {
     for (Node* src : node->srcnodes)
       src_map_[layer].push_back(name2layer(src->name));
   }
+
   // setup layers
   int paramid = 0;
   map<string, string> layerinfo;

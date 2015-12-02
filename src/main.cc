@@ -56,6 +56,7 @@ int main(int argc, char **argv) {
 
   // initialize glog before creating the driver
   google::InitGoogleLogging(argv[0]);
+
   // must create driver at the beginning and call its Init method.
   singa::Driver driver;
   driver.Init(argc, argv);
@@ -64,6 +65,7 @@ int main(int argc, char **argv) {
 
   // get the job conf, and custmize it if need
   singa::JobProto jobConf = driver.job_conf();
+
   if (singa::ArgPos(argc, argv, "-test") != -1) {
     driver.Test(jobConf);
   } else {
