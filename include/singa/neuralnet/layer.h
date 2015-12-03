@@ -180,24 +180,24 @@ class Layer {
    * @return a const ref for Blob storing feature values of this layer.
    */
   virtual const Blob<float>& data(const Layer* from) const {
-    return data_;
+    return data_.at(0);
   }
 
   virtual const vector<Blob<float>>& data() const {
-    return data_vector_;
+    return data_;
   }
   virtual const Blob<float>& data(int k) const {
-    return data_;
+    return data_.at(k);
   }
   /**
    * @see data().
    * @return the pointer to the Blob storing feature values of this layer.
    */
   virtual Blob<float>* mutable_data(const Layer* from) {
-    return &data_;
+    return &data_.at(0);
   }
   virtual Blob<float>* mutable_data(int k) {
-    return &data_;
+    return &data_.at(k);
   }
   /**
    * @return auxiliary data, e.g., image label.
@@ -224,9 +224,9 @@ class Layer {
 
  protected:
   LayerProto layer_conf_;
-  Blob<float> data_, grad_;
+  Blob<float> grad_;
   vector<AuxType> aux_data_;
-  vector<Blob<float>> data_vector_;
+  vector<Blob<float>> data_;
 };
 
 /**

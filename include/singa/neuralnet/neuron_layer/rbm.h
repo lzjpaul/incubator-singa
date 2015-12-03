@@ -35,13 +35,13 @@ class RBMLayer: virtual public Layer {
   virtual ~RBMLayer() {}
   void Setup(const LayerProto& proto, const vector<Layer*>& srclayers) override;
   const vector<Blob<float>>& data() const override{
-    return data_vector_;
+    return data_;
   }
   const Blob<float>& data(int k) const override{
-    return data_vector_.at(k);
+    return data_.at(k);
   }
   Blob<float>* mutable_data(int k) override{
-    return &data_vector_.at(k);
+    return &data_.at(k);
   }
   const std::vector<Param*> GetParams() const override {
     std::vector<Param*> params{weight_, bias_};
