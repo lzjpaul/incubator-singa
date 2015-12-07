@@ -197,7 +197,7 @@ class Layer {
    * @return a const ref for the kth Blob.
    */
   virtual const Blob<float>& data(int k) const {
-    return (*(datavec_.at(k)));
+    return *datavec_.at(k);
   }
   /**
    * @see data().
@@ -242,7 +242,7 @@ class Layer {
    * @return the const ref of the kth Blob for the gradient of this layer.
    */
   virtual const Blob<float>& grad(int k) const {
-    return (*gradvec_.at(k));
+    return *gradvec_.at(k);
   }
   /**
    * @see data().
