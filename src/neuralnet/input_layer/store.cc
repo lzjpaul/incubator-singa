@@ -67,7 +67,6 @@ void StoreInputLayer::ComputeFeature(int flag,
 void SingleLabelRecordLayer::Setup(const LayerProto& conf,
     const vector<Layer*>& srclayers) {
   StoreInputLayer::Setup(conf, srclayers);
-
   vector<int> shape {batchsize_};
   for (int s : conf.store_conf().shape())
     shape.push_back(s);

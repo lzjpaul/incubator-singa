@@ -32,11 +32,11 @@ using std::vector;
 Blob<float>* RBMLayer::Sample(int flag) {
   Tensor<cpu, 2> sample, data;
   if ((flag & kPositive) == kPositive || first_gibbs_) {
-    data = Tensor2(&data_vector_.at(0));
-    sample = Tensor2(&data_vector_.at(3));
+    data = Tensor2(&pos_data_);
+    sample = Tensor2(&sample_);
   } else {
-    data = Tensor2(&data_vector_.at(1));
-    sample = Tensor2(&data_vector_.at(2));
+    data = Tensor2(&neg_data_);
+    sample = Tensor2(&neg_sample_);
   }
   auto random = TSingleton<Random<cpu>>::Instance();
   if (gaussian_) {
@@ -46,22 +46,20 @@ Blob<float>* RBMLayer::Sample(int flag) {
     random->SampleBinary(sample, data);
   }
   return (flag & kPositive) == kPositive || first_gibbs_ ?
-    &data_vector_.at(3) : &data_vector_.at(2);
+    &sample_ : &neg_sample_;
 }
 void RBMLayer::Setup(const LayerProto& conf, const vector<Layer*>& srclayers) {
   Layer::Setup(conf, srclayers);
   hdim_ = conf.rbm_conf().hdim();
   gaussian_ = conf.rbm_conf().gaussian();
   first_gibbs_ = true;
-  //data_, neg_data_, neg_sample_, sample_
-  Blob<float> new_data_;
-  Blob<float> neg_data_;
-  Blob<float> neg_sample_;
-  Blob<float> sample_;
-  data_vector_.push_back(new_data_);
-  data_vector_.push_back(neg_data_);
-  data_vector_.push_back(neg_sample_);
-  data_vector_.push_back(sample_);
+  //pos_data_, neg_data_, neg_sample_, sample_
+  datavec_.clear();
+  datavec_.push_back(&pos_data_);
+  datavec_.push_back(&neg_data_);
+  datavec_.push_back(&neg_sample_);
+  datavec_.push_back(&sample_);
+  gradvec_.resize(4);
 }
 /**************** Implementation for RBMVisLayer********************/
 RBMVisLayer::~RBMVisLayer() {
@@ -85,9 +83,9 @@ void RBMVisLayer::Setup(const LayerProto& conf,
   input_layer_ = srclayers[0] != hid_layer_ ? srclayers[0]: srclayers[1];
   const auto& src = input_layer_->data(this);
   batchsize_ = src.shape()[0];
-  data_vector_.at(0).ReshapeLike(src);
-  data_vector_.at(1).ReshapeLike(data_vector_.at(0));
-  data_vector_.at(2).ReshapeLike(data_vector_.at(0));
+  pos_data_.ReshapeLike(src);
+  neg_data_.ReshapeLike(pos_data_);
+  neg_sample_.ReshapeLike(pos_data_);
   vdim_ = src.count() / batchsize_;
   weight_ = Param::Create(conf.param(0));
   weight_ ->Setup(vector<int>{hdim_, vdim_});
@@ -97,21 +95,21 @@ void RBMVisLayer::Setup(const LayerProto& conf,
 
 void RBMVisLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
   if ((flag & kPositive) == kPositive) {
-    data_vector_.at(0).CopyFrom(input_layer_->data(this), true);
+    pos_data_.CopyFrom(input_layer_->data(this), true);
     first_gibbs_ = true;
   } else if ((flag & kNegative) == kNegative) {
     // fetch sampling results from hidden layer
     auto hid_sample = Tensor2(hid_layer_->Sample(flag));
-    auto data = Tensor2(&data_vector_.at(1));
+    auto data = Tensor2(&neg_data_);
     auto weight = Tensor2(weight_->mutable_data());
     auto bias = Tensor1(bias_->mutable_data());
     data = dot(hid_sample, weight);
     data += expr::repmat(bias, batchsize_);
     data = expr::F<op::sigmoid>(data);
     if ((flag & kTest) == kTest) {
-      const float *dptr = data_vector_.at(0).cpu_data(), *rcns = data_vector_.at(1).cpu_data();
+      const float *dptr = pos_data_.cpu_data(), *rcns = neg_data_.cpu_data();
       float err = 0.f;
-      for (int i = 0; i < data_vector_.at(0).count(); i++) {
+      for (int i = 0; i < pos_data_.count(); i++) {
         err += (dptr[i] - rcns[i]) * (dptr[i] - rcns[i]);
       }
       metric_.Add("Squared Error", err / batchsize_);
@@ -121,8 +119,8 @@ void RBMVisLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
 }
 
 void RBMVisLayer::ComputeGradient(int flag, const vector<Layer*>& srclayers) {
-  auto vis_pos = Tensor2(&data_vector_.at(0));
-  auto vis_neg = Tensor2(&data_vector_.at(1));
+  auto vis_pos = Tensor2(&pos_data_);
+  auto vis_neg = Tensor2(&neg_data_);
   auto hid_pos = Tensor2(hid_layer_->mutable_data(0)); //modify here
   auto hid_neg = Tensor2(hid_layer_->mutable_data(1));
 
@@ -149,10 +147,10 @@ void RBMHidLayer::Setup(const LayerProto& conf,
   const auto& src_data = srclayers[0]->data(0); //modify here
   batchsize_ = src_data.shape()[0];
   vdim_ = src_data.count() / batchsize_;
-  data_vector_.at(0).Reshape(vector<int>{batchsize_, hdim_});
-  data_vector_.at(1).ReshapeLike(data_vector_.at(0));
-  data_vector_.at(3).ReshapeLike(data_vector_.at(0));
-  data_vector_.at(2).ReshapeLike(data_vector_.at(0));
+  pos_data_.Reshape(vector<int>{batchsize_, hdim_});
+  neg_data_.ReshapeLike(pos_data_);
+  sample_.ReshapeLike(pos_data_);
+  neg_sample_.ReshapeLike(pos_data_);
   weight_ = Param::Create(conf.param(0));
   weight_->Setup(vector<int>{hdim_, vdim_});
   bias_ = Param::Create(conf.param(1));
@@ -166,11 +164,11 @@ void RBMHidLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
 
   Tensor<cpu, 2> data, src;
   if ((flag & kPositive) == kPositive) {
-    data = Tensor2(&data_vector_.at(0));
+    data = Tensor2(&pos_data_);
     src = Tensor2(vis_layer_->mutable_data(0));  //modify here
     first_gibbs_ = true;
   } else {
-    data = Tensor2(&data_vector_.at(1));
+    data = Tensor2(&neg_data_);
     // hinton's science paper does not sample the vis layer
     src = Tensor2(vis_layer_->mutable_data(1));
     first_gibbs_ = false;
@@ -183,8 +181,8 @@ void RBMHidLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
 }
 
 void RBMHidLayer::ComputeGradient(int flag, const vector<Layer*>& srclayers) {
-  auto hid_pos = Tensor2(&data_vector_.at(0));
-  auto hid_neg = Tensor2(&data_vector_.at(1));
+  auto hid_pos = Tensor2(&pos_data_);
+  auto hid_neg = Tensor2(&neg_data_);
   auto gbias = Tensor1(bias_->mutable_grad());
   gbias = expr::sum_rows(hid_neg);
   gbias -= expr::sum_rows(hid_pos);
