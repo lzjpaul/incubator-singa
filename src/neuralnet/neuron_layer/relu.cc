@@ -38,6 +38,9 @@ void ReLULayer::Setup(const LayerProto& conf,
 void ReLULayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
   auto data = Tensor1(&data_);
   auto src = Tensor1(srclayers[0]->mutable_data(this));
+  LOG(INFO) << "RELU src shape0: " << srclayers[0]->mutable_data(this)->shape()[0];
+  LOG(INFO) << "RELU src shape1: " << srclayers[0]->mutable_data(this)->shape()[1];
+  LOG(INFO) << "RELU src shape2: " << srclayers[0]->mutable_data(this)->shape()[2];
   data = expr::F<op::relu>(src);
 }
 

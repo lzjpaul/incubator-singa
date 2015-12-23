@@ -115,6 +115,9 @@ void CPoolingLayer::Setup(const LayerProto& conf,
       mask_.ReshapeLike(data_);
 }
 void CPoolingLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
+  LOG(INFO) << "pool src shape0: " << srclayers[0]->mutable_data(this)->shape()[0];
+  LOG(INFO) << "pool src shape1: " << srclayers[0]->mutable_data(this)->shape()[1];
+  LOG(INFO) << "pool src shape2: " << srclayers[0]->mutable_data(this)->shape()[2];
   if (pool_ == PoolingProto_PoolMethod_MAX)
     ForwardMaxPooling(srclayers[0]->mutable_data(this)->mutable_cpu_data(),
         batchsize_, channels_, height_, width_, kernel_y_, kernel_x_,

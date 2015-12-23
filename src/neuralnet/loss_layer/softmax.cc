@@ -63,6 +63,12 @@ void SoftmaxLossLayer::ComputeFeature(int flag,
     //  CHECK_LT(ilabel,10);
     CHECK_GE(ilabel, 0);
     float prob_of_truth = probptr[ilabel];
+
+    /*begin check probability*/
+    if (n < 30)
+      LOG(INFO)<<"ilabel "<<ilabel<<" prob of 1: "<<probptr[1];
+    /*end check probability*/
+
     loss -= log(std::max(prob_of_truth, FLT_MIN));
     vector<std::pair<float, int> > probvec;
     for (int j = 0; j < dim_; ++j) {

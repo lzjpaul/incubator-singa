@@ -354,6 +354,7 @@ void BPWorker::Forward(int step, Phase phase, NeuralNet* net) {
         }
       }
       // LOG(ERROR) << layer->name() << " forward";
+      // LOG(ERROR) << "phase: " << phase << " kForward" << kForward;
       layer->ComputeFeature(phase | kForward, net->srclayers(layer));
       // TODO(wangwei): enable this for model partition
       // send data to other workers

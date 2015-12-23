@@ -68,6 +68,14 @@ void CudnnActivationLayer::ComputeFeature(int flag,
   if (!has_init_cudnn_)
     InitCudnn();
   float alpha = 1.0f, beta = 0.0f;
+
+  LOG(INFO) << "layer name: " << this->name().c_str(); 
+  LOG(INFO) << "RELU source data shape0: " << srclayers[0]->data(this).shape()[0];
+  LOG(INFO) << "RELU source data shape1: " << srclayers[0]->data(this).shape()[1];
+  LOG(INFO) << "RELU source data shape2: " << srclayers[0]->data(this).shape()[2];
+  LOG(INFO) << "RELU source data shape3: " << srclayers[0]->data(this).shape()[3];
+  LOG(INFO) << "RELU source data shape4: " << srclayers[0]->data(this).shape()[4];
+
   // currently only consider single src layer
   CHECK_EQ(srclayers.size(), 1);
   CHECK_CUDNN(cudnnActivationForward(handle_,
