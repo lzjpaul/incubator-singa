@@ -20,6 +20,7 @@
 *************************************************************/
 
 #include "singa/neuralnet/neuron_layer.h"
+#include "singa/utils/math_blob.h"
 
 namespace singa {
 
@@ -69,7 +70,8 @@ void CudnnActivationLayer::ComputeFeature(int flag,
     InitCudnn();
   float alpha = 1.0f, beta = 0.0f;
 
-  LOG(INFO) << "layer name: " << this->name().c_str(); 
+  LOG(INFO) << "layer name: " << this->name().c_str();
+  LOG(INFO) << "RELU source data norm: " << Asum(srclayers[0]->data(this)); 
   LOG(INFO) << "RELU source data shape0: " << srclayers[0]->data(this).shape()[0];
   LOG(INFO) << "RELU source data shape1: " << srclayers[0]->data(this).shape()[1];
   LOG(INFO) << "RELU source data shape2: " << srclayers[0]->data(this).shape()[2];

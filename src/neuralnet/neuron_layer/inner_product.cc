@@ -63,6 +63,8 @@ void InnerProductLayer::ComputeFeature(int flag,
   LOG(INFO) << "inner product src layer shape2: " << srclayers[0]->data(this).shape()[2];
   LOG(INFO) << "inner product src layer shape3: " << srclayers[0]->data(this).shape()[3];
   LOG(INFO) << "inner product src layer shape4: " << srclayers[0]->data(this).shape()[4];
+  LOG(INFO) << "inner product weight shape0: " << weight_->data().shape()[0];
+  LOG(INFO) << "inner product weight shape1: " << weight_->data().shape()[1];
 
   MMDot(srclayers[0]->data(this), weight_->data().T(), &data_);
   MVAddRow(bias_->data(), &data_);

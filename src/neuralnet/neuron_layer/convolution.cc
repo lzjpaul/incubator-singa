@@ -34,7 +34,9 @@ ConvolutionLayer::~ConvolutionLayer() {
 void ConvolutionLayer::Setup(const LayerProto& conf,
     const vector<Layer*>& srclayers) {
   CHECK_EQ(srclayers.size(), 1);
+  LOG(ERROR) << "before conv layer setup";
   Layer::Setup(conf, srclayers);
+  LOG(ERROR) << "after conv layer setup";
   ConvolutionProto conv_conf = conf.convolution_conf();
   if (conv_conf.has_kernel()) {
     kernel_x_ = kernel_y_ = conv_conf.kernel();
@@ -44,6 +46,7 @@ void ConvolutionLayer::Setup(const LayerProto& conf,
   }
   CHECK_NE(kernel_x_, 0);
   CHECK_NE(kernel_y_, 0);
+  LOG(ERROR) << "kernel_y: " << kernel_y_;
 
   if (conv_conf.has_pad()) {
     pad_x_ = pad_y_ = conv_conf.pad();
@@ -51,7 +54,7 @@ void ConvolutionLayer::Setup(const LayerProto& conf,
     pad_x_ = conv_conf.pad_x();
     pad_y_ = conv_conf.pad_y();
   }
-
+  LOG(ERROR) << "pad_y: " << pad_y_;
   if (conv_conf.has_stride()) {
     stride_x_ = stride_y_ = conv_conf.stride();
   } else {
@@ -59,6 +62,7 @@ void ConvolutionLayer::Setup(const LayerProto& conf,
     stride_y_ = conv_conf.stride_y();
   }
 
+  LOG(ERROR) << "stride_y: " << stride_y_;
   num_filters_ = conv_conf.num_filters();
   // partition filters
   if (partition_dim() > 0)
@@ -70,16 +74,18 @@ void ConvolutionLayer::Setup(const LayerProto& conf,
   CHECK_GT(dim, 2);
   width_ = srcshape[dim - 1];
   height_ = srcshape[dim - 2];
+  LOG(ERROR) << " dim: " << dim << " srdshape 0: " << srcshape[0] << " srdshape 1: " << srcshape[1] << " srdshape 2: " << srcshape[2] << " srdshape 3: " << srcshape[3] << " srdshape 4: " << srcshape[4];
   if (dim > 3)
     channels_ = srcshape[dim - 3];
   else if (dim > 2)
     channels_ = 1;
-
+  LOG(ERROR) << "channels: " << channels_ << " height: " << height_;
   conv_height_ = (height_ + 2 * pad_y_ - kernel_y_) / stride_y_ + 1;
   conv_width_ = (width_ + 2 * pad_x_ - kernel_x_) / stride_x_ + 1;
   col_height_ = channels_ * kernel_x_ * kernel_y_;
   col_width_ = conv_height_ * conv_width_;
   vector<int> shape{batchsize_, num_filters_, conv_height_, conv_width_};
+  LOG(ERROR) << "batchsize: " << batchsize_ << " num_filters: " << num_filters_ << " conv_height: " << conv_height_ << " conv_width: " << conv_width_;
   data_.Reshape(shape);
   grad_.Reshape(shape);
   col_data_.Reshape(vector<int>{col_height_, col_width_});

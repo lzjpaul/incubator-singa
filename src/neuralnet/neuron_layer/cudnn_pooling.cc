@@ -20,6 +20,7 @@
 *************************************************************/
 
 #include "singa/neuralnet/neuron_layer.h"
+#include "singa/utils/math_blob.h"
 
 namespace singa {
 
@@ -63,6 +64,16 @@ void CudnnPoolLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
   if (!has_init_cudnn_)
     InitCudnn();
   float alpha = 1.0f, beta = 0.0f;
+  LOG(INFO) << "layer name: " << this->name().c_str();
+  LOG(INFO) << "POOL source data norm: " << Asum(srclayers[0]->data(this)); 
+  LOG(INFO) << "POOL source data shape0: " << srclayers[0]->data(this).shape()[0];
+  LOG(INFO) << "POOL source data shape1: " << srclayers[0]->data(this).shape()[1];
+  LOG(INFO) << "POOL source data shape2: " << srclayers[0]->data(this).shape()[2];
+  LOG(INFO) << "POOL source data shape3: " << srclayers[0]->data(this).shape()[3];
+  LOG(INFO) << "POOL source data shape4: " << srclayers[0]->data(this).shape()[4];
+  LOG(INFO) << "POOL source data shape5: " << srclayers[0]->data(this).shape()[5];
+
+
   // currently only consider single src layer
   CHECK_EQ(srclayers.size(), 1);
   CHECK_CUDNN(cudnnPoolingForward(handle_,
