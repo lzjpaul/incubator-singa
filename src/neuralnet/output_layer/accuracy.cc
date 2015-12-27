@@ -21,6 +21,11 @@
 
 #include <algorithm>
 #include "singa/neuralnet/output_layer.h"
+#include <time.h>
+#include <fstream>
+#include <iostream>
+
+using namespace std;
 
 namespace singa {
 
@@ -28,10 +33,15 @@ void AccuracyLayer::Setup(const LayerProto& proto,
     const vector<Layer*>& srclayers) {
   CHECK_EQ(srclayers.size(), 2);
   ArgSortLayer::Setup(proto, vector<Layer*>{srclayers.at(0)});
+  // print_step_ = 0;
+  // srand((unsigned)time(NULL));
+  // run_version_ = rand()%1000;
 }
 
 void AccuracyLayer::ComputeFeature(int flag,
     const vector<Layer*>& srclayers) {
+  // LOG(ERROR) << "in accuracy layer";
+  // LOG(INFO) << "in accuracy layer";
   ArgSortLayer::ComputeFeature(flag, vector<Layer*>{srclayers.at(0)});
   const auto& label = srclayers[1]->aux_data(this);
   int ncorrect = 0;
@@ -45,6 +55,19 @@ void AccuracyLayer::ComputeFeature(int flag,
       }
     }
   }
+  
+  /*print labels*/
+  ofstream probmatout;
+  // probmatout.open("/data/zhaojing/AUC/label/version" + std::to_string(static_cast<int>(run_version_)) + "step" + std::to_string(static_cast<int>(print_step_)) + ".csv");
+  probmatout.open("/data/zhaojing/AUC/label/version" + std::to_string(static_cast<int>(run_version_)) + ".csv", ios::app);
+  // print_step_ ++;
+  for(int n = 0; n < batchsize_; n++){
+    int label_writeout=static_cast<int>(label[n]);
+    probmatout << label_writeout << "\n";
+  }
+  probmatout.close();
+  /*print labels*/
+
   accuracy_ += ncorrect * 1.0f / batchsize_;
   counter_++;
 }

@@ -60,6 +60,8 @@ class SoftmaxLossLayer : public LossLayer {
   int batchsize_, topk_, dim_, counter_ = 0;
   float scale_;
   float loss_ = 0.0f, accuracy_ = 0.0f;
+  int print_step_;
+  int run_version_;
 };
 
 #ifdef USE_CUDNN

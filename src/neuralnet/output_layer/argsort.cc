@@ -21,6 +21,11 @@
 
 #include <algorithm>
 #include "singa/neuralnet/output_layer.h"
+#include <time.h>
+#include <fstream>
+#include <iostream>
+
+using namespace std;
 
 namespace singa {
 
@@ -32,6 +37,9 @@ void ArgSortLayer::Setup(const LayerProto& proto,
   dim_ = srclayers[0]->data(this).count() / batchsize_;
   topk_ = proto.argsort_conf().topk();
   data_.Reshape(vector<int>{batchsize_, topk_});
+  // print_step_ = 0;
+  srand((unsigned)time(NULL));
+  run_version_ = rand()%1000;
 }
 
 void ArgSortLayer::ComputeFeature(int flag,
@@ -39,6 +47,25 @@ void ArgSortLayer::ComputeFeature(int flag,
   // TODO(wangwei) check flag to ensure it is not called in training phase
   const float* srcptr = srclayers.at(0)->data(this).cpu_data();
   float* ptr = data_.mutable_cpu_data();
+  // LOG(ERROR) << "argsort layer batchsize_: " << batchsize_;
+  // LOG(INFO) << "argsort layer batchsize_: " << batchsize_;
+
+  // LOG(INFO) << "argsort dim_: " << dim_;
+  // LOG(ERROR) << "argsort dim_: " << dim_;
+  /*print out prob*/
+  const float* probptr_writeout = srclayers.at(0)->data(this).cpu_data();
+  ofstream probmatout;
+  probmatout.open("/data/zhaojing/AUC/prob/version" + std::to_string(static_cast<int>(run_version_)) + ".csv", ios::app);
+  // probmatout.open("/data/zhaojing/AUC/prob/version" + std::to_string(static_cast<int>(run_version_)) + "step" + std::to_string(static_cast<int>(print_step_)) + ".csv");
+  // print_step_ ++;
+  for (int n = 0; n < batchsize_; n++) {
+    probmatout << probptr_writeout[1] << "\n";
+    probptr_writeout += dim_;
+  }
+  probmatout.close();
+  /*print out prob*/
+
+  /**/
   for (int n = 0; n < batchsize_; n++) {
     vector<std::pair<float, int> > vec;
     for (int j = 0; j < dim_; ++j)

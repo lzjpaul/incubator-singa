@@ -44,6 +44,8 @@ class ArgSortLayer : public OutputLayer {
  protected:
   int batchsize_, dim_;
   int topk_;
+  int print_step_;
+  int run_version_;
 };
 
 class AccuracyLayer : public ArgSortLayer {

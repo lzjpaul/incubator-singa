@@ -43,6 +43,8 @@ void CudnnSoftmaxLayer::InitCudnn() {
 
 void CudnnSoftmaxLayer::ComputeFeature(int flag,
     const vector<Layer*>& srclayers) {
+  // LOG(INFO) << "cudnnsoftmax begins";
+  // LOG(ERROR) << "cudnnsoftmax begins";
   if (!has_init_cudnn_)
     InitCudnn();
   const float alpha = 1.0f, beta = 0.0f;

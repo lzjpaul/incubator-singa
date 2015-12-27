@@ -25,6 +25,11 @@
 #include "singa/neuralnet/loss_layer.h"
 #include "mshadow/tensor.h"
 #include "singa/utils/math_blob.h"
+#include <time.h>
+#include <fstream>
+#include <iostream>
+
+using namespace std;
 
 namespace singa {
 
@@ -47,10 +52,15 @@ void SoftmaxLossLayer::Setup(const LayerProto& proto,
   dim_ = data_.count() / batchsize_;
   topk_ = proto.softmaxloss_conf().topk();
   scale_ = proto.softmaxloss_conf().scale();
+  print_step_ = 0;
+  srand((unsigned)time(NULL));
+  run_version_ = rand()%1000;
 }
 
 void SoftmaxLossLayer::ComputeFeature(int flag,
     const vector<Layer*>& srclayers) {
+  // LOG(INFO) << "softmax compute feature begins";
+  // LOG(ERROR) << "softmax compute feature begins";
   Shape<2> s = Shape2(batchsize_, dim_);
   Tensor<cpu, 2> prob(data_.mutable_cpu_data(), s);
   Tensor<cpu, 2> src(srclayers[0]->mutable_data(this)->mutable_cpu_data(), s);
@@ -65,8 +75,8 @@ void SoftmaxLossLayer::ComputeFeature(int flag,
     float prob_of_truth = probptr[ilabel];
 
     /*begin check probability*/
-    if (n < 30)
-      LOG(INFO)<<"ilabel "<<ilabel<<" prob of 1: "<<probptr[1];
+    // if (n < 30)
+       // LOG(INFO)<<"ilabel "<<ilabel<<" prob of 1: "<<probptr[1];
     /*end check probability*/
 
     loss -= log(std::max(prob_of_truth, FLT_MIN));
@@ -86,6 +96,20 @@ void SoftmaxLossLayer::ComputeFeature(int flag,
     probptr += dim_;
   }
   CHECK_EQ(probptr, prob.dptr + prob.shape.Size());
+  // LOG(ERROR) << "batchsize: " << batchsize_;
+  if (batchsize_ == 3000){
+    LOG(ERROR) << "beign printting";
+    const float* probptr_writeout=prob.dptr;
+    ofstream probmatout;
+    probmatout.open("/data/zhaojing/AUC/version" + std::to_string(static_cast<int>(run_version_)) + "step" + std::to_string(static_cast<int>(print_step_)) + ".csv");
+    print_step_ ++;
+    for(int n = 0; n < batchsize_; n++){
+      int label_writeout=static_cast<int>(label[n]);
+      probmatout << label_writeout << "," << probptr_writeout[1] << "\n";
+      probptr_writeout += dim_;
+    }
+    probmatout.close();
+  }
   loss_ += loss * scale_ / (1.0f * batchsize_);
   accuracy_ += precision * scale_ / (1.0f * batchsize_);
   counter_++;

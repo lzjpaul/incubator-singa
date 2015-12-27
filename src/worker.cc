@@ -353,6 +353,8 @@ void BPWorker::Forward(int step, Phase phase, NeuralNet* net) {
           Collect(step, p);
         }
       }
+      // LOG(INFO) << layer->name() << " forward";
+      // LOG(INFO) << "phase: " << phase << " kForward" << kForward;
       // LOG(ERROR) << layer->name() << " forward";
       // LOG(ERROR) << "phase: " << phase << " kForward" << kForward;
       layer->ComputeFeature(phase | kForward, net->srclayers(layer));

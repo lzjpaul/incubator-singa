@@ -137,13 +137,16 @@ void CudnnConvLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
     InitCudnn();
   float alpha = 1.f, beta = 0.f;
 
-  LOG(INFO) << "layer name: " << this->name().c_str();
-  LOG(INFO) << "CONV source data norm: " << Asum(srclayers[0]->data(this));
-  LOG(INFO) << "CONV source data shape0: " << srclayers[0]->data(this).shape()[0];
-  LOG(INFO) << "CONV source data shape1: " << srclayers[0]->data(this).shape()[1];
-  LOG(INFO) << "CONV source data shape2: " << srclayers[0]->data(this).shape()[2];
-  LOG(INFO) << "CONV source data shape3: " << srclayers[0]->data(this).shape()[3];
-  LOG(INFO) << "CONV source data shape4: " << srclayers[0]->data(this).shape()[4];
+  // LOG(INFO) << "layer name: " << this->name().c_str();
+  // LOG(INFO) << "CONV source data norm: " << Asum(srclayers[0]->data(this));
+  // LOG(INFO) << "CONV source data shape0: " << srclayers[0]->data(this).shape()[0];
+  // LOG(INFO) << "CONV source data shape1: " << srclayers[0]->data(this).shape()[1];
+  // LOG(INFO) << "CONV source data shape2: " << srclayers[0]->data(this).shape()[2];
+  // LOG(INFO) << "CONV source data shape3: " << srclayers[0]->data(this).shape()[3];
+  // LOG(INFO) << "CONV source data shape4: " << srclayers[0]->data(this).shape()[4];
+  // LOG(INFO) << "CONV weight shape0: " << weight_->data().shape()[0];
+  // LOG(INFO) << "CONV weight shape1: " << weight_->data().shape()[1];
+  // LOG(INFO) << "CONV weight shape2: " << weight_->data().shape()[2];
 
   Blob<float> workspace(vector<int>{static_cast<int>(workspace_count_)});
   CHECK_CUDNN(cudnnConvolutionForward(handle_,
