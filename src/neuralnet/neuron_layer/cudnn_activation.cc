@@ -19,8 +19,14 @@
 *
 *************************************************************/
 
+#include <algorithm>
 #include "singa/neuralnet/neuron_layer.h"
 #include "singa/utils/math_blob.h"
+#include <time.h>
+#include <fstream>
+#include <iostream>
+
+using namespace std;
 
 namespace singa {
 
@@ -62,6 +68,8 @@ void CudnnActivationLayer::InitCudnn() {
         stride));
   delete[] sdim;
   delete[] stride;
+  srand((unsigned)time(NULL));
+  run_version_ = rand()%1000;
 }
 
 void CudnnActivationLayer::ComputeFeature(int flag,
@@ -70,6 +78,7 @@ void CudnnActivationLayer::ComputeFeature(int flag,
     InitCudnn();
   float alpha = 1.0f, beta = 0.0f;
 
+  // LOG(ERROR) << "flag indicate" << (flag&flag);
   // LOG(INFO) << "layer name: " << this->name().c_str();
   // LOG(INFO) << "RELU source data norm: " << Asum(srclayers[0]->data(this)); 
   // LOG(INFO) << "RELU source data shape0: " << srclayers[0]->data(this).shape()[0];
@@ -77,6 +86,35 @@ void CudnnActivationLayer::ComputeFeature(int flag,
   // LOG(INFO) << "RELU source data shape2: " << srclayers[0]->data(this).shape()[2];
   // LOG(INFO) << "RELU source data shape3: " << srclayers[0]->data(this).shape()[3];
   // LOG(INFO) << "RELU source data shape4: " << srclayers[0]->data(this).shape()[4];
+  // 528 log, 544 line
+  //check : featuremapptr + = height * width && j is reused?
+  if (strcmp((this->name()).c_str(), "relu1@00") == 0 && (flag&flag) == 36){
+    int topk = 10;
+    int batchsize = srclayers[0]->data(this).shape()[0];
+    int filter_num = srclayers[0]->data(this).shape()[1];
+    int height = srclayers[0]->data(this).shape()[2];
+    int width = srclayers[0]->data(this).shape()[3];
+    int count = srclayers[0]->data(this).count();
+    LOG(ERROR) << "beign printting feature map";
+    const float* featuremapptr = srclayers[0]->data(this).cpu_data();
+    ofstream featuremapout;
+    ofstream featuremapshape;
+    featuremapout.open("/data/zhaojing/feature-map/map/version" + std::to_string(static_cast<int>(run_version_)) + ".csv", ios::app);
+    featuremapshape.open("/data/zhaojing/feature-map/shape/version" + std::to_string(static_cast<int>(run_version_)) + ".csv", ios::app);
+    featuremapshape << batchsize << "," << filter_num << "," << height << "," << width << "," << count << "\n";
+    for(int n = 0; n < (batchsize * filter_num); n++){
+      vector<std::pair<float, int> > vec;
+      for (int j = 0; j < (height * width); j++)
+        vec.push_back(std::make_pair(featuremapptr[j], j));
+      std::partial_sort(vec.begin(), vec.begin() + topk, vec.end(),
+                      std::greater<std::pair<float, int> >());
+      for (int j = 0; j < topk; j++)
+        featuremapout  << static_cast<int> (vec.at(j).second) << "," << static_cast<float> (vec.at(j).first) << "\n";
+      featuremapptr += (height * width); //important!!!
+    }
+    featuremapout.close();
+    featuremapshape.close();
+  }
 
   // currently only consider single src layer
   CHECK_EQ(srclayers.size(), 1);

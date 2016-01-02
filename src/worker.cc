@@ -112,6 +112,7 @@ void Worker::Run() {
 }
 
 void Worker::Test(int steps, Phase phase, NeuralNet* net) {
+  // LOG(ERROR) << "in Test";
   for (int step = 0; step < steps; step++)
     TestOneBatch(step, phase, net);
   Display(phase, " ", net);
@@ -337,6 +338,7 @@ void BPWorker::TrainOneBatch(int step, NeuralNet* net) {
 }
 
 void BPWorker::TestOneBatch(int step, Phase phase, NeuralNet* net) {
+  // LOG(ERROR) << "in TestOneBatch";
   Forward(step, phase, net);
 }
 

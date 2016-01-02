@@ -137,8 +137,9 @@ void CudnnConvLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
     InitCudnn();
   float alpha = 1.f, beta = 0.f;
 
-  // LOG(INFO) << "layer name: " << this->name().c_str();
-  // LOG(INFO) << "CONV source data norm: " << Asum(srclayers[0]->data(this));
+  // LOG(ERROR) << "source layer name: " << srclayers[0]->name().c_str();
+  // LOG(ERROR) << "layer name: " << this->name().c_str();
+  // LOG(ERROR) << "CONV source data norm: " << Asum(srclayers[0]->data(this));
   // LOG(INFO) << "CONV source data shape0: " << srclayers[0]->data(this).shape()[0];
   // LOG(INFO) << "CONV source data shape1: " << srclayers[0]->data(this).shape()[1];
   // LOG(INFO) << "CONV source data shape2: " << srclayers[0]->data(this).shape()[2];

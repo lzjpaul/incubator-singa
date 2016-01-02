@@ -57,6 +57,7 @@ void AccuracyLayer::ComputeFeature(int flag,
   }
   
   /*print labels*/
+  LOG(ERROR) << "begin output labels";
   ofstream probmatout;
   // probmatout.open("/data/zhaojing/AUC/label/version" + std::to_string(static_cast<int>(run_version_)) + "step" + std::to_string(static_cast<int>(print_step_)) + ".csv");
   probmatout.open("/data/zhaojing/AUC/label/version" + std::to_string(static_cast<int>(run_version_)) + ".csv", ios::app);
@@ -75,7 +76,7 @@ void AccuracyLayer::ComputeFeature(int flag,
 const std::string AccuracyLayer::ToString(bool debug, int flag) {
   if (debug)
     return Layer::ToString(debug, flag);
-
+  // LOG(ERROR) << "in accuracy layer display";
   string disp = "accuracy = " + std::to_string(accuracy_ / counter_);
   counter_ = 0;
   accuracy_ = 0;
