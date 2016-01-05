@@ -1,4 +1,6 @@
 # !!!attention!!! -- step == 0 also outputs, so only collect step == 1000
+# differs in how to calculate group line 91
+
 
 # group_length change to sys.argv (over)
 # how to check the end of images? -- print line 56: check the last one and first one is zero? check sort.. (over)
@@ -86,7 +88,7 @@ for i in range(filter_num):
 
 
 all_filter_top_position_mod = all_filter_top_position % width
-all_filter_top_position_mod_div = all_filter_top_position_mod * (1/float(group_length))
+all_filter_top_position_mod_div = (all_filter_top_position_mod - 3) * (1/float(group_length)) + 1
 #output
 a = numpy.asarray(all_filter_top_position, dtype = int)
 numpy.savetxt(sys.argv[6], a, fmt = '%d', delimiter=",") #original output
@@ -94,4 +96,4 @@ b = numpy.asarray(all_filter_top_position_mod, dtype = int)
 numpy.savetxt(sys.argv[7], b, fmt = '%d', delimiter=",")
 c = numpy.asarray(all_filter_top_position_mod_div, dtype = int)
 numpy.savetxt(sys.argv[8], c, fmt = '%d', delimiter=",")
-# python rank-feature-map.py /data/zhaojing/feature-map/shape/version200.csv /data/zhaojing/feature-map/map/version200.csv 30 10 14 /data/zhaojing/feature-map/version200-output.csv /data/zhaojing/feature-map/version200-output-mod.csv /data/zhaojing/feature-map/version200-output-mod-div.csv
+# python examples/data-process/python/feature-map/rank-feature-map-140-35.py /data/zhaojing/feature-map/shape/version536.csv /data/zhaojing/feature-map/map/version536.csv 30 10 4 /data/zhaojing/feature-map/version536-output.csv /data/zhaojing/feature-map/version536-output-mod.csv /data/zhaojing/feature-map/version536-output-mod-div.csv
