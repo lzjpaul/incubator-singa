@@ -76,6 +76,32 @@ void ConvolutionLayer::ComputeFeature(int flag,
   auto col = Tensor2(&col_data_);
   auto weight = Tensor2(weight_->mutable_data());
   auto bias = Tensor1(bias_->mutable_data());
+  // LOG(ERROR) << "begin convolutionlaye function";
+
+  /*begin check input data!!!!*/
+  // float* srcdptr = src.dptr;
+  // LOG(ERROR) << "begin print data outside loop";
+  /*if (strcmp((this->name()).c_str(), "conv1") == 0){
+    LOG(ERROR) << "begin print data";
+    for (int i = 0; i < 86; i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<"ith: "<<(i+1)<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 1st round";
+    for (int i = 7572; i < (7572+86); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<"ith: "<<(i+1)<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 2nd round";
+    for (int i = 7572*2; i < (7572*2+86); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<"ith: "<<(i+1)<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 3rd round";
+    for (int i = 7572*3; i < (7572*3+86); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<"ith: "<<(i+1)<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 4th round";
+    for (int i = 7572*4; i < (7572*4+86); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<"ith: "<<(i+1)<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 5th round";
+    LOG(ERROR) << "end print data";
+  }*/
+  /*end check input data!!!*/
+
   for (int n = 0; n < batchsize_; n++) {
     if (pad_ > 0)
       col = expr::unpack_patch2col(pad(src[n], pad_), kernel_, stride_);
@@ -127,6 +153,30 @@ void CConvolutionLayer::ComputeFeature(int flag,
   auto col = Tensor2(&col_data_);
   auto weight = Tensor2(weight_->mutable_data());
   auto bias = Tensor1(bias_->mutable_data());
+
+  /*begin check input data!!!!*/
+  // float* srcdptr = src.dptr;
+  LOG(ERROR) << "begin print data outside loop";
+  /*if (strcmp((this->name()).c_str(), "conv1@00") == 0){
+    LOG(ERROR) << "begin print data";
+    for (int i = 0; i < 48; i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<"ith: "<<(i+1)<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 1st round";
+    for (int i = 15324; i < (15324+48); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<"ith: "<<(i+1)<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 2nd round";
+    for (int i = 15324*2; i < (15324*2+48); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<"ith: "<<(i+1)<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 3rd round";
+    for (int i = 15324*3; i < (15324*3+48); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<"ith: "<<(i+1)<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 4th round";
+    for (int i = 15324*4; i < (15324*4+48); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<"ith: "<<(i+1)<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 5th round";
+    LOG(ERROR) << "end print data";
+  }*/
+  /*end check input data!!!*/
 
   for (int n = 0; n < batchsize_; n++) {
     Im2col(src[n].dptr, channels_, height_, width_,
