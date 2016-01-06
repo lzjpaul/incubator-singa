@@ -52,7 +52,7 @@ void ArgSortLayer::ComputeFeature(int flag,
 
   // LOG(INFO) << "argsort dim_: " << dim_;
   // LOG(ERROR) << "argsort dim_: " << dim_;
-  LOG(ERROR) << "begin print prob";
+  // LOG(ERROR) << "begin print prob";
   /*print out prob*/
   const float* probptr_writeout = srclayers.at(0)->data(this).cpu_data();
   ofstream probmatout;

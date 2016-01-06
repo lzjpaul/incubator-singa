@@ -149,6 +149,31 @@ void CudnnConvLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
   // LOG(INFO) << "CONV weight shape1: " << weight_->data().shape()[1];
   // LOG(INFO) << "CONV weight shape2: " << weight_->data().shape()[2];
 
+  /*begin check input data!!!!*/
+  /*auto src = Tensor4(srclayers[0]->mutable_data(this));
+  float* srcdptr = src.dptr;
+  LOG(ERROR) << "begin print data outside loop";
+  if (strcmp((this->name()).c_str(), "conv1@00") == 0){
+    LOG(ERROR) << "begin print data";
+    for (int i = 0; i < 48; i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<"ith: "<<(i+1)<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 1st round";
+    for (int i = 15324; i < (15324+48); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<"ith: "<<(i+1)<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 2nd round";
+    for (int i = 15324*2; i < (15324*2+48); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<"ith: "<<(i+1)<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 3rd round";
+    for (int i = 15324*3; i < (15324*3+48); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<"ith: "<<(i+1)<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 4th round";
+    for (int i = 15324*4; i < (15324*4+48); i++)
+      LOG(INFO)<<" layer name: "<<(this->name())<<"ith: "<<(i+1)<<" src: "<<srcdptr[i];
+    LOG(INFO)<<"finish 5th round";
+    LOG(ERROR) << "end print data";
+  }*/
+  /*end check input data!!!*/
+
   Blob<float> workspace(vector<int>{static_cast<int>(workspace_count_)});
   CHECK_CUDNN(cudnnConvolutionForward(handle_,
         &alpha,
