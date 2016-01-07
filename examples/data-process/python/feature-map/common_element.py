@@ -20,3 +20,4 @@ for i in range(len(filters_matrix[:,0])):
     filters_common_area[i] = np.argmax(counts)
 a = numpy.asarray(filters_common_area, dtype = int)
 numpy.savetxt(sys.argv[2], a, fmt = '%d', delimiter=",") #original output
+# python examples/data-process/python/feature-map/common_element.py /data/zhaojing/feature-map/version528-output-mod-div.csv /data/zhaojing/feature-map/version528-common-area-mod-div.csv
