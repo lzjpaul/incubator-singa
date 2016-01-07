@@ -43,12 +43,40 @@ void CudnnSoftmaxLossLayer::ComputeFeature(int flag,
   for (int i = 0; i < batchsize_; ++i) {
     labelptr[i] = srclayers[1]->aux_data(this)[i];
   }
-
+  float *probptr = data_.mutable_cpu_data(); //release?
   Blob<float> loss(batchsize_);
   singa_gpu_softmaxloss_forward(batchsize_, dim_, data_.gpu_data(),
       label.gpu_data(), loss.mutable_gpu_data());
   loss_ += Asum(loss);
   counter_++;
+  // LOG(ERROR) << "flag&flag: " << (flag&flag);
+  for (int i = 0; i < batchsize_; i++){
+    test_prob.push_back(probptr[2*i+1]); //two dimension!!
+    test_label.push_back(labelptr[i]);
+    /*if (i < 100)
+      LOG(ERROR) << "prob: " << probptr[2*i+1];*/
+  }
+  /*if ((flag&flag) == 36)
+    LOG(ERROR) << "test_label vector size: " << test_label.size();*/
+  if ((flag&flag) == 36 && test_label.size() == 3000){
+    int tol_sample = 0;
+    int correct_sample = 0;
+    float test_accuracy = 0.0;
+    for (int i = 0; i < 3000; i++){
+      if ( (( static_cast<float>(test_prob.at(i)) < (1.0f - static_cast<float>(test_prob.at(i)))) && test_label.at(i) == 0) 
+            || ((static_cast<float>(test_prob.at(i)) >= (1.0f - static_cast<float>(test_prob.at(i)))) && test_label.at(i) == 1) )
+        correct_sample ++;
+      tol_sample ++;
+    }
+    test_accuracy = correct_sample / (1.0f * tol_sample);
+    LOG(ERROR) << "tol test sample: " << tol_sample << " accuracy: " << test_accuracy;
+    test_prob.clear();
+    test_label.clear();
+  }
+  /*for (int i = 0; i < batchsize_; i++){
+    test_prob.push_back(probptr[2*i+1]); //two dimension!!
+    test_label.push_back(labelptr[i]);
+  }*/
 }
 
 void CudnnSoftmaxLossLayer::ComputeGradient(int flag,

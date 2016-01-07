@@ -282,7 +282,7 @@ class Model(object):
         #filename = 'job.conf'
         #with open(filename, 'w') as f:
         #  f.write(text_format.MessageToString(self.jobconf.cluster))
-        #self.display()
+        self.display()
 
         #--- run singa ---
         return SingaRun(jobproto=self.jobconf,
@@ -578,7 +578,7 @@ def SingaRun(jobproto='', argv=None, execpath='', testmode=False):
     # Get the performance from the latest log file.
     # TODO(wangwei) the log file would be overwritten by other running instance
     # of the same program, e.g., lt-singa
-    logfile = '/tmp/singa-log/{0}.ERROR'.format(argv[0].split('/')[-1])
+    logfile = '/data/zhaojing/singa-log/{0}.ERROR'.format(argv[0].split('/')[-1])
     fin = open(logfile, 'r')
     result = StoreResults(fin.readlines())
 

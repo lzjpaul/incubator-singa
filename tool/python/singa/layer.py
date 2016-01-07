@@ -112,14 +112,16 @@ class Convolution2D(Layer):
             b_wd = (float) // weight decay multiplier for bias
         '''
 
-        assert nb_filter > 0 and kernel > 0, 'should be set as positive int'
+        # assert nb_filter > 0 and kernel > 0, 'should be set as positive int'
         super(Convolution2D, self).__init__(name=generate_name('conv', 1),
                                             type=kCConvolution)
         fields = {'num_filters' : nb_filter,
-                  'kernel' : kernel,
-                  'stride' : stride,
-                  'pad' : pad}
+                 # 'kernel' : kernel,
+                 # 'stride' : stride,
+                 # 'pad' : pad}
+                 }
         setval(self.layer.convolution_conf, **fields)
+        setval(self.layer.convolution_conf, **kwargs)
 
         # parameter w
         if w_param == None:

@@ -74,6 +74,8 @@ class CudnnSoftmaxLossLayer : public LossLayer{
   int batchsize_, dim_;
   int counter_ = 0;
   float loss_ = 0.0f;
+  std::vector<int> test_label;
+  std::vector<float> test_prob;
 
   CudnnSoftmaxLayer softmax_;
 };
