@@ -88,7 +88,7 @@ void CudnnActivationLayer::ComputeFeature(int flag,
   // LOG(INFO) << "RELU source data shape4: " << srclayers[0]->data(this).shape()[4];
   // 528 log, 544 line
   //check : featuremapptr + = height * width && j is reused?
-  if (strcmp((this->name()).c_str(), "relu1@00") == 0 && (flag&flag) == 36){
+  if (strcmp((this->name()).c_str(), "relu1@@00") == 0 && (flag&flag) == 36){
     int topk = 10;
     int batchsize = srclayers[0]->data(this).shape()[0];
     int filter_num = srclayers[0]->data(this).shape()[1];
