@@ -18,11 +18,17 @@
 * under the License.
 *
 *************************************************************/
-
+/*whether flag&&flag can help to distinguishe data of different phase to push
+  previously, push data into vector, is not correct?*/
 #include "singa/neuralnet/loss_layer.h"
 #include "singa/utils/blob.h"
 #include "singa/utils/math_blob.h"
 #include "singa/utils/math_kernel.h"
+#include <time.h>
+#include <fstream>
+#include <iostream>
+
+using namespace std;
 
 namespace singa {
 void CudnnSoftmaxLossLayer::Setup(const LayerProto& conf,
@@ -33,6 +39,8 @@ void CudnnSoftmaxLossLayer::Setup(const LayerProto& conf,
   data_.ShareData(softmax_.mutable_data(this), false);
   batchsize_ = data_.shape(0);
   dim_ = data_.count() / batchsize_;
+  srand((unsigned)time(NULL));
+  run_version_ = rand()%1000;
 }
 void CudnnSoftmaxLossLayer::ComputeFeature(int flag,
     const vector<Layer*>& srclayers) {
@@ -49,13 +57,40 @@ void CudnnSoftmaxLossLayer::ComputeFeature(int flag,
       label.gpu_data(), loss.mutable_gpu_data());
   loss_ += Asum(loss);
   counter_++;
+
+  // print AUC and result
+  ofstream probmatout;
+  ofstream labelout;
   // LOG(ERROR) << "flag&flag: " << (flag&flag);
-  for (int i = 0; i < batchsize_; i++){
-    test_prob.push_back(probptr[2*i+1]); //two dimension!!
-    test_label.push_back(labelptr[i]);
-    /*if (i < 100)
-      LOG(ERROR) << "prob: " << probptr[2*i+1];*/
+  if ((flag&flag) == 36){
+    probmatout.open("/data/zhaojing/AUC/prob/version" + std::to_string(static_cast<int>(run_version_)) + ".csv", ios::app);
+    labelout.open("/data/zhaojing/AUC/label/version" + std::to_string(static_cast<int>(run_version_)) + ".csv", ios::app);
+    for (int i = 0; i < batchsize_; i++){
+      test_prob.push_back(probptr[2*i+1]); //two dimension!!
+      probmatout << probptr[2*i+1] << "\n";
+      test_label.push_back(static_cast<int>(labelptr[i]));
+      labelout << static_cast<int>(labelptr[i]) << "\n";
+      /*if (i < 100)
+        LOG(ERROR) << "prob: " << probptr[2*i+1];*/
+    }
+    probmatout.close();
+    labelout.close();
   }
+  else if ((flag&flag) == 34){
+    probmatout.open("/data/zhaojing/AUC/prob/version" + std::to_string(static_cast<int>(run_version_)) + ".csv", ios::app);    
+    labelout.open("/data/zhaojing/AUC/label/version" + std::to_string(static_cast<int>(run_version_)) + ".csv", ios::app);
+    for (int i = 0; i < batchsize_; i++){
+      valid_prob.push_back(probptr[2*i+1]); //two dimension!!
+      probmatout << probptr[2*i+1] << "\n";
+      valid_label.push_back(static_cast<int>(labelptr[i]));
+      labelout << static_cast<int>(labelptr[i]) << "\n";
+      /*if (i < 100)
+        LOG(ERROR) << "prob: " << probptr[2*i+1];*/
+    }
+    probmatout.close();
+    labelout.close();
+  }
+
   /*if ((flag&flag) == 36)
     LOG(ERROR) << "test_label vector size: " << test_label.size();*/
   if ((flag&flag) == 36 && test_label.size() == 3000){
@@ -72,6 +107,21 @@ void CudnnSoftmaxLossLayer::ComputeFeature(int flag,
     LOG(ERROR) << "tol test sample: " << tol_sample << " accuracy: " << test_accuracy;
     test_prob.clear();
     test_label.clear();
+  }
+  else if ((flag&flag) == 34 && valid_label.size() == 2000){
+    int valid_tol_sample = 0;
+    int valid_correct_sample = 0;
+    float valid_accuracy = 0.0;
+    for (int i = 0; i < 2000; i++){
+      if ( (( static_cast<float>(valid_prob.at(i)) < (1.0f - static_cast<float>(valid_prob.at(i)))) && valid_label.at(i) == 0)
+            || ((static_cast<float>(valid_prob.at(i)) >= (1.0f - static_cast<float>(valid_prob.at(i)))) && valid_label.at(i) == 1) )
+        valid_correct_sample ++;
+      valid_tol_sample ++;
+    }
+    valid_accuracy = valid_correct_sample / (1.0f * valid_tol_sample);
+    LOG(ERROR) << "tol valid sample: " << valid_tol_sample << " valid accuracy: " << valid_accuracy;
+    valid_prob.clear();
+    valid_label.clear();
   }
   /*for (int i = 0; i < batchsize_; i++){
     test_prob.push_back(probptr[2*i+1]); //two dimension!!

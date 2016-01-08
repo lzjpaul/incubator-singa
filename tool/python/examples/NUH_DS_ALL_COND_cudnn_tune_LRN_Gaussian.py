@@ -35,6 +35,13 @@ pool_x_param = pool_y_param = pool_param_array[random.randint(0,len(pool_param_a
 pool_stride_param_array = np.array([pool_x_param, pool_x_param-1])
 pool_stride_param = pool_stride_param_array[random.randint(0,len(pool_stride_param_array)-1)]
 
+LRN_local_size_array=np.array([3])
+LRN_alpha_array=np.array([0.00005, 0.0005])
+LRN_beta_array=np.array([0.75, 0.65])
+LRN_local_size_param=LRN_local_size_array[random.randint(0,len(LRN_local_size_array)-1)]
+LRN_alpha_param=LRN_alpha_array[random.randint(0,len(LRN_alpha_array)-1)]
+LRN_beta_param=LRN_beta_array[random.randint(0,len(LRN_beta_array)-1)]
+
 conv_std_w_array = np.array([0.0001, 0.001])
 conv_constant_b_array = 0
 conv_std_w_param = conv_std_w_array[random.randint(0,len(conv_std_w_array)-1)]
@@ -57,6 +64,7 @@ conv_parw = Parameter(init='gaussian', std=conv_std_w_param)
 conv_parb = Parameter(init='constant', value=conv_constant_b_param)
 m.add(Convolution2D(500, pad_x=pad_x_param, pad_y=pad_y_param, stride_x=stride_x_param, stride_y=stride_y_param, kernel_x=kernel_x_param, kernel_y=kernel_y_param, w_param=conv_parw, b_param=conv_parb))
 m.add(Activation('relu'))
+m.add(LRN2D(LRN_local_size_param, alpha=LRN_alpha_param, beta=LRN_beta_param))
 m.add(MaxPooling2D(pool_size=(pool_x_param,pool_y_param), stride=pool_stride_param))
 
 softmax_parw = Parameter(init='gaussian', std=softmax_std_w_param)
