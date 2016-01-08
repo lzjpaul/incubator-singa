@@ -14,7 +14,7 @@ m = Sequential('NUHALLCOND-cnn', sys.argv)
 
 # m.add(Convolution2D(500,  init='uniform', scale=0.1, pad_y=0, pad_x=10, stride_x=35, stride_y=1, kernel_x=140, kernel_y=3, b_lr=2.0, b_wd=0, w_std=0.0001))
 # m.add(Convolution2D(500,  init='uniform', scale=0.1, pad_y=0, pad_x=10, stride_x=35, stride_y=1, kernel_x=140, kernel_y=3))
-m.add(Convolution2D(1000,  init='uniform', scale=0.1, pad_x=2, pad_y=0, stride_x=20, stride_y=1, kernel_x=60, kernel_y=3))
+m.add(Convolution2D(500,  init='uniform', scale=0.1, pad_x=2, pad_y=0, stride_x=20, stride_y=1, kernel_x=60, kernel_y=3))
 m.add(Activation('relu'))
 m.add(MaxPooling2D(pool_size=(3,3), stride=2))
 
