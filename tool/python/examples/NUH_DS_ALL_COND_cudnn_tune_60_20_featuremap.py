@@ -25,6 +25,6 @@ topo = Cluster(workspace)
 m.compile(loss='categorical_crossentropy', optimizer=sgd, cluster=topo)
 
 gpu_id = [1]
-m.fit(X_train, nb_epoch=1400, with_test=True, validate_data=X_valid, validate_steps=20, validate_freq=20, device=gpu_id)
+m.fit(X_train, nb_epoch=1300, with_test=True, validate_data=X_valid, validate_steps=20, validate_freq=20, device=gpu_id)
 # m.fit(X_train, nb_epoch=7000, with_test=True, device=gpu_id)
 result = m.evaluate(X_test, test_steps=30, test_freq=20)
