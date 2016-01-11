@@ -9,13 +9,12 @@ from examples.datasets import NUHALLCOND
 import numpy as np
 import random
 from random import randint
-import numpy
 
 X_train, X_test, X_valid, workspace = NUHALLCOND.load_data()
 Uniform_or_Gaussian = int (sys.argv[1])
 b_Uniform_or_Constant = random.randint(0,1)
-input_y = int (sys.argv[2]) # calculate inner size
-input_x = int (sys.argv[3]) # calculate inner size
+input_Y = int (sys.argv[2]) # calculate inner size
+input_X = int (sys.argv[3]) # calculate inner size
 
 kernel_x_param_array = np.array([60, 66, 80, 140, 300])
 kernel_y_param_array = np.array([2, 3])
@@ -51,14 +50,14 @@ conv_fan_in = input_channel * kernel_y_param * kernel_x_param
 conv_fan_out = filter_num_param * kernel_y_param * kernel_x_param 
 conv_fan_out_1 = (filter_num_param * kernel_y_param * kernel_x_param) / (pool_x_param * pool_y_param)
 
-conv_n_array = np.array([conv_fan_in, (conv_fan_in + conv_fan_out)/2, conv_fan_out, (conv_fan_in + conv_fan_out_1)/2, conv_fan_out_1])
+conv_n_array = np.array([conv_fan_in, (conv_fan_in + conv_fan_out)/2, fan_out, (conv_fan_in + conv_fan_out_1)/2, fan_out_1])
 
 #gaussian
 conv_std_w_param = numpy.sqrt(2. / (conv_n_array[random.randint(0,len(conv_n_array)-1)]))
 conv_constant_b_param = 0
 #uniform, b can use 0 also
 conv_uniform_w_param = numpy.sqrt(3. / (conv_n_array[random.randint(0,len(conv_n_array)-1)]))
-conv_uniform_b_param = conv_uniform_w_param
+conv_uniform_b_param = numpy.sqrt(3. / (conv_n_array[random.randint(0,len(conv_n_array)-1)]))
 
 feamap_y = (input_y - kernel_y_param + 2*pad_y_param) / stride_y_param + 1
 feamap_x = (input_x - kernel_x_param + 2*pad_x_param) / stride_x_param + 1
@@ -67,14 +66,14 @@ pool_map_x = (feamap_x - pool_x_param + 2*pool_pad_x_param) / pool_stride_x_para
 
 softmax_fan_in = filter_num_param * pool_map_y * pool_map_x
 softmax_fan_out = 2
-softmax_n_array = np.array([softmax_fan_in,(softmax_fan_in + softmax_fan_out)/2]) # do not use fan_out
+softmax_n_array = np.array([softmax_fan_in,(softmax_fan_in + softmax_fan_out)/2, softmax_fan_out])
 
 #gaussian
 softmax_std_w_param = numpy.sqrt(2. / (softmax_n_array[random.randint(0,len(softmax_n_array)-1)]))
 softmax_constant_b_param = 0
 #uniform, b can use 0 also
 softmax_uniform_w_param = numpy.sqrt(3. / (softmax_n_array[random.randint(0,len(softmax_n_array)-1)]))
-softmax_uniform_b_param = softmax_uniform_w_param
+softmax_uniform_b_param = numpy.sqrt(3. / (softmax_n_array[random.randint(0,len(softmax_n_array)-1)]))
 
 
 lr_array = np.array([0.1, 0.01, 0.001, 0.0001])
@@ -124,7 +123,7 @@ topo = Cluster(workspace)
 m.compile(loss='categorical_crossentropy', optimizer=ada, cluster=topo)
 
 gpu_id = [1]
-m.fit(X_train, nb_epoch=12000, with_test=True, validate_data=X_valid, validate_steps=20, validate_freq=20, device=gpu_id)
+m.fit(X_train, nb_epoch=10000, with_test=True, validate_data=X_valid, validate_steps=20, validate_freq=20, device=gpu_id)
 # m.fit(X_train, nb_epoch=7000, with_test=True, device=gpu_id)
 result = m.evaluate(X_test, test_steps=30, test_freq=20)
-# ./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_tune_init.py 0 12 1277
+

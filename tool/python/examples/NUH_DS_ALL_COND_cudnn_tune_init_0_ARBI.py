@@ -5,13 +5,13 @@
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 from singa.model import *
-from examples.datasets import NUHALLCOND
+from examples.datasets import NUHALLCONDARBI
 import numpy as np
 import random
 from random import randint
 import numpy
 
-X_train, X_test, X_valid, workspace = NUHALLCOND.load_data()
+X_train, X_test, X_valid, workspace = NUHALLCONDARBI.load_data()
 Uniform_or_Gaussian = int (sys.argv[1])
 b_Uniform_or_Constant = random.randint(0,1)
 input_y = int (sys.argv[2]) # calculate inner size
@@ -123,7 +123,7 @@ ada = AdaGrad(lr=lr_param, decay=decay_param, momentum=momentum_param)
 topo = Cluster(workspace)
 m.compile(loss='categorical_crossentropy', optimizer=ada, cluster=topo)
 
-gpu_id = [1]
+gpu_id = [0]
 m.fit(X_train, nb_epoch=12000, with_test=True, validate_data=X_valid, validate_steps=20, validate_freq=20, device=gpu_id)
 # m.fit(X_train, nb_epoch=7000, with_test=True, device=gpu_id)
 result = m.evaluate(X_test, test_steps=30, test_freq=20)

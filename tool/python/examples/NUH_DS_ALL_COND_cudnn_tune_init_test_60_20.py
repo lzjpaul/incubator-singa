@@ -17,8 +17,13 @@ b_Uniform_or_Constant = random.randint(0,1)
 input_y = int (sys.argv[2]) # calculate inner size
 input_x = int (sys.argv[3]) # calculate inner size
 
-kernel_x_param_array = np.array([60, 66, 80, 140, 300])
-kernel_y_param_array = np.array([2, 3])
+print "begin printing\n"
+print "check the code, especially initialize param, b_param=conv_parb_uniform...\n"
+print "input_y = \n ", input_y
+print "intput_x = \n", input_x
+
+kernel_x_param_array = np.array([60])
+kernel_y_param_array = np.array([3])
 stride_x_param_array = np.array([20, 25, 30,35])
 stride_y_param_array = 1
 kernel_x_param = kernel_x_param_array[random.randint(0,len(kernel_x_param_array)-1)]
@@ -37,44 +42,64 @@ pad_x_param = 2
 pad_y_param = 0
 filter_num_param = 500
 
-pool_param_array = np.array([2,3])
+pool_param_array = np.array([3])
 pool_x_param = pool_y_param = pool_param_array[random.randint(0,len(pool_param_array)-1)]
 pool_stride_param_array = np.array([pool_x_param, pool_x_param-1])
 if pool_x_param == 2:
     pool_stride_x_param = pool_stride_y_param = pool_stride_param_array[random.randint(0,len(pool_stride_param_array)-1)]
 else:
-    pool_stride_x_param = pool_stride_y_param = 1
+    pool_stride_x_param = pool_stride_y_param = 2 #just for testing shape
 
 pool_pad_x_param = pool_pad_y_param = 0
 
 conv_fan_in = input_channel * kernel_y_param * kernel_x_param
 conv_fan_out = filter_num_param * kernel_y_param * kernel_x_param 
 conv_fan_out_1 = (filter_num_param * kernel_y_param * kernel_x_param) / (pool_x_param * pool_y_param)
-
 conv_n_array = np.array([conv_fan_in, (conv_fan_in + conv_fan_out)/2, conv_fan_out, (conv_fan_in + conv_fan_out_1)/2, conv_fan_out_1])
+
+print "conv_fan_in = \n", conv_fan_in
+print "conv_fan_out = \n", conv_fan_out
+print "conv_fan_out_1 = \n", conv_fan_out_1
+print "conv_n_array = \n", conv_n_array
 
 #gaussian
 conv_std_w_param = numpy.sqrt(2. / (conv_n_array[random.randint(0,len(conv_n_array)-1)]))
 conv_constant_b_param = 0
+print "conv_std_w_param = \n", conv_std_w_param
+
 #uniform, b can use 0 also
 conv_uniform_w_param = numpy.sqrt(3. / (conv_n_array[random.randint(0,len(conv_n_array)-1)]))
-conv_uniform_b_param = conv_uniform_w_param
+conv_uniform_b_param = conv_uniform_w_param 
+print "conv_uniform_w_param = \n", conv_uniform_w_param
+print "modify the code!!!!! should be the same as conv_uniform_w_param conv_uniform_b_param = \n", conv_uniform_b_param
 
 feamap_y = (input_y - kernel_y_param + 2*pad_y_param) / stride_y_param + 1
 feamap_x = (input_x - kernel_x_param + 2*pad_x_param) / stride_x_param + 1
 pool_map_y = (feamap_y - pool_y_param + 2*pool_pad_y_param) / pool_stride_y_param + 1
 pool_map_x = (feamap_x - pool_x_param + 2*pool_pad_x_param) / pool_stride_x_param + 1
 
+print "feamap_y = \n", feamap_y
+print "feamap_x = \n", feamap_x
+print "pool_map_y = \n", pool_map_y
+print "pool_map_x = \n", pool_map_x
+
 softmax_fan_in = filter_num_param * pool_map_y * pool_map_x
 softmax_fan_out = 2
-softmax_n_array = np.array([softmax_fan_in,(softmax_fan_in + softmax_fan_out)/2]) # do not use fan_out
+softmax_n_array = np.array([softmax_fan_in,(softmax_fan_in + softmax_fan_out)/2, softmax_fan_out])
+
+print "softmax_fan_in = \n", softmax_fan_in
+print "softmax_fan_out = \n", softmax_fan_out
+print "softmax_n_array = \n", softmax_n_array
 
 #gaussian
 softmax_std_w_param = numpy.sqrt(2. / (softmax_n_array[random.randint(0,len(softmax_n_array)-1)]))
 softmax_constant_b_param = 0
+print "softmax_std_w_param = \n", softmax_std_w_param
 #uniform, b can use 0 also
 softmax_uniform_w_param = numpy.sqrt(3. / (softmax_n_array[random.randint(0,len(softmax_n_array)-1)]))
-softmax_uniform_b_param = softmax_uniform_w_param
+softmax_uniform_b_param = softmax_uniform_w_param 
+print "softmax_uniform_w_param = \n", softmax_uniform_w_param
+print "modify the code!!!!! should be the same as softmax_uniform_w_param softmax_uniform_b_param = \n", softmax_uniform_b_param
 
 
 lr_array = np.array([0.1, 0.01, 0.001, 0.0001])
@@ -124,7 +149,7 @@ topo = Cluster(workspace)
 m.compile(loss='categorical_crossentropy', optimizer=ada, cluster=topo)
 
 gpu_id = [1]
-m.fit(X_train, nb_epoch=12000, with_test=True, validate_data=X_valid, validate_steps=20, validate_freq=20, device=gpu_id)
+m.fit(X_train, nb_epoch=10000, with_test=True, validate_data=X_valid, validate_steps=20, validate_freq=20, device=gpu_id)
 # m.fit(X_train, nb_epoch=7000, with_test=True, device=gpu_id)
 result = m.evaluate(X_test, test_steps=30, test_freq=20)
-# ./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_tune_init.py 0 12 1277
+# ./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_tune_init_test.py 0 12 1277

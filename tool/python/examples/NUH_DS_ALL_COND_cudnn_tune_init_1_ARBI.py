@@ -5,13 +5,13 @@
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 from singa.model import *
-from examples.datasets import NUHALLCOND
+from examples.datasets import NUHALLCONDARBI
 import numpy as np
 import random
 from random import randint
 import numpy
 
-X_train, X_test, X_valid, workspace = NUHALLCOND.load_data()
+X_train, X_test, X_valid, workspace = NUHALLCONDARBI.load_data()
 Uniform_or_Gaussian = int (sys.argv[1])
 b_Uniform_or_Constant = random.randint(0,1)
 input_y = int (sys.argv[2]) # calculate inner size
