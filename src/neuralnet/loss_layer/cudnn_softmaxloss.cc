@@ -83,7 +83,7 @@ void CudnnSoftmaxLossLayer::ComputeFeature(int flag,
     // labelout.open("/data/zhaojing/AUC/label/version" + std::to_string(static_cast<int>(run_version_)) + ".csv", ios::app);
     auto cluster = Cluster::Get();
     probmatout.open(cluster->workspace()+"/prob.csv", ios::app);
-    labelout.open(cluster->workspace()+"/label.csv" + ".csv", ios::app);
+    labelout.open(cluster->workspace()+"/label.csv", ios::app);
     for (int i = 0; i < batchsize_; i++){
       valid_prob.push_back(probptr[2*i+1]); //two dimension!!
       probmatout << probptr[2*i+1] << "\n";

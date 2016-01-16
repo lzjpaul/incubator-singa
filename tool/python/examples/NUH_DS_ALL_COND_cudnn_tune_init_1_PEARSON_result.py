@@ -14,7 +14,7 @@ import os
 X_train, X_test, X_valid, workspace = NUHALLCONDPEARSON.load_data()
 
 version_num = random.randint(0,10000)
-data_dir_prefix = '/data/zhaojing/result'
+data_dir_prefix = '/data/zhaojing/result/1-16-PEARSON'
 workspace = data_dir_prefix + '/version' + str(version_num)
 if not os.path.exists(workspace):
     os.mkdir(workspace)
@@ -24,7 +24,7 @@ b_Uniform_or_Constant = random.randint(0,1)
 input_y = int (sys.argv[2]) # calculate inner size
 input_x = int (sys.argv[3]) # calculate inner size
 
-kernel_x_param_array = np.array([60, 66, 80, 140, 300])
+kernel_x_param_array = np.array([60, 66, 80])
 kernel_y_param_array = np.array([2, 3])
 stride_x_param_array = np.array([20, 25, 30,35])
 stride_y_param_array = 1
@@ -140,7 +140,7 @@ topo = Cluster(workspace)
 m.compile(loss='categorical_crossentropy', optimizer=ada, cluster=topo)
 
 gpu_id = [1]
-m.fit(X_train, nb_epoch=100, with_test=True, validate_data=X_valid, validate_steps=20, validate_freq=20, device=gpu_id)
+m.fit(X_train, nb_epoch=12000, with_test=True, validate_data=X_valid, validate_steps=20, validate_freq=20, device=gpu_id)
 # m.fit(X_train, nb_epoch=7000, with_test=True, device=gpu_id)
 result = m.evaluate(X_test, test_steps=30, test_freq=20)
 # ./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_tune_init.py 0 12 1277
