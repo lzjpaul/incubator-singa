@@ -24,6 +24,7 @@
 #include "singa/utils/blob.h"
 #include "singa/utils/math_blob.h"
 #include "singa/utils/math_kernel.h"
+#include "singa/utils/cluster.h"
 #include <time.h>
 #include <fstream>
 #include <iostream>
@@ -40,7 +41,7 @@ void CudnnSoftmaxLossLayer::Setup(const LayerProto& conf,
   batchsize_ = data_.shape(0);
   dim_ = data_.count() / batchsize_;
   srand((unsigned)time(NULL));
-  run_version_ = rand()%1000;
+  run_version_ = rand()%100000;
 }
 void CudnnSoftmaxLossLayer::ComputeFeature(int flag,
     const vector<Layer*>& srclayers) {
@@ -63,8 +64,9 @@ void CudnnSoftmaxLossLayer::ComputeFeature(int flag,
   ofstream labelout;
   // LOG(ERROR) << "flag&flag: " << (flag&flag);
   if ((flag&flag) == 36){
-    probmatout.open("/data/zhaojing/AUC/prob/version" + std::to_string(static_cast<int>(run_version_)) + ".csv", ios::app);
-    labelout.open("/data/zhaojing/AUC/label/version" + std::to_string(static_cast<int>(run_version_)) + ".csv", ios::app);
+    auto cluster = Cluster::Get();
+    probmatout.open(cluster->workspace()+"/prob.csv", ios::app);
+    labelout.open(cluster->workspace()+"/label.csv", ios::app);
     for (int i = 0; i < batchsize_; i++){
       test_prob.push_back(probptr[2*i+1]); //two dimension!!
       probmatout << probptr[2*i+1] << "\n";
@@ -77,8 +79,11 @@ void CudnnSoftmaxLossLayer::ComputeFeature(int flag,
     labelout.close();
   }
   else if ((flag&flag) == 34){
-    probmatout.open("/data/zhaojing/AUC/prob/version" + std::to_string(static_cast<int>(run_version_)) + ".csv", ios::app);    
-    labelout.open("/data/zhaojing/AUC/label/version" + std::to_string(static_cast<int>(run_version_)) + ".csv", ios::app);
+    // probmatout.open("/data/zhaojing/AUC/prob/version" + std::to_string(static_cast<int>(run_version_)) + ".csv", ios::app);    
+    // labelout.open("/data/zhaojing/AUC/label/version" + std::to_string(static_cast<int>(run_version_)) + ".csv", ios::app);
+    auto cluster = Cluster::Get();
+    probmatout.open(cluster->workspace()+"/prob.csv", ios::app);
+    labelout.open(cluster->workspace()+"/label.csv" + ".csv", ios::app);
     for (int i = 0; i < batchsize_; i++){
       valid_prob.push_back(probptr[2*i+1]); //two dimension!!
       probmatout << probptr[2*i+1] << "\n";
@@ -127,6 +132,8 @@ void CudnnSoftmaxLossLayer::ComputeFeature(int flag,
     test_prob.push_back(probptr[2*i+1]); //two dimension!!
     test_label.push_back(labelptr[i]);
   }*/
+  /*LOG(ERROR) << "test_prob size: " << test_prob.size() << " test_label size: " << test_label.size();
+  LOG(ERROR) << "valid_prob size: " << valid_prob.size() << " valid_label size: " << valid_label.size();*/
 }
 
 void CudnnSoftmaxLossLayer::ComputeGradient(int flag,

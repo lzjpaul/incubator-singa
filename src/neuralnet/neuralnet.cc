@@ -24,6 +24,11 @@
 #include <algorithm>
 #include <queue>
 #include "singa/utils/singleton.h"
+#include "singa/utils/cluster.h"
+#include <fstream>
+#include <iostream>
+
+using namespace std;
 
 namespace singa {
 
@@ -101,6 +106,11 @@ NeuralNet* NeuralNet::Create(const NetProto& net_conf, Phase phase,
   }
   LOG(INFO) << "Initial NeuralNet Config is\n" << conf.DebugString();
   // TODO(wangwei) create net based on net type, e.g., directed, undirected, etc
+  ofstream modeloutput;
+  auto cluster = Cluster::Get();
+  modeloutput.open(cluster->workspace()+"/model", ios::app);
+  modeloutput << conf.DebugString();
+  modeloutput.close();
   return new NeuralNet(conf, npartitions);
 }
 
