@@ -1,0 +1,24 @@
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+./bin/singa-run.sh -exec tool/python/examples/NUH_DS_ALL_COND_cudnn_mlp_2src_pearson_3_result.py
+

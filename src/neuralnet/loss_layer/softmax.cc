@@ -116,7 +116,7 @@ void SoftmaxLossLayer::ComputeFeature(int flag,
     // labelout.open("/data/zhaojing/AUC/label/version" + std::to_string(static_cast<int>(run_version_)) + ".csv", ios::app);
     auto cluster = Cluster::Get();
     probmatout.open(cluster->workspace()+"/prob.csv", ios::app);
-    labelout.open(cluster->workspace()+"/label.csv" + ".csv", ios::app);
+    labelout.open(cluster->workspace()+"/label.csv", ios::app);
     for (int i = 0; i < batchsize_; i++){
       valid_prob.push_back(probptr[2*i+1]); //two dimension!!
       probmatout << probptr[2*i+1] << "\n";
@@ -131,11 +131,11 @@ void SoftmaxLossLayer::ComputeFeature(int flag,
   
   /*if ((flag&flag) == 36)
     LOG(ERROR) << "test_label vector size: " << test_label.size();*/
-  if ((flag&flag) == 36 && test_label.size() == 3000){
+  if ((flag&flag) == 36 && test_label.size() == 2910){
     int tol_sample = 0;
     int correct_sample = 0;
     float test_accuracy = 0.0;
-    for (int i = 0; i < 3000; i++){
+    for (int i = 0; i < 2910; i++){
       if ( (( static_cast<float>(test_prob.at(i)) < (1.0f - static_cast<float>(test_prob.at(i)))) && test_label.at(i) == 0) 
             || ((static_cast<float>(test_prob.at(i)) >= (1.0f - static_cast<float>(test_prob.at(i)))) && test_label.at(i) == 1) )
         correct_sample ++;
@@ -146,11 +146,11 @@ void SoftmaxLossLayer::ComputeFeature(int flag,
     test_prob.clear();
     test_label.clear();
   }
-  else if ((flag&flag) == 34 && valid_label.size() == 2000){
+  else if ((flag&flag) == 34 && valid_label.size() == 1939){
     int valid_tol_sample = 0;
     int valid_correct_sample = 0;
     float valid_accuracy = 0.0;
-    for (int i = 0; i < 2000; i++){
+    for (int i = 0; i < 1939; i++){
       if ( (( static_cast<float>(valid_prob.at(i)) < (1.0f - static_cast<float>(valid_prob.at(i)))) && valid_label.at(i) == 0)
             || ((static_cast<float>(valid_prob.at(i)) >= (1.0f - static_cast<float>(valid_prob.at(i)))) && valid_label.at(i) == 1) )
         valid_correct_sample ++;

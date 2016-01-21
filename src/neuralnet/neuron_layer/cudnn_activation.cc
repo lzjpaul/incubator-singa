@@ -38,10 +38,13 @@ void CudnnActivationLayer::InitCudnn() {
 
   const auto& shape = data_.shape();
   CHECK_GT(shape.size(), 0);
+  const int nbdim = 4;
   // size of each dimension
-  int* sdim = new int[shape.size()];
-  int* stride = new int[shape.size()];
-  stride[shape.size() -1] = 1;
+  // int* sdim = new int[shape.size()];
+  // int* stride = new int[shape.size()];
+  // stride[shape.size() -1] = 1;
+  int* sdim = new int[nbdim];
+  int* stride = new int[nbdim];
   int i = shape.size() - 1;
   sdim[i] = shape[i];
   stride[i] = 1;
@@ -49,14 +52,26 @@ void CudnnActivationLayer::InitCudnn() {
     sdim[i] = shape[i];
     stride[i] = shape[i + 1] * stride[i + 1];
   }
+  // LOG(ERROR) << "src_desc_: " << src_desc_;
+  // LOG(ERROR) << "CUDNN_DATA_FLOAT: " << CUDNN_DATA_FLOAT;
+  for (i = shape.size(); i < nbdim; i++){
+    sdim[i] = 1;
+    stride[i] = 1;
+  }
+  
+  // LOG(ERROR) << "shape.size(): " << shape.size();
+  // LOG(ERROR) << "sdim: " << sdim[0] << " " << sdim[1] << " " << sdim[2] << " " << sdim[3];
+  // LOG(ERROR) << "stride: " << stride[0] << " " << stride[1] << " " << stride[2] << " " << stride[3]; 
   CHECK_CUDNN(cudnnSetTensorNdDescriptor(src_desc_,
         CUDNN_DATA_FLOAT,
-        shape.size(),
+        // shape.size(),
+        nbdim,
         sdim,
         stride));
   CHECK_CUDNN(cudnnSetTensorNdDescriptor(my_desc_,
         CUDNN_DATA_FLOAT,
-        shape.size(),
+        // shape.size(),
+        nbdim,
         sdim,
         stride));
   delete[] sdim;

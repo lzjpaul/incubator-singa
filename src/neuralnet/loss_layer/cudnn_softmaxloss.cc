@@ -98,11 +98,11 @@ void CudnnSoftmaxLossLayer::ComputeFeature(int flag,
 
   /*if ((flag&flag) == 36)
     LOG(ERROR) << "test_label vector size: " << test_label.size();*/
-  if ((flag&flag) == 36 && test_label.size() == 3000){
+  if ((flag&flag) == 36 && test_label.size() == 2910){
     int tol_sample = 0;
     int correct_sample = 0;
     float test_accuracy = 0.0;
-    for (int i = 0; i < 3000; i++){
+    for (int i = 0; i < 2910; i++){
       if ( (( static_cast<float>(test_prob.at(i)) < (1.0f - static_cast<float>(test_prob.at(i)))) && test_label.at(i) == 0) 
             || ((static_cast<float>(test_prob.at(i)) >= (1.0f - static_cast<float>(test_prob.at(i)))) && test_label.at(i) == 1) )
         correct_sample ++;
@@ -113,11 +113,11 @@ void CudnnSoftmaxLossLayer::ComputeFeature(int flag,
     test_prob.clear();
     test_label.clear();
   }
-  else if ((flag&flag) == 34 && valid_label.size() == 2000){
+  else if ((flag&flag) == 34 && valid_label.size() == 1940){
     int valid_tol_sample = 0;
     int valid_correct_sample = 0;
     float valid_accuracy = 0.0;
-    for (int i = 0; i < 2000; i++){
+    for (int i = 0; i < 1940; i++){
       if ( (( static_cast<float>(valid_prob.at(i)) < (1.0f - static_cast<float>(valid_prob.at(i)))) && valid_label.at(i) == 0)
             || ((static_cast<float>(valid_prob.at(i)) >= (1.0f - static_cast<float>(valid_prob.at(i)))) && valid_label.at(i) == 1) )
         valid_correct_sample ++;
