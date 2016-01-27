@@ -132,6 +132,30 @@ class RecordInputLayer : public SingleLabelRecordLayer {
 };
 
 /**
+ * Occlude layer that parses the value string loaded by Store into a
+ * RecordProto.
+ */
+class OccludeInputLayer : public SingleLabelRecordLayer {
+ public:
+  void Setup(const LayerProto& proto, const vector<Layer*>& srclayers) override;
+
+ protected:
+  /**
+   * Parse key as instance ID and val into RecordProto.
+   * @copydetails StoreInputLayer::Parse()
+   */
+  bool Parse(int k, int flag, const string& key, const string& val) override;
+  void LoadRecord(const string& backend,
+                  const string& path,
+                  Blob<float>* to) override;
+
+ private:
+  // TODO(wangwei) decode the image
+  bool encoded_;
+  int test_step_;
+};
+
+/**
  * Do preprocessing for images, including cropping, mirroring, resizing.
  */
 class ImagePreprocessLayer : public InputLayer {

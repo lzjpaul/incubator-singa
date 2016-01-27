@@ -67,6 +67,7 @@ void Driver::Init(int argc, char **argv) {
 
   // input and output layers
   RegisterLayer<RecordInputLayer, int>(kRecordInput);
+  RegisterLayer<OccludeInputLayer, int>(kOccludeInput);
   RegisterLayer<CSVInputLayer, int>(kCSVInput);
   RegisterLayer<ImagePreprocessLayer, int>(kImagePreprocess);
   RegisterLayer<RecordOutputLayer, int>(kRecordOutput);
@@ -185,10 +186,9 @@ void Driver::Test(const std::string str) {
   Test(job_conf);
 }
 
-void Driver::Test(const JobProto& job_conf) {
+/* void Driver::Test(const JobProto& job_conf) {
   Cluster::Setup(job_id_, singa_conf_, job_conf.cluster());
   Cluster::Get()->Register(getpid(), "localhost");
-  // TODO(wangwei) extend to a group with multiple workers
   auto worker = Worker::Create(job_conf.train_one_batch());
   worker->Setup(0, 0, job_conf, nullptr, nullptr, nullptr);
   auto net = NeuralNet::Create(job_conf.neuralnet(), kTest, 1);
@@ -196,6 +196,29 @@ void Driver::Test(const JobProto& job_conf) {
   for (const auto& p : job_conf.checkpoint_path())
     paths.push_back(p);
   net->Load(paths);
+  worker->Test(job_conf.test_steps(), kTest,  net);
+}*/
+
+void Driver::Test(const JobProto& job_conf) {
+  Cluster::Setup(job_id_, singa_conf_, job_conf.cluster());
+  Cluster::Get()->Register(getpid(), "localhost");
+  // TODO(wangwei) extend to a group with multiple workers
+  auto worker = Worker::Create(job_conf.train_one_batch());
+  worker->Setup(0, 0, job_conf, nullptr, nullptr, nullptr);
+  auto net = NeuralNet::Create(job_conf.neuralnet(), kTest, 1);
+  WriteStringToTextFile(Cluster::Get()->vis_folder() + "/test_net.json",
+      net->ToGraph(true).ToJson());
+  vector<string> paths;
+  for (const auto& p : job_conf.checkpoint_path())
+    paths.push_back(p);
+  net->Load(paths);
+  auto context = Singleton<Context>::Instance();
+  // CHECK_LE(workers.size(), job_conf.gpu_size());
+  int device_id  = -1;
+  if (job_conf.gpu_size()) {
+    device_id = job_conf.gpu(0);
+  }
+  context->SetupDevice(std::this_thread::get_id(), device_id);
   worker->Test(job_conf.test_steps(), kTest,  net);
 }
 

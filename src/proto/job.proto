@@ -568,6 +568,7 @@ enum LayerType {
   kImagePreprocess = 101;
   kPrefetch = 102;
   kRecordInput = 103;
+  kOccludeInput = 104;
   kLMDBData = 190;  // deprecated
   kLabel = 191;  // deprecated
   kMnist = 192;  // deprecated
