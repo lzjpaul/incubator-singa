@@ -76,6 +76,7 @@ SINGA_SRCS := src/driver.cc \
               src/neuralnet/input_layer/prefetch.cc \
               src/neuralnet/input_layer/record.cc \
               src/neuralnet/input_layer/deprecated.cc \
+              src/neuralnet/input_layer/occlude.cc\
               src/neuralnet/input_layer/store.cc \
               src/neuralnet/output_layer/accuracy.cc \
               src/neuralnet/output_layer/argsort.cc \
