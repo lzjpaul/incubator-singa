@@ -3,7 +3,7 @@
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__),'..')) 
 from singa.model import * 
-from examples.datasets import NUHALLCOND2SRCPEARSON_3
+from examples.datasets import NUHALLCONDPEARSON
 import random
 from random import randint
 import numpy
@@ -12,10 +12,10 @@ import os
 
 # Sample parameter values for Mnist MLP example
 # pvalues = {'batchsize' : 100, 'shape' : 15324, 'random_skip' : 0}
-X_train, X_test, X_valid, workspace = NUHALLCOND2SRCPEARSON_3.load_data()
+X_train, X_test, X_valid, workspace = NUHALLCONDPEARSON.load_data()
 
 version_num = random.randint(0,10000)
-data_dir_prefix = '/data/zhaojing/result/1-23-MLP-Nlayer-PEARSON-3'
+data_dir_prefix = '/data/zhaojing/result/1-28-MLP-Nlayer-OneSrc'
 workspace = data_dir_prefix + '/version' + str(version_num)
 if not os.path.exists(workspace):
     os.mkdir(workspace)
@@ -30,7 +30,7 @@ layer_neuron_size_array = np.array([100, 500, 1000, 2000, 4000, 8000])
 layer_num = random.randint(1,3)
 
 mlp_fan_out = 0
-mlp_fan_in = 20532
+mlp_fan_in = 15324
 for i in range(layer_num):
     if i == 0:
         mlp_fan_out = layer_neuron_size = layer_neuron_size_array[random.randint(0,len(layer_neuron_size_array)-2)] # no 8000 for the 1st layer
