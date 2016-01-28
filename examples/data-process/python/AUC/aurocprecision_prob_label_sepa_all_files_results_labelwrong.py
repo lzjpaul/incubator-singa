@@ -61,11 +61,7 @@ def calAUC(valid_num, test_num, all_label_file, all_prob_file, valid_output, tes
     numpy.savetxt(valid_output, a, fmt = '%6f', delimiter=",") #modify here
     b = numpy.asarray(pre_AUC_matrix_test, dtype = float)
     numpy.savetxt(test_output, b, fmt = '%6f', delimiter=",") #modify here
-    best_validataion_place = 0
-    for index in range(len(pre_AUC_matrix_valid[:,1]) - 1):
-        if np.argsort(pre_AUC_matrix_valid[:,1])[len(pre_AUC_matrix_valid[:,1]) - index - 1] >= 14:
-            best_validataion_place = np.argsort(pre_AUC_matrix_valid[:,1])[len(pre_AUC_matrix_valid[:,1]) - index - 1]
-            break
+    best_validataion_place = np.argsort(pre_AUC_matrix_valid[:,1])[len(pre_AUC_matrix_valid[:,1]) - 1]
     print "best validation place = \n", best_validataion_place
     print "best test AUC = \n", pre_AUC_matrix_test[best_validataion_place,1]
     return best_validataion_place, pre_AUC_matrix_test[best_validataion_place,1]
@@ -76,7 +72,7 @@ arr_prob = []
 best_AUC = []
 
 list_dirs = os.walk(sys.argv[1]) #label
-print "need to modify test and valid number\n"
+
 for root, dirs, files in list_dirs:
     for f in files:
         # print os.path.join(root, f)
@@ -96,8 +92,6 @@ arr_prob.sort()
 #    print "prob file = \n", arr_prob[i]
 
 f = open(sys.argv[1] +'infoversion' + str(random.randint(0,20000)), 'w+')
-valid_num = int (sys.argv[2])
-test_num = int (sys.argv[3])
 for i in range(len(arr_label)):
     print "i is = ", i
     f.write("i is = " + str(i) + "\n")
@@ -105,7 +99,7 @@ for i in range(len(arr_label)):
     f.write("processing = " + arr_label[i] + "\n")
     print "processing = ", arr_prob[i]
     f.write("processing = " + arr_prob[i] + "\n")
-    best_validation_place, best_AUC_value = calAUC(valid_num, test_num, arr_label[i], arr_prob[i], sys.argv[1] + "valid_" + str(i) + ".csv", sys.argv[1] + "test_" + str(i) + ".csv")
+    best_validation_place, best_AUC_value = calAUC(2000, 3000, arr_label[i], arr_prob[i], sys.argv[1] + "valid_" + str(i) + ".csv", sys.argv[1] + "test_" + str(i) + ".csv")
     best_AUC.append(best_AUC_value)
     f.write("best_AUC_value = " + str(best_AUC_value) + "\n")
     f.write("best_validation_place = " + str(best_validation_place) + "\n")
@@ -117,4 +111,4 @@ for i in range(10):
     f.write("top 10 model index = " + str(np.argsort(-best_AUC)[i]) + "\n")
     f.write("top 10 AUC = " +  str(best_AUC[np.argsort(-best_AUC)][i]) + "\n")
 f.close()
-# python aurocprecision_prob_label_sepa_all_files_results.py /data/zhaojing/result/ 2000 3000
+# python aurocprecision_prob_label_sepa_all_files_results.py /data/zhaojing/result/
