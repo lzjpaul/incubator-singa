@@ -152,7 +152,7 @@ class OccludeInputLayer : public SingleLabelRecordLayer {
  private:
   // TODO(wangwei) decode the image
   bool encoded_;
-  int test_step_;
+  int test_sample_;
 };
 
 /**

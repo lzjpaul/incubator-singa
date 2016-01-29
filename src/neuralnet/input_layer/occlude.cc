@@ -29,7 +29,7 @@ void OccludeInputLayer::Setup(const LayerProto& conf,
     const vector<Layer*>& srclayers) {
   SingleLabelRecordLayer::Setup(conf, srclayers);
   encoded_ = conf.store_conf().encoded();
-  test_step_ = 0;
+  test_sample_ = 0;
 }
 
 void OccludeInputLayer::LoadRecord(const string& backend,
@@ -51,11 +51,13 @@ bool OccludeInputLayer::Parse(int k, int flag, const string& key,
   RecordProto image;
   image.ParseFromString(value);
   int size = data_.count() / batchsize_;
+  // LOG(ERROR) << "size: " << size;
+  // LOG(ERROR) << "key" << key;
   if (image.data_size() != 15324)
     LOG(ERROR) << "image.data_size(): " << image.data_size();
   if (image.data_size()) {
-    if ( test_step_ % 3000 == 0 )
-      LOG(ERROR) << "begin step: " << (test_step_)/100;
+    if ( test_sample_ % 3000 == 0 )
+      LOG(ERROR) << "begin step: " << (test_sample_)/batchsize_;
     CHECK_EQ(size, image.data_size());
     float* ptr = data_.mutable_cpu_data() + k * size;
     for (int i = 0; i< size; i++)
@@ -65,17 +67,21 @@ bool OccludeInputLayer::Parse(int k, int flag, const string& key,
     int width = 1277;
     int kernel_y = 3;
     int kernel_x = 80;
-    int stride_y = 1;
+    int stride_y = 1; //because stride_y == 1, so can for j = 0; j < kernel_y
     int stride_x = 20;
-    int test_step = 30;
+    int sample_test_step = 30;
     int height_dim = (height - kernel_y) / stride_y + 1; // 10
+    // LOG(ERROR) << "height_dim: " << height_dim;
     int width_dim = (width - kernel_x) / stride_x + 1; // 60
-    int height_index = (test_step_ / test_step)/width_dim;
-    int width_index = (test_step_ / test_step) - (width_dim * height_index);
+    // LOG(ERROR) << "width_dim: " << width_dim;
+    // this is to calculate feature map, according to 18000 samples in total 600 steps
+    int height_index = (test_sample_ / batchsize_ / sample_test_step)/width_dim;
+    int width_index = (test_sample_ / batchsize_ / sample_test_step) - (width_dim * height_index);
+    // calculate which part this piture should be occlude
     for (int j = 0; j < kernel_y; j++)
-      for (int i = (height_index + j) * width + width_index * stride_x; i < (height_index + j) * width + width_index * stride_x + kernel_x; i++)
+      for (int i = (height_index * stride_y + j) * width + width_index * stride_x; i < (height_index * stride_y + j) * width + width_index * stride_x + kernel_x; i++)
         ptr[i] = 0.0f;
-    test_step_ ++;
+    test_sample_ ++;
     /*end occlude*/
   } else if (image.pixel().size()) {
     CHECK_EQ(size, image.pixel().size());

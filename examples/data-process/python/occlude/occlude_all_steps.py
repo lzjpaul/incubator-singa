@@ -16,6 +16,9 @@ all_prob_matrix = np.array(all_prob[0:])[:,0:]
 print all_label_matrix.shape
 print all_prob_matrix.shape
 
+matrix_row_num = int (sys.argv[6])
+matrix_col_num = int (sys.argv[7])
+
 print "all label length = \n", len(all_label_matrix[:,0])
 true_label_prob_matrix = np.zeros([(len(all_label_matrix[:,0])/test_num), 1])
 pre_AUC_matrix_test = np.zeros([(len(all_label_matrix[:,0])/test_num), 2])
@@ -48,7 +51,24 @@ for j in range(len(pre_AUC_matrix_test[:,0])):
     true_label_prob_matrix[j,0] = sum_true_label_prob / test_num
 
 a = numpy.asarray(true_label_prob_matrix, dtype = float)
-numpy.savetxt(sys.argv[4], a, fmt = '%6f', delimiter=",") #modify here
+numpy.savetxt(sys.argv[5], a, fmt = '%6f', delimiter=",") #modify here
 b = numpy.asarray(pre_AUC_matrix_test, dtype = float)
-numpy.savetxt(sys.argv[5], b, fmt = '%6f', delimiter=",") #modify here
-#python occlude_all_steps.py 3000 ../../../NUHALLCOND/label.csv ../../../NUHALLCOND/prob.csv ../../../NUHALLCOND/true_prob_matrix.csv ../../../NUHALLCOND/pre_AUC_matrix.csv
+numpy.savetxt(sys.argv[4], b, fmt = '%6f', delimiter=",") #modify here
+
+pre_viz_matrix = np.zeros([matrix_row_num, matrix_col_num])
+AUC_viz_matrix = np.zeros([matrix_row_num, matrix_col_num])
+true_label_prob_viz_matrix = np.zeros([matrix_row_num, matrix_col_num])
+for i in range(len(pre_AUC_matrix_test[:,0])):
+    pre_viz_matrix[i/matrix_col_num][i%matrix_col_num] = pre_AUC_matrix_test[i,0]
+    AUC_viz_matrix[i/matrix_col_num][i%matrix_col_num] = pre_AUC_matrix_test[i,1]
+    true_label_prob_viz_matrix[i/matrix_col_num][i%matrix_col_num] = true_label_prob_matrix[i]
+
+c = numpy.asarray(pre_viz_matrix, dtype = float)
+numpy.savetxt(sys.argv[8], c, fmt = '%6f', delimiter=",") #modify here
+d = numpy.asarray(AUC_viz_matrix, dtype = float)
+numpy.savetxt(sys.argv[9], d, fmt = '%6f', delimiter=",") #modify here
+e = numpy.asarray(true_label_prob_viz_matrix, dtype = float)
+numpy.savetxt(sys.argv[10],e, fmt = '%6f', delimiter=",") #modify here
+#python occlude_all_steps.py 3000 ../../../NUHALLCOND/label.csv ../../../NUHALLCOND/prob.csv ../../../NUHALLCOND/pre_AUC_matrix.csv 
+#../../../NUHALLCOND/true_label_prob_matrix.csv 10 60 
+#../../../NUHALLCOND/pre_viz_matrix.csv ../../../NUHALLCOND/AUC_viz_matrix.csv ../../../NUHALLCOND/true_label_prob_viz.csv
