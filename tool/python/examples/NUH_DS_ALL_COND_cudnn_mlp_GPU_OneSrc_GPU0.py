@@ -27,7 +27,7 @@ m = Sequential('mlp', argv=sys.argv)
     uniform distribution with scale=0.05 at default
 '''
 layer_neuron_size_array = np.array([100, 500, 1000, 2000, 4000, 8000])
-layer_num = random.randint(1,5)
+layer_num = random.randint(1,4)
 
 mlp_fan_out = 0
 mlp_fan_in = 15324
@@ -80,7 +80,7 @@ f.close()
 topo = Cluster(workspace)
 m.compile(loss='categorical_crossentropy', optimizer=ada, cluster=topo)
 
-gpu_id = [1]
+gpu_id = [0]
 m.fit(X_train, nb_epoch=12000, with_test=True, validate_data=X_valid, validate_steps=20, validate_freq=20, device=gpu_id)
 result = m.evaluate(X_test, test_steps=30, test_freq=20)
 #e.g., display result
