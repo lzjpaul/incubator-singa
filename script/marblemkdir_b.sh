@@ -1,12 +1,12 @@
 #!/bin/bash
-hostfile="/home/singa/zhaojing/script/marbleslaves_a"
+hostfile="/home/singa/zhaojing/script/marbleslaves_b"
 
 hosts=(`cat $hostfile |cut -d ' ' -f1`)
 
 #for i in 1 2 3; do ssh awan-0-0$i-0 "hostname"; done
 
 #for i in ${hosts[@]}
-for i in `cat /home/singa/zhaojing/script/marbleslaves_a`
+for i in `cat /home/singa/zhaojing/script/marbleslaves_b`
 do
     echo $i
       echo "ssh $i"
