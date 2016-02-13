@@ -4,17 +4,17 @@
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 from singa.model import *
-from examples.datasets import CMS2SRCKB
+from examples.datasets import CMS2SRCARBI
 import numpy as np
 import random
 from random import randint
 import numpy
 import os
 
-X_train, X_test, X_valid, workspace = CMS2SRCKB.load_data()
+X_train, X_test, X_valid, workspace = CMS2SRCARBI.load_data()
 
 version_num = random.randint(0,10000)
-data_dir_prefix = '/data/zhaojing/result/2-4-CNN-CMS-2SRC-KB'
+data_dir_prefix = '/data/zhaojing/result/2-4-CNN-CMS-2SRC-ARBI'
 workspace = data_dir_prefix + '/version' + str(version_num)
 if not os.path.exists(workspace):
     os.mkdir(workspace)

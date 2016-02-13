@@ -1,20 +1,21 @@
 #!/usr/bin/env python
 # import os and create folder line 11-19
 # create model files
+# (1) filter_num increases (2) pool to 2,2;,3,2;,3,1
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 from singa.model import *
-from examples.datasets import CMS2SRCKB
+from examples.datasets import NUHALLCOND2SRCPEARSON_3_SUB8
 import numpy as np
 import random
 from random import randint
 import numpy
 import os
 
-X_train, X_test, X_valid, workspace = CMS2SRCKB.load_data()
+X_train, X_test, X_valid, workspace = NUHALLCOND2SRCPEARSON_3_SUB8.load_data()
 
 version_num = random.randint(0,10000)
-data_dir_prefix = '/data/zhaojing/result/2-4-CNN-CMS-2SRC-KB'
+data_dir_prefix = '/data/zhaojing/result/1-19-CNN-PEARSON-3-new-sub8'
 workspace = data_dir_prefix + '/version' + str(version_num)
 if not os.path.exists(workspace):
     os.mkdir(workspace)
@@ -24,41 +25,34 @@ b_Uniform_or_Constant = random.randint(0,1)
 input_y = int (sys.argv[2]) # calculate inner size
 input_x = int (sys.argv[3]) # calculate inner size
 
-kernel_x_param_array = np.array([6, 10, 15, 20, 25, 30, 35, 40, 45])
+kernel_x_param_array = np.array([60, 66, 80, 140, 300])
 kernel_y_param_array = np.array([2, 3])
-stride_x_param_array = np.array([3, 5, 8, 10])
+stride_x_param_array = np.array([20, 25, 30, 35])
 stride_y_param_array = 1
 kernel_x_param = kernel_x_param_array[random.randint(0,len(kernel_x_param_array)-1)]
 kernel_y_param = kernel_y_param_array[random.randint(0,len(kernel_y_param_array)-1)]
 #stride_x_param = stride_x_param_array[random.randint(0,len(stride_x_param_array)-1)]
-if kernel_x_param == 6:
+if kernel_x_param < 80:
     stride_x_param = stride_x_param_array[random.randint(0,0)]
-elif kernel_x_param == 10 or kernel_x_param == 15 or kernel_x_param == 20:
+elif kernel_x_param == 80:
     stride_x_param = stride_x_param_array[random.randint(0,1)]
 else:
     stride_x_param = stride_x_param_array[random.randint(0,len(stride_x_param_array)-1)]
 # stride_y_param = stride_y_param_array[random.randint(0,len(stride_y_param_array))]
-if stride_x_param == 3 or stride_x_param == 5:
-    stride_y_param = 2
-else:
-    stride_y_param = random.randint(1,2)
+stride_y_param = stride_y_param_array
 input_channel = 1
-pad_x_param = 0
+pad_x_param = 2
 pad_y_param = 0
-filter_num_param_array = np.array([600, 650, 700, 750, 800])
+filter_num_param_array = np.array([500, 600, 700, 800, 900])
 filter_num_param = filter_num_param_array[random.randint(0,len(filter_num_param_array)-1)]
 
 pool_param_array = np.array([2,3])
 pool_x_param = pool_y_param = pool_param_array[random.randint(0,len(pool_param_array)-1)]
-pool_stride_param_array = np.array([pool_x_param-1, pool_x_param])
+pool_stride_param_array = np.array([pool_x_param, pool_x_param-1])
 if pool_x_param == 2:
     pool_stride_x_param = pool_stride_y_param = pool_stride_param_array[random.randint(0,len(pool_stride_param_array)-1)]
 else:
     pool_stride_x_param = pool_stride_y_param = random.randint(1,2)
-#if pool_x_param == 2:
-#    pool_stride_x_param = pool_stride_y_param = pool_stride_param_array[random.randint(0,len(pool_stride_param_array)-1)]
-#else:
-#    pool_stride_x_param = pool_stride_y_param = 1
 
 pool_pad_x_param = pool_pad_y_param = 0
 
@@ -99,7 +93,7 @@ lr_param = lr_array[random.randint(0,len(lr_array)-1)]
 decay_param = decay_array[random.randint(0,len(decay_array)-1)]
 momentum_param = momentum_array[random.randint(0,len(momentum_array)-1)]
 
-m = Sequential('CMS-cnn', sys.argv)
+m = Sequential('NUHALLCOND-cnn', sys.argv)
 #gaussian
 conv_parw_gaussian = Parameter(init='gaussian', std=conv_std_w_param)
 conv_parb_gaussian = Parameter(init='constant', value=conv_constant_b_param)
@@ -147,7 +141,7 @@ f.close()
 topo = Cluster(workspace)
 m.compile(loss='categorical_crossentropy', optimizer=ada, cluster=topo)
 
-gpu_id = [0]
+gpu_id = [1]
 m.fit(X_train, nb_epoch=12000, with_test=True, validate_data=X_valid, validate_steps=20, validate_freq=20, device=gpu_id)
 # m.fit(X_train, nb_epoch=7000, with_test=True, device=gpu_id)
 result = m.evaluate(X_test, test_steps=30, test_freq=20)

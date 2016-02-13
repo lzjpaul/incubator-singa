@@ -24,7 +24,7 @@ b_Uniform_or_Constant = random.randint(0,1)
 input_y = int (sys.argv[2]) # calculate inner size
 input_x = int (sys.argv[3]) # calculate inner size
 
-kernel_x_param_array = np.array([6, 10, 15, 20, 25, 30, 35, 40, 65, 80])
+kernel_x_param_array = np.array([6, 10, 15, 20, 25, 30, 35, 40, 65, 80, 100])
 kernel_y_param_array = np.array([2, 3])
 stride_x_param_array = np.array([3, 5, 8, 10])
 stride_y_param_array = 1
@@ -38,20 +38,23 @@ elif kernel_x_param == 10 or kernel_x_param == 15 or kernel_x_param == 20:
 else:
     stride_x_param = stride_x_param_array[random.randint(0,len(stride_x_param_array)-1)]
 # stride_y_param = stride_y_param_array[random.randint(0,len(stride_y_param_array))]
-if stride_x_param == 3:
+if stride_x_param == 3 or stride_x_param == 5:
     stride_y_param = 2
 else:
-    stride_y_param = stride_y_param_array
+    stride_y_param = random.randint(1,2)
 input_channel = 1
 pad_x_param = 0
 pad_y_param = 0
-filter_num_param_array = np.array([600, 650, 700, 750, 800, 850, 900])
+filter_num_param_array = np.array([600, 650, 700, 750, 800])
 filter_num_param = filter_num_param_array[random.randint(0,len(filter_num_param_array)-1)]
 
 pool_param_array = np.array([2,3])
 pool_x_param = pool_y_param = pool_param_array[random.randint(0,len(pool_param_array)-1)]
 pool_stride_param_array = np.array([pool_x_param, pool_x_param-1])
-pool_stride_x_param = pool_stride_y_param = pool_x_param - 1
+if pool_x_param == 2:
+    pool_stride_x_param = pool_stride_y_param = pool_stride_param_array[random.randint(0,len(pool_stride_param_array)-1)]
+else:
+    pool_stride_x_param = pool_stride_y_param = random.randint(1,2)
 #if pool_x_param == 2:
 #    pool_stride_x_param = pool_stride_y_param = pool_stride_param_array[random.randint(0,len(pool_stride_param_array)-1)]
 #else:

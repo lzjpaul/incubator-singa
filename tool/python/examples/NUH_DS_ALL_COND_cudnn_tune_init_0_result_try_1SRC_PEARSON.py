@@ -1,20 +1,21 @@
 #!/usr/bin/env python
-# import os and create folder line 11-19
-# create model files
+# initialization method
+# Sequential(...)
+# ada gradient? (steps?)
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 from singa.model import *
-from examples.datasets import CMS2SRCKB
+from examples.datasets import NUHALLCOND
 import numpy as np
 import random
 from random import randint
 import numpy
 import os
 
-X_train, X_test, X_valid, workspace = CMS2SRCKB.load_data()
+X_train, X_test, X_valid, workspace = NUHALLCOND.load_data()
 
 version_num = random.randint(0,10000)
-data_dir_prefix = '/data/zhaojing/result/2-4-CNN-CMS-2SRC-KB'
+data_dir_prefix = '/data/zhaojing/result/1-16-KB'
 workspace = data_dir_prefix + '/version' + str(version_num)
 if not os.path.exists(workspace):
     os.mkdir(workspace)
@@ -24,41 +25,33 @@ b_Uniform_or_Constant = random.randint(0,1)
 input_y = int (sys.argv[2]) # calculate inner size
 input_x = int (sys.argv[3]) # calculate inner size
 
-kernel_x_param_array = np.array([6, 10, 15, 20, 25, 30, 35, 40, 45])
-kernel_y_param_array = np.array([2, 3])
-stride_x_param_array = np.array([3, 5, 8, 10])
+kernel_x_param_array = np.array([80])
+kernel_y_param_array = np.array([2])
+stride_x_param_array = np.array([25])
 stride_y_param_array = 1
 kernel_x_param = kernel_x_param_array[random.randint(0,len(kernel_x_param_array)-1)]
 kernel_y_param = kernel_y_param_array[random.randint(0,len(kernel_y_param_array)-1)]
 #stride_x_param = stride_x_param_array[random.randint(0,len(stride_x_param_array)-1)]
-if kernel_x_param == 6:
+if kernel_x_param < 80:
     stride_x_param = stride_x_param_array[random.randint(0,0)]
-elif kernel_x_param == 10 or kernel_x_param == 15 or kernel_x_param == 20:
-    stride_x_param = stride_x_param_array[random.randint(0,1)]
+elif kernel_x_param == 80:
+    stride_x_param = stride_x_param_array[random.randint(0,0)]
 else:
     stride_x_param = stride_x_param_array[random.randint(0,len(stride_x_param_array)-1)]
 # stride_y_param = stride_y_param_array[random.randint(0,len(stride_y_param_array))]
-if stride_x_param == 3 or stride_x_param == 5:
-    stride_y_param = 2
-else:
-    stride_y_param = random.randint(1,2)
+stride_y_param = stride_y_param_array
 input_channel = 1
-pad_x_param = 0
+pad_x_param = 2
 pad_y_param = 0
-filter_num_param_array = np.array([600, 650, 700, 750, 800])
-filter_num_param = filter_num_param_array[random.randint(0,len(filter_num_param_array)-1)]
+filter_num_param = 500
 
-pool_param_array = np.array([2,3])
+pool_param_array = np.array([2])
 pool_x_param = pool_y_param = pool_param_array[random.randint(0,len(pool_param_array)-1)]
-pool_stride_param_array = np.array([pool_x_param-1, pool_x_param])
+pool_stride_param_array = np.array([pool_x_param, pool_x_param-1])
 if pool_x_param == 2:
-    pool_stride_x_param = pool_stride_y_param = pool_stride_param_array[random.randint(0,len(pool_stride_param_array)-1)]
+    pool_stride_x_param = pool_stride_y_param = 2
 else:
-    pool_stride_x_param = pool_stride_y_param = random.randint(1,2)
-#if pool_x_param == 2:
-#    pool_stride_x_param = pool_stride_y_param = pool_stride_param_array[random.randint(0,len(pool_stride_param_array)-1)]
-#else:
-#    pool_stride_x_param = pool_stride_y_param = 1
+    pool_stride_x_param = pool_stride_y_param = 1
 
 pool_pad_x_param = pool_pad_y_param = 0
 
@@ -66,7 +59,7 @@ conv_fan_in = input_channel * kernel_y_param * kernel_x_param
 conv_fan_out = filter_num_param * kernel_y_param * kernel_x_param 
 conv_fan_out_1 = (filter_num_param * kernel_y_param * kernel_x_param) / (pool_x_param * pool_y_param)
 
-conv_n_array = np.array([conv_fan_in, (conv_fan_in + conv_fan_out)/2, conv_fan_out, (conv_fan_in + conv_fan_out_1)/2, conv_fan_out_1])
+conv_n_array = np.array([conv_fan_out])
 
 #gaussian
 conv_std_w_param = numpy.sqrt(2. / (conv_n_array[random.randint(0,len(conv_n_array)-1)]))
@@ -82,7 +75,7 @@ pool_map_x = (feamap_x - pool_x_param + 2*pool_pad_x_param) / pool_stride_x_para
 
 softmax_fan_in = filter_num_param * pool_map_y * pool_map_x
 softmax_fan_out = 2
-softmax_n_array = np.array([softmax_fan_in,(softmax_fan_in + softmax_fan_out)/2]) # do not use fan_out
+softmax_n_array = np.array([softmax_fan_in]) # do not use fan_out
 
 #gaussian
 softmax_std_w_param = numpy.sqrt(2. / (softmax_n_array[random.randint(0,len(softmax_n_array)-1)]))
@@ -92,14 +85,14 @@ softmax_uniform_w_param = numpy.sqrt(3. / (softmax_n_array[random.randint(0,len(
 softmax_uniform_b_param = softmax_uniform_w_param
 
 
-lr_array = np.array([0.1, 0.01, 0.001, 0.0001])
-decay_array = np.array([0.01, 0.001, 0.0001])
-momentum_array = np.array([0.8, 0.9])
+lr_array = np.array([0.001])
+decay_array = np.array([0.0001])
+momentum_array = np.array([0.9])
 lr_param = lr_array[random.randint(0,len(lr_array)-1)]
 decay_param = decay_array[random.randint(0,len(decay_array)-1)]
 momentum_param = momentum_array[random.randint(0,len(momentum_array)-1)]
 
-m = Sequential('CMS-cnn', sys.argv)
+m = Sequential('NUHALLCOND-cnn', sys.argv)
 #gaussian
 conv_parw_gaussian = Parameter(init='gaussian', std=conv_std_w_param)
 conv_parb_gaussian = Parameter(init='constant', value=conv_constant_b_param)
