@@ -156,6 +156,144 @@ class OccludeInputLayer : public SingleLabelRecordLayer {
 };
 
 /**
+ * Multi destination layer that parses the value string 
+ * to several destination layers.
+ */
+class Multi_distInputLayer : public SingleLabelRecordLayer {
+ public:
+  void Setup(const LayerProto& proto, const vector<Layer*>& srclayers) override;
+
+ protected:
+  /**
+   * Parse key as instance ID and val into RecordProto.
+   * @copydetails StoreInputLayer::Parse()
+   */
+  bool Parse(int k, int flag, const string& key, const string& val) override;
+  void LoadRecord(const string& backend,
+                  const string& path,
+                  Blob<float>* to) override;
+
+ const Blob<float>& data(const Layer* from) override{
+    if (from != nullptr){
+      //LOG(ERROR)<<"not nullptr";
+      if ( strcmp((from->name()).c_str(), "Group1") == 0 ) //any other better solutions?
+        return group1_data_;
+      else if ( strcmp((from->name()).c_str(), "Group2") == 0 )
+        return group2_data_;
+      else if ( strcmp((from->name()).c_str(), "Group3") == 0 )
+        return group3_data_;
+      else if ( strcmp((from->name()).c_str(), "Group4") == 0 )
+        return group4_data_;
+      else if ( strcmp((from->name()).c_str(), "Group5") == 0 )
+        return group5_data_;
+      else if ( strcmp((from->name()).c_str(), "Group6") == 0 )
+        return group6_data_;
+      else if ( strcmp((from->name()).c_str(), "Group7") == 0 )
+        return group7_data_;
+      else if ( strcmp((from->name()).c_str(), "Group8") == 0 )
+        return group8_data_;
+      else if ( strcmp((from->name()).c_str(), "Group9") == 0 )
+        return group9_data_;
+      else if ( strcmp((from->name()).c_str(), "Group10") == 0 )
+        return group10_data_;
+      else if ( strcmp((from->name()).c_str(), "Group11") == 0 )
+        return group11_data_;
+      else if ( strcmp((from->name()).c_str(), "Group12") == 0 )
+        return group12_data_;
+      else if ( strcmp((from->name()).c_str(), "Group13") == 0 )
+        return group13_data_;
+      else if ( strcmp((from->name()).c_str(), "Group14") == 0 )
+        return group14_data_;
+      else if ( strcmp((from->name()).c_str(), "Group15") == 0 )
+        return group15_data_;
+      else if ( strcmp((from->name()).c_str(), "Group16") == 0 )
+        return group16_data_;
+      else if ( strcmp((from->name()).c_str(), "Group17") == 0 )
+        return group17_data_;
+      else if ( strcmp((from->name()).c_str(), "Group18") == 0 )
+        return group18_data_;
+      else if ( strcmp((from->name()).c_str(), "Group19") == 0 )
+        return group19_data_;
+      else if ( strcmp((from->name()).c_str(), "Group20") == 0 )
+        return group20_data_;
+      else if ( strcmp((from->name()).c_str(), "Group21") == 0 )
+        return group21_data_;
+      else{
+        LOG(ERROR)<<"no data returned in the Multi_distInputLayer return data_";
+        return data_;
+      }
+    }
+    else{
+      LOG(ERROR)<<"nullptr";
+      return data_;
+    }
+  }
+ Blob<float>* mutable_data(const Layer* from) override{
+    if (from != nullptr){
+      //LOG(ERROR)<<"not nullptr";
+      if ( strcmp((from->name()).c_str(), "Group1") == 0 ) //any other better solutions?
+        return &group1_data_;
+      else if ( strcmp((from->name()).c_str(), "Group2") == 0 )
+        return &group2_data_;
+      else if ( strcmp((from->name()).c_str(), "Group3") == 0 )
+        return &group3_data_;
+      else if ( strcmp((from->name()).c_str(), "Group4") == 0 )
+        return &group4_data_;
+      else if ( strcmp((from->name()).c_str(), "Group5") == 0 )
+        return &group5_data_;
+      else if ( strcmp((from->name()).c_str(), "Group6") == 0 )
+        return &group6_data_;
+      else if ( strcmp((from->name()).c_str(), "Group7") == 0 )
+        return &group7_data_;
+      else if ( strcmp((from->name()).c_str(), "Group8") == 0 )
+        return &group8_data_;
+      else if ( strcmp((from->name()).c_str(), "Group9") == 0 )
+        return &group9_data_;
+      else if ( strcmp((from->name()).c_str(), "Group10") == 0 )
+        return &group10_data_;
+      else if ( strcmp((from->name()).c_str(), "Group11") == 0 )
+        return &group11_data_;
+      else if ( strcmp((from->name()).c_str(), "Group12") == 0 )
+        return &group12_data_;
+      else if ( strcmp((from->name()).c_str(), "Group13") == 0 )
+        return &group13_data_;
+      else if ( strcmp((from->name()).c_str(), "Group14") == 0 )
+        return &group14_data_;
+      else if ( strcmp((from->name()).c_str(), "Group15") == 0 )
+        return &group15_data_;
+      else if ( strcmp((from->name()).c_str(), "Group16") == 0 )
+        return &group16_data_;
+      else if ( strcmp((from->name()).c_str(), "Group17") == 0 )
+        return &group17_data_;
+      else if ( strcmp((from->name()).c_str(), "Group18") == 0 )
+        return &group18_data_;
+      else if ( strcmp((from->name()).c_str(), "Group19") == 0 )
+        return &group19_data_;
+      else if ( strcmp((from->name()).c_str(), "Group20") == 0 )
+        return &group20_data_;
+      else if ( strcmp((from->name()).c_str(), "Group21") == 0 )
+        return &group21_data_;
+      else{
+        LOG(ERROR)<<"no mutable_data returned in the Multi_distInputLayer return &data_";
+        return &data_;
+      }
+    }
+    else{
+      LOG(ERROR)<<"nullptr";
+      return &data_;
+    }
+  }
+ private:
+  // TODO(wangwei) decode the image
+  bool encoded_;
+  int test_sample_;
+  int group1_dim_, group2_dim_, group3_dim_, group4_dim_, group5_dim_, group6_dim_, group7_dim_, group8_dim_, group9_dim_, group10_dim_, group11_dim_, group12_dim_, group13_dim_, 
+  group14_dim_, group15_dim_, group16_dim_, group17_dim_, group18_dim_, group19_dim_, group20_dim_, group21_dim_;
+  Blob<float> group1_data_, group2_data_, group3_data_, group4_data_, group5_data_, group6_data_, group7_data_, group8_data_, group9_data_, group10_data_, group11_data_, group12_data_,
+  group13_data_, group14_data_, group15_data_, group16_data_, group17_data_, group18_data_, group19_data_, group20_data_, group21_data_;
+};
+
+/**
  * Do preprocessing for images, including cropping, mirroring, resizing.
  */
 class ImagePreprocessLayer : public InputLayer {

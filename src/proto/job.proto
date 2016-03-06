@@ -345,6 +345,27 @@ message StoreProto {
   optional bool encoded = 10 [default = false];
   optional int32 random_skip = 11 [default = 0];
   optional bool has_label = 12 [default = true];
+  optional int32 group1_dim = 13 [default = 0];
+  optional int32 group2_dim = 14 [default = 0];
+  optional int32 group3_dim = 15 [default = 0];
+  optional int32 group4_dim = 16 [default = 0];
+  optional int32 group5_dim = 17 [default = 0];
+  optional int32 group6_dim = 18 [default = 0];
+  optional int32 group7_dim = 19 [default = 0];
+  optional int32 group8_dim = 20 [default = 0];
+  optional int32 group9_dim = 21 [default = 0];
+  optional int32 group10_dim = 22 [default = 0];
+  optional int32 group11_dim = 23 [default = 0];
+  optional int32 group12_dim = 24 [default = 0];
+  optional int32 group13_dim = 25 [default = 0];
+  optional int32 group14_dim = 26 [default = 0];
+  optional int32 group15_dim = 27 [default = 0];
+  optional int32 group16_dim = 28 [default = 0];
+  optional int32 group17_dim = 29 [default = 0];
+  optional int32 group18_dim = 30 [default = 0];
+  optional int32 group19_dim = 31 [default = 0];
+  optional int32 group20_dim = 32 [default = 0];
+  optional int32 group21_dim = 33 [default = 0];
 }
 
 message SoftmaxLossProto {
@@ -569,6 +590,7 @@ enum LayerType {
   kPrefetch = 102;
   kRecordInput = 103;
   kOccludeInput = 104;
+  kMulti_distInput = 105;
   kLMDBData = 190;  // deprecated
   kLabel = 191;  // deprecated
   kMnist = 192;  // deprecated
