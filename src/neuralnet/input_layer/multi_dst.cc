@@ -26,6 +26,7 @@ group1_data_.Reshape(vector<int>{batchsize, 1, 12, group1_dim_}); and previous k
 
 **/
 #include "singa/neuralnet/input_layer.h"
+#include "mshadow/tensor.h"
 namespace singa {
 
 using std::string;
@@ -56,48 +57,49 @@ void Multi_dstInputLayer::Setup(const LayerProto& conf,
   group19_dim_ = conf.store_conf().group19_dim();
   group20_dim_ = conf.store_conf().group20_dim();
   group21_dim_ = conf.store_conf().group21_dim();
+  LOG(ERROR) << "batchsize: " << batchsize_;
   if (group1_dim_ != 0)
-    group1_data_.Reshape(vector<int>{batchsize, 1, 12, group1_dim_});
+    group1_data_.Reshape(vector<int>{batchsize_, 1, 12, group1_dim_});
   if (group2_dim_ != 0)
-    group2_data_.Reshape(vector<int>{batchsize, 1, 12, group2_dim_});
+    group2_data_.Reshape(vector<int>{batchsize_, 1, 12, group2_dim_});
   if (group3_dim_ != 0)
-    group3_data_.Reshape(vector<int>{batchsize, 1, 12, group3_dim_});
+    group3_data_.Reshape(vector<int>{batchsize_, 1, 12, group3_dim_});
   if (group4_dim_ != 0)
-    group4_data_.Reshape(vector<int>{batchsize, 1, 12, group4_dim_});
+    group4_data_.Reshape(vector<int>{batchsize_, 1, 12, group4_dim_});
   if (group5_dim_ != 0)
-    group5_data_.Reshape(vector<int>{batchsize, 1, 12, group5_dim_});
+    group5_data_.Reshape(vector<int>{batchsize_, 1, 12, group5_dim_});
   if (group6_dim_ != 0)
-    group6_data_.Reshape(vector<int>{batchsize, 1, 12, group6_dim_});
+    group6_data_.Reshape(vector<int>{batchsize_, 1, 12, group6_dim_});
   if (group7_dim_ != 0)
-    group7_data_.Reshape(vector<int>{batchsize, 1, 12, group7_dim_});
+    group7_data_.Reshape(vector<int>{batchsize_, 1, 12, group7_dim_});
   if (group8_dim_ != 0)
-    group8_data_.Reshape(vector<int>{batchsize, 1, 12, group8_dim_});
+    group8_data_.Reshape(vector<int>{batchsize_, 1, 12, group8_dim_});
   if (group9_dim_ != 0)
-    group9_data_.Reshape(vector<int>{batchsize, 1, 12, group9_dim_});
+    group9_data_.Reshape(vector<int>{batchsize_, 1, 12, group9_dim_});
   if (group10_dim_ != 0)
-    group10_data_.Reshape(vector<int>{batchsize, 1, 12, group10_dim_});
+    group10_data_.Reshape(vector<int>{batchsize_, 1, 12, group10_dim_});
   if (group11_dim_ != 0)
-    group11_data_.Reshape(vector<int>{batchsize, 1, 12, group11_dim_});
+    group11_data_.Reshape(vector<int>{batchsize_, 1, 12, group11_dim_});
   if (group12_dim_ != 0)
-    group12_data_.Reshape(vector<int>{batchsize, 1, 12, group12_dim_});
+    group12_data_.Reshape(vector<int>{batchsize_, 1, 12, group12_dim_});
   if (group13_dim_ != 0)
-    group13_data_.Reshape(vector<int>{batchsize, 1, 12, group13_dim_});
+    group13_data_.Reshape(vector<int>{batchsize_, 1, 12, group13_dim_});
   if (group14_dim_ != 0)
-    group14_data_.Reshape(vector<int>{batchsize, 1, 12, group14_dim_});
+    group14_data_.Reshape(vector<int>{batchsize_, 1, 12, group14_dim_});
   if (group15_dim_ != 0)
-    group15_data_.Reshape(vector<int>{batchsize, 1, 12, group15_dim_});
+    group15_data_.Reshape(vector<int>{batchsize_, 1, 12, group15_dim_});
   if (group16_dim_ != 0)
-    group16_data_.Reshape(vector<int>{batchsize, 1, 12, group16_dim_});
+    group16_data_.Reshape(vector<int>{batchsize_, 1, 12, group16_dim_});
   if (group17_dim_ != 0)
-    group17_data_.Reshape(vector<int>{batchsize, 1, 12, group17_dim_});
+    group17_data_.Reshape(vector<int>{batchsize_, 1, 12, group17_dim_});
   if (group18_dim_ != 0)
-    group18_data_.Reshape(vector<int>{batchsize, 1, 12, group18_dim_});
+    group18_data_.Reshape(vector<int>{batchsize_, 1, 12, group18_dim_});
   if (group19_dim_ != 0)
-    group19_data_.Reshape(vector<int>{batchsize, 1, 12, group19_dim_});
+    group19_data_.Reshape(vector<int>{batchsize_, 1, 12, group19_dim_});
   if (group20_dim_ != 0)
-    group20_data_.Reshape(vector<int>{batchsize, 1, 12, group20_dim_});
+    group20_data_.Reshape(vector<int>{batchsize_, 1, 12, group20_dim_});
   if (group21_dim_ != 0)
-    group21_data_.Reshape(vector<int>{batchsize, 1, 12, group21_dim_});
+    group21_data_.Reshape(vector<int>{batchsize_, 1, 12, group21_dim_});
   test_sample_ = 0;
 }
 

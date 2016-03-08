@@ -35,6 +35,10 @@ void ConcateLayer::Setup(const LayerProto& conf,
   CHECK_GE(concate_dim_, 0);
   CHECK_LT(concate_dim_, shape.size());
   CHECK_EQ(num_concates_, srclayers.size());
+  LOG(ERROR) << "src layer0 concate shape 0: " << srclayers[0]->data(this).shape()[0] << "\n";
+  LOG(ERROR) << "src layer0 concate shape 1: " << srclayers[0]->data(this).shape()[1] << "\n";
+  LOG(ERROR) << "src layer0 concate shape 2: " << srclayers[0]->data(this).shape()[2] << "\n";
+  LOG(ERROR) << "src layer0 concate shape 3: " << srclayers[0]->data(this).shape()[3] << "\n";
   for (size_t i = 1; i < srclayers.size(); i++) {
     const vector<int>& src_shape = srclayers[i]->data(this).shape();
     for (size_t j = 0; j < shape.size(); j++)
@@ -43,6 +47,10 @@ void ConcateLayer::Setup(const LayerProto& conf,
       else
         CHECK_EQ(shape[j], src_shape[j]);
   }
+  LOG(ERROR) << "concate shape 0: " << shape[0] << "\n";
+  LOG(ERROR) << "concate shape 1: " << shape[1] << "\n";
+  LOG(ERROR) << "concate shape 2: " << shape[2] << "\n";
+  LOG(ERROR) << "concate shape 3 used for fan_out: " << shape[3] << "\n";
   data_.Reshape(shape);
   grad_.Reshape(shape);
 }

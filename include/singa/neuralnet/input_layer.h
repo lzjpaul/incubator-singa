@@ -159,7 +159,7 @@ class OccludeInputLayer : public SingleLabelRecordLayer {
  * Multi destination layer that parses the value string 
  * to several destination layers.
  */
-class Multi_distInputLayer : public SingleLabelRecordLayer {
+class Multi_dstInputLayer : public SingleLabelRecordLayer {
  public:
   void Setup(const LayerProto& proto, const vector<Layer*>& srclayers) override;
 
@@ -289,8 +289,9 @@ class Multi_distInputLayer : public SingleLabelRecordLayer {
   int test_sample_;
   int group1_dim_, group2_dim_, group3_dim_, group4_dim_, group5_dim_, group6_dim_, group7_dim_, group8_dim_, group9_dim_, group10_dim_, group11_dim_, group12_dim_, group13_dim_, 
   group14_dim_, group15_dim_, group16_dim_, group17_dim_, group18_dim_, group19_dim_, group20_dim_, group21_dim_;
-  Blob<float> group1_data_, group2_data_, group3_data_, group4_data_, group5_data_, group6_data_, group7_data_, group8_data_, group9_data_, group10_data_, group11_data_, group12_data_,
+  Blob<float> group1_data_, group2_data_, group3_data_, group4_data_, group5_data_, group6_data_, group7_data_, group8_data_, group10_data_, group11_data_, group12_data_,
   group13_data_, group14_data_, group15_data_, group16_data_, group17_data_, group18_data_, group19_data_, group20_data_, group21_data_;
+  Blob<float> group9_data_;
 };
 
 /**
