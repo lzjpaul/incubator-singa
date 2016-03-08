@@ -30,6 +30,7 @@ CudnnPoolLayer::~CudnnPoolLayer() {
 }
 
 void CudnnPoolLayer::InitCudnn() {
+  LOG(ERROR) << "cudnnPooling init begins";
   CudnnBase::InitCudnn();
   CHECK_CUDNN(cudnnCreatePoolingDescriptor(&pool_desc_));
   CHECK_CUDNN(cudnnSetTensor4dDescriptor(src_desc_,
@@ -39,6 +40,8 @@ void CudnnPoolLayer::InitCudnn() {
         channels_,
         height_,
         width_));
+  LOG(ERROR) << "src pooling height_: " << height_;
+  LOG(ERROR) << "src pooling width_: " << width_;
   CHECK_CUDNN(cudnnSetTensor4dDescriptor(my_desc_,
         CUDNN_TENSOR_NCHW,
         CUDNN_DATA_FLOAT,

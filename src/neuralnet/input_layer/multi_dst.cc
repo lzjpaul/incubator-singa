@@ -32,7 +32,7 @@ namespace singa {
 using std::string;
 using std::vector;
 
-void Multi_dstInputLayer::Setup(const LayerProto& conf,
+void MultidstInputLayer::Setup(const LayerProto& conf,
     const vector<Layer*>& srclayers) {
   SingleLabelRecordLayer::Setup(conf, srclayers);
   encoded_ = conf.store_conf().encoded();
@@ -103,7 +103,7 @@ void Multi_dstInputLayer::Setup(const LayerProto& conf,
   test_sample_ = 0;
 }
 
-void Multi_dstInputLayer::LoadRecord(const string& backend,
+void MultidstInputLayer::LoadRecord(const string& backend,
     const string&path, Blob<float>* to) {
   io::Store* store = io::OpenStore(backend, path, io::kRead);
   string key, val;
@@ -117,7 +117,7 @@ void Multi_dstInputLayer::LoadRecord(const string& backend,
   delete store;
 }
 
-bool Multi_dstInputLayer::Parse(int k, int flag, const string& key,
+bool MultidstInputLayer::Parse(int k, int flag, const string& key,
     const string& value) {
   RecordProto image;
   image.ParseFromString(value);

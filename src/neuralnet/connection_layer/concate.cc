@@ -27,6 +27,7 @@ namespace singa {
 
 void ConcateLayer::Setup(const LayerProto& conf,
                          const vector<Layer*>& srclayers) {
+  LOG(ERROR) << "concate layer setup begins" << "\n";
   CHECK_GT(srclayers.size(), 1);
   Layer::Setup(conf, srclayers);
   vector<int> shape = srclayers[0]->data(this).shape();
@@ -56,6 +57,7 @@ void ConcateLayer::Setup(const LayerProto& conf,
 }
 
 void ConcateLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
+  LOG(ERROR) << "concate layer compute feature begins" << "\n";
   CHECK_GT(srclayers.size(), 1);
   CHECK_EQ(num_concates_, srclayers.size());
   // calculate step for each memcpy
@@ -66,6 +68,7 @@ void ConcateLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
   int concate_offset = 0;
   auto context = Singleton<Context>::Instance();
   int device = context->device_id(std::this_thread::get_id());
+  LOG(ERROR) << "concate layer compute feature before while" << "\n";
   while (concate_offset < data_.count()) {
     for (size_t i = 0; i < srclayers.size(); ++i) {
       if (device == -1) {

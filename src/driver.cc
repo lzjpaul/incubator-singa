@@ -69,6 +69,7 @@ void Driver::Init(int argc, char **argv) {
   RegisterLayer<RecordInputLayer, int>(kRecordInput);
   RegisterLayer<OccludeInputLayer, int>(kOccludeInput);
   RegisterLayer<CSVInputLayer, int>(kCSVInput);
+  RegisterLayer<MultidstInputLayer, int>(kMultidstInput);
   RegisterLayer<ImagePreprocessLayer, int>(kImagePreprocess);
   RegisterLayer<RecordOutputLayer, int>(kRecordOutput);
   RegisterLayer<CSVOutputLayer, int>(kCSVOutput);

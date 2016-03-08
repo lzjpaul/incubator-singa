@@ -159,7 +159,7 @@ class OccludeInputLayer : public SingleLabelRecordLayer {
  * Multi destination layer that parses the value string 
  * to several destination layers.
  */
-class Multi_dstInputLayer : public SingleLabelRecordLayer {
+class MultidstInputLayer : public SingleLabelRecordLayer {
  public:
   void Setup(const LayerProto& proto, const vector<Layer*>& srclayers) override;
 
@@ -176,47 +176,47 @@ class Multi_dstInputLayer : public SingleLabelRecordLayer {
  const Blob<float>& data(const Layer* from) override{
     if (from != nullptr){
       //LOG(ERROR)<<"not nullptr";
-      if ( strcmp((from->name()).c_str(), "Group1") == 0 ) //any other better solutions?
+      if ( strcmp((from->name()).c_str(), "Group1@00") == 0 ) //any other better solutions?
         return group1_data_;
-      else if ( strcmp((from->name()).c_str(), "Group2") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group2@00") == 0 )
         return group2_data_;
-      else if ( strcmp((from->name()).c_str(), "Group3") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group3@00") == 0 )
         return group3_data_;
-      else if ( strcmp((from->name()).c_str(), "Group4") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group4@00") == 0 )
         return group4_data_;
-      else if ( strcmp((from->name()).c_str(), "Group5") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group5@00") == 0 )
         return group5_data_;
-      else if ( strcmp((from->name()).c_str(), "Group6") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group6@00") == 0 )
         return group6_data_;
-      else if ( strcmp((from->name()).c_str(), "Group7") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group7@00") == 0 )
         return group7_data_;
-      else if ( strcmp((from->name()).c_str(), "Group8") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group8@00") == 0 )
         return group8_data_;
-      else if ( strcmp((from->name()).c_str(), "Group9") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group9@00") == 0 )
         return group9_data_;
-      else if ( strcmp((from->name()).c_str(), "Group10") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group10@00") == 0 )
         return group10_data_;
-      else if ( strcmp((from->name()).c_str(), "Group11") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group11@00") == 0 )
         return group11_data_;
-      else if ( strcmp((from->name()).c_str(), "Group12") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group12@00") == 0 )
         return group12_data_;
-      else if ( strcmp((from->name()).c_str(), "Group13") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group13@00") == 0 )
         return group13_data_;
-      else if ( strcmp((from->name()).c_str(), "Group14") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group14@00") == 0 )
         return group14_data_;
-      else if ( strcmp((from->name()).c_str(), "Group15") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group15@00") == 0 )
         return group15_data_;
-      else if ( strcmp((from->name()).c_str(), "Group16") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group16@00") == 0 )
         return group16_data_;
-      else if ( strcmp((from->name()).c_str(), "Group17") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group17@00") == 0 )
         return group17_data_;
-      else if ( strcmp((from->name()).c_str(), "Group18") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group18@00") == 0 )
         return group18_data_;
-      else if ( strcmp((from->name()).c_str(), "Group19") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group19@00") == 0 )
         return group19_data_;
-      else if ( strcmp((from->name()).c_str(), "Group20") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group20@00") == 0 )
         return group20_data_;
-      else if ( strcmp((from->name()).c_str(), "Group21") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group21@00") == 0 )
         return group21_data_;
       else{
         LOG(ERROR)<<"no data returned in the Multi_distInputLayer return data_";
@@ -231,47 +231,47 @@ class Multi_dstInputLayer : public SingleLabelRecordLayer {
  Blob<float>* mutable_data(const Layer* from) override{
     if (from != nullptr){
       //LOG(ERROR)<<"not nullptr";
-      if ( strcmp((from->name()).c_str(), "Group1") == 0 ) //any other better solutions?
+      if ( strcmp((from->name()).c_str(), "Group1@00") == 0 ) //any other better solutions?
         return &group1_data_;
-      else if ( strcmp((from->name()).c_str(), "Group2") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group2@00") == 0 )
         return &group2_data_;
-      else if ( strcmp((from->name()).c_str(), "Group3") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group3@00") == 0 )
         return &group3_data_;
-      else if ( strcmp((from->name()).c_str(), "Group4") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group4@00") == 0 )
         return &group4_data_;
-      else if ( strcmp((from->name()).c_str(), "Group5") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group5@00") == 0 )
         return &group5_data_;
-      else if ( strcmp((from->name()).c_str(), "Group6") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group6@00") == 0 )
         return &group6_data_;
-      else if ( strcmp((from->name()).c_str(), "Group7") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group7@00") == 0 )
         return &group7_data_;
-      else if ( strcmp((from->name()).c_str(), "Group8") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group8@00") == 0 )
         return &group8_data_;
-      else if ( strcmp((from->name()).c_str(), "Group9") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group9@00") == 0 )
         return &group9_data_;
-      else if ( strcmp((from->name()).c_str(), "Group10") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group10@00") == 0 )
         return &group10_data_;
-      else if ( strcmp((from->name()).c_str(), "Group11") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group11@00") == 0 )
         return &group11_data_;
-      else if ( strcmp((from->name()).c_str(), "Group12") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group12@00") == 0 )
         return &group12_data_;
-      else if ( strcmp((from->name()).c_str(), "Group13") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group13@00") == 0 )
         return &group13_data_;
-      else if ( strcmp((from->name()).c_str(), "Group14") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group14@00") == 0 )
         return &group14_data_;
-      else if ( strcmp((from->name()).c_str(), "Group15") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group15@00") == 0 )
         return &group15_data_;
-      else if ( strcmp((from->name()).c_str(), "Group16") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group16@00") == 0 )
         return &group16_data_;
-      else if ( strcmp((from->name()).c_str(), "Group17") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group17@00") == 0 )
         return &group17_data_;
-      else if ( strcmp((from->name()).c_str(), "Group18") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group18@00") == 0 )
         return &group18_data_;
-      else if ( strcmp((from->name()).c_str(), "Group19") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group19@00") == 0 )
         return &group19_data_;
-      else if ( strcmp((from->name()).c_str(), "Group20") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group20@00") == 0 )
         return &group20_data_;
-      else if ( strcmp((from->name()).c_str(), "Group21") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group21@00") == 0 )
         return &group21_data_;
       else{
         LOG(ERROR)<<"no mutable_data returned in the Multi_distInputLayer return &data_";
