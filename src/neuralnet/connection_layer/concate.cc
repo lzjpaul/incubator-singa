@@ -57,7 +57,7 @@ void ConcateLayer::Setup(const LayerProto& conf,
 }
 
 void ConcateLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
-  LOG(ERROR) << "concate layer compute feature begins" << "\n";
+  // LOG(ERROR) << "concate layer compute feature begins" << "\n";
   CHECK_GT(srclayers.size(), 1);
   CHECK_EQ(num_concates_, srclayers.size());
   // calculate step for each memcpy
@@ -68,7 +68,7 @@ void ConcateLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
   int concate_offset = 0;
   auto context = Singleton<Context>::Instance();
   int device = context->device_id(std::this_thread::get_id());
-  LOG(ERROR) << "concate layer compute feature before while" << "\n";
+  // LOG(ERROR) << "concate layer compute feature before while" << "\n";
   while (concate_offset < data_.count()) {
     for (size_t i = 0; i < srclayers.size(); ++i) {
       if (device == -1) {

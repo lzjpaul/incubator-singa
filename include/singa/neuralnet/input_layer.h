@@ -178,8 +178,10 @@ class MultidstInputLayer : public SingleLabelRecordLayer {
       //LOG(ERROR)<<"not nullptr";
       if ( strcmp((from->name()).c_str(), "Group1@00") == 0 ) //any other better solutions?
         return group1_data_;
-      else if ( strcmp((from->name()).c_str(), "Group2@00") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group2@00") == 0 ){
+        // LOG(ERROR) << "return group2_data_";
         return group2_data_;
+      }
       else if ( strcmp((from->name()).c_str(), "Group3@00") == 0 )
         return group3_data_;
       else if ( strcmp((from->name()).c_str(), "Group4@00") == 0 )
@@ -224,7 +226,8 @@ class MultidstInputLayer : public SingleLabelRecordLayer {
       }
     }
     else{
-      LOG(ERROR)<<"nullptr";
+      // LOG(ERROR)<<"nullptr";
+      // LOG(ERROR) << "data shape: " << data_.shape()[3];
       return data_;
     }
   }

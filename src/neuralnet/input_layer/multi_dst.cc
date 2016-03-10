@@ -57,9 +57,10 @@ void MultidstInputLayer::Setup(const LayerProto& conf,
   group19_dim_ = conf.store_conf().group19_dim();
   group20_dim_ = conf.store_conf().group20_dim();
   group21_dim_ = conf.store_conf().group21_dim();
-  LOG(ERROR) << "batchsize: " << batchsize_;
+  // LOG(ERROR) << "batchsize: " << batchsize_;
   if (group1_dim_ != 0)
     group1_data_.Reshape(vector<int>{batchsize_, 1, 12, group1_dim_});
+  // LOG(ERROR) << "group_data_1 finished";
   if (group2_dim_ != 0)
     group2_data_.Reshape(vector<int>{batchsize_, 1, 12, group2_dim_});
   if (group3_dim_ != 0)
@@ -100,6 +101,7 @@ void MultidstInputLayer::Setup(const LayerProto& conf,
     group20_data_.Reshape(vector<int>{batchsize_, 1, 12, group20_dim_});
   if (group21_dim_ != 0)
     group21_data_.Reshape(vector<int>{batchsize_, 1, 12, group21_dim_});
+  // LOG(ERROR) << "group21 finished";
   test_sample_ = 0;
 }
 
@@ -127,8 +129,6 @@ bool MultidstInputLayer::Parse(int k, int flag, const string& key,
   if (image.data_size() != 15036)
     LOG(ERROR) << "image.data_size(): " << image.data_size();
   if (image.data_size()) {
-    if ( test_sample_ % 3000 == 0 )
-      LOG(ERROR) << "begin step: " << (test_sample_)/batchsize_;
     CHECK_EQ(size, image.data_size());
     float* ptr = data_.mutable_cpu_data() + k * size;
     float* group1dptr;
@@ -373,6 +373,10 @@ bool MultidstInputLayer::Parse(int k, int flag, const string& key,
         j_dim ++;
       }
     }
+    CHECK_EQ(group21_data_.mutable_cpu_data() + (k+1) * group21_dim_ * 12, group21dptr);
+    CHECK_EQ(group12_data_.mutable_cpu_data() + (k+1) * group12_dim_ * 12, group12dptr);
+    CHECK_EQ(group7_data_.mutable_cpu_data() + (k+1) * group7_dim_ * 12, group7dptr);
+    CHECK_EQ(group2_data_.mutable_cpu_data() + (k+1) * group2_dim_ * 12, group2dptr);
     /*end multi-dst*/
   } else if (image.pixel().size()) {
     CHECK_EQ(size, image.pixel().size());

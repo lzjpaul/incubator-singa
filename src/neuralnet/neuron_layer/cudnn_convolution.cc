@@ -20,6 +20,7 @@
 *************************************************************/
 
 #include "singa/neuralnet/neuron_layer.h"
+#include "singa/utils/math_blob.h"
 
 namespace singa {
 
@@ -32,6 +33,7 @@ CudnnConvLayer::~CudnnConvLayer() {
 }
 
 void CudnnConvLayer::InitCudnn() {
+  // LOG(ERROR) << "conv init";
   CudnnBase::InitCudnn();
   // convert MB to bytes
   workspace_byte_limit_
@@ -135,11 +137,12 @@ void CudnnConvLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
   if (!has_init_cudnn_)
     InitCudnn();
   float alpha = 1.f, beta = 0.f;
-  LOG(ERROR) << "layer name: " << this->name();
-  LOG(ERROR) << "convolution src data shape0: " << srclayers[0]->data(this).shape()[0];
-  LOG(ERROR) << "convolution src data shape1: " << srclayers[0]->data(this).shape()[1];
-  LOG(ERROR) << "convolution src data shape2: " << srclayers[0]->data(this).shape()[2];
-  LOG(ERROR) << "convolution src data shape3: " << srclayers[0]->data(this).shape()[3];
+  // LOG(ERROR) << "layer name: " << this->name();
+  // LOG(ERROR) << "convolution src data shape0: " << srclayers[0]->data(this).shape()[0];
+  // LOG(ERROR) << "convolution src data shape1: " << srclayers[0]->data(this).shape()[1];
+  // LOG(ERROR) << "convolution src data shape2: " << srclayers[0]->data(this).shape()[2];
+  // LOG(ERROR) << "convolution src data shape3: " << srclayers[0]->data(this).shape()[3];
+  // LOG(ERROR) << "convolution data absolute value: "  << Asum(srclayers[0]->data(this));
   Blob<float> workspace(vector<int>{static_cast<int>(workspace_count_)});
   CHECK_CUDNN(cudnnConvolutionForward(handle_,
         &alpha,

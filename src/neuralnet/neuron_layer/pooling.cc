@@ -31,9 +31,11 @@ using std::vector;
 /******************** Implementation for PoolingLayer******************/
 void PoolingLayer::Setup(const LayerProto& conf,
     const vector<Layer*>& srclayers) {
+  // LOG(ERROR) << "pooling setup";
   Layer::Setup(conf, srclayers);
   CHECK_EQ(srclayers.size(), 1);
   PoolingProto pool_conf = conf.pooling_conf();
+  // LOG(ERROR) << "after Layer Setup";
   if (pool_conf.has_kernel()) {
     kernel_x_ = kernel_y_ = pool_conf.kernel();
   } else {
@@ -61,8 +63,15 @@ void PoolingLayer::Setup(const LayerProto& conf,
   CHECK(pool_ == PoolingProto_PoolMethod_AVG
         || pool_ == PoolingProto_PoolMethod_MAX)
         << "Padding implemented only for average and max pooling.";
+  // LOG(ERROR) << "before srclayers[0]->data(this).shape(): " << srclayers[0]->name();
   const auto& srcshape = srclayers[0]->data(this).shape();
+  // LOG(ERROR) << "after srclayers[0]->data(this).shape(): " << srclayers[0]->name();
   int dim = srcshape.size();
+  // LOG(ERROR) << "dim: " << dim;
+  // LOG(ERROR) << "srclayers[0]->data(this).shape()[0]: " << srclayers[0]->data(this).shape()[0];
+  // LOG(ERROR) << "srclayers[0]->data(this).shape()[1]: " << srclayers[0]->data(this).shape()[1];
+  // LOG(ERROR) << "srclayers[0]->data(this).shape()[2]: " << srclayers[0]->data(this).shape()[2];
+  // LOG(ERROR) << "srclayers[0]->data(this).shape()[3]: " << srclayers[0]->data(this).shape()[3];
   CHECK_GT(dim, 2);
   width_ = srcshape[dim - 1];
   height_ = srcshape[dim - 2];
@@ -75,8 +84,11 @@ void PoolingLayer::Setup(const LayerProto& conf,
       (height_ + 2 * pad_y_- kernel_y_) / stride_y_) + 1;
   pooled_width_ = static_cast<int>(
       (width_ + 2* pad_x_ - kernel_x_) / stride_x_) + 1;
+  // LOG(ERROR) << "before data rehape";
+  // LOG(ERROR) << "batchsize_: " << batchsize_ << " channels: " << channels_ << " pooled_height_: " << pooled_height_ << " pooled_width_: " << pooled_width_;
   data_.Reshape(vector<int>{batchsize_, channels_, pooled_height_,
                             pooled_width_});
+  // LOG(ERROR) << "after data reshape";
   grad_.ReshapeLike(data_);
 }
 
@@ -110,6 +122,7 @@ void PoolingLayer::ComputeGradient(int flag, const vector<Layer*>& srclayers) {
 
 void CPoolingLayer::Setup(const LayerProto& conf,
     const vector<Layer*>& srclayers) {
+  LOG(ERROR) << "Cpooling setup";
   PoolingLayer::Setup(conf, srclayers);
   if (pool_ == PoolingProto_PoolMethod_MAX)
       mask_.ReshapeLike(data_);

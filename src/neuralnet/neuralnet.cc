@@ -116,13 +116,17 @@ NeuralNet* NeuralNet::Create(const NetProto& net_conf, Phase phase,
 
 NeuralNet::NeuralNet(NetProto netproto, int npartitions) {
   LOG(INFO) << "Constructing NeuralNet...";
+  // LOG(ERROR) << "Constructing NeuralNet...";
   auto graph = CreateGraph(netproto, npartitions);
+  // LOG(ERROR) << "Creating Net...";
   CreateNetFromGraph(graph);
+  // LOG(ERROR) << "Net finished...";
   PrepareDataStructures();
   for (Node* node : graph->nodes())
     delete static_cast<LayerProto*>(node->proto);
   delete graph;
   LOG(INFO) << "NeuralNet Constructed";
+  // LOG(ERROR) << "NeuralNet Constructed";
 }
 
 NeuralNet::~NeuralNet() {
@@ -420,6 +424,7 @@ Graph* NeuralNet::CreateGraph(const NetProto& netproto, int npartitions) {
 
 void NeuralNet::CreateNetFromGraph(Graph* graph) {
   // create one layer per node
+  // LOG(ERROR) << "create one layer per node";
   for (Node* node : graph->nodes()) {
     auto proto_ptr = static_cast<LayerProto*>(node->proto);
     auto layer = Layer::Create(*proto_ptr);
@@ -427,6 +432,7 @@ void NeuralNet::CreateNetFromGraph(Graph* graph) {
     name2layer_[node->name] = layer;
   }
   // connect layers
+  // LOG(ERROR) << "connect layers";
   for (Node* node : graph->nodes()) {
     auto layer = name2layer(node->name);
     src_map_[layer] = vector<Layer*>{};
@@ -434,15 +440,19 @@ void NeuralNet::CreateNetFromGraph(Graph* graph) {
       src_map_[layer].push_back(name2layer(src->name));
   }
   // setup layers
+  // LOG(ERROR) << "setup layers";
   int paramid = 0;
   map<string, string> layerinfo;
   map<string, vector<Layer*>> share_param_layers;
   for (Node* node : graph->nodes()) {
     LOG(INFO) << "constructing graph: " << node->name;
+    // LOG(ERROR) << "constructing graph node name: " << node->name;
     auto layer = name2layer(node->name);
     layer->Setup(*(static_cast<LayerProto*>(node->proto)), srclayers(layer));
     DLOG(INFO) << "constructing graph: " << layer->name();
+    // LOG(ERROR) << "constructing graph: " << layer->name();
     layerinfo[layer->name()] = IntVecToString(layer->data(nullptr).shape());
+    // LOG(ERROR) << "constructing graph finished: " << layer->name();
     string param_name = "$";
     for (auto param : layer->GetParams()) {
       param->set_id(paramid++);
@@ -456,6 +466,7 @@ void NeuralNet::CreateNetFromGraph(Graph* graph) {
       share_param_layers[node->origin].push_back(layer);
   }
   // create map from param name to param ptr
+  // LOG(ERROR) << "create map from param name to param ptr";
   std::unordered_map<string, Param*> name2param;
   for (auto layer : layers_) {
     for (auto param : layer->GetParams()) {
@@ -468,6 +479,7 @@ void NeuralNet::CreateNetFromGraph(Graph* graph) {
       name2param.at(param->name()) = param;
   }
   // share params based on share_from field
+  // LOG(ERROR) << "share params based on share_from field";
   for (auto & entry : name2param) {
     Param* param = entry.second;
     const string share_from = param->share_from();
@@ -480,6 +492,7 @@ void NeuralNet::CreateNetFromGraph(Graph* graph) {
     }
   }
   // share Params for layers generated (partitioned) from the same origin layer
+  // LOG(ERROR) << "share Params for layers generated (partitioned) from the same origin layer";
   for (auto & entry : share_param_layers) {
     const auto& owner = entry.second.begin();
     const auto& owner_params = (*owner)->GetParams();
