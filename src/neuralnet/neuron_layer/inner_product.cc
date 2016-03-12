@@ -57,11 +57,14 @@ void InnerProductLayer::Setup(const LayerProto& conf,
 
 void InnerProductLayer::ComputeFeature(int flag,
     const vector<Layer*>& srclayers) {
+  // LOG(ERROR) << "layer name: " << this->name();
+  // LOG(ERROR) << "inner compute feature";
   if (transpose_)
     MMDot(srclayers[0]->data(this), weight_->data(), &data_);
   else
     MMDot(srclayers[0]->data(this), weight_->data().T(), &data_);
   MVAddRow(bias_->data(), &data_);
+  // LOG(ERROR) << "inner ends";
 }
 
 void InnerProductLayer::ComputeGradient(int flag,

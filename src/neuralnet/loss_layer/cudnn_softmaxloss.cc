@@ -45,6 +45,7 @@ void CudnnSoftmaxLossLayer::Setup(const LayerProto& conf,
 }
 void CudnnSoftmaxLossLayer::ComputeFeature(int flag,
     const vector<Layer*>& srclayers) {
+  // LOG(ERROR) << "CudnnSoftmaxLoss compute feature";
   softmax_.ComputeFeature(flag, srclayers);
   Blob<int> label(batchsize_);
   int *labelptr = label.mutable_cpu_data();
@@ -58,7 +59,7 @@ void CudnnSoftmaxLossLayer::ComputeFeature(int flag,
       label.gpu_data(), loss.mutable_gpu_data());
   loss_ += Asum(loss);
   counter_++;
-
+  // LOG(ERROR) << "before print AUC";
   // print AUC and result
   ofstream probmatout;
   ofstream labelout;
@@ -134,10 +135,12 @@ void CudnnSoftmaxLossLayer::ComputeFeature(int flag,
   }*/
   /*LOG(ERROR) << "test_prob size: " << test_prob.size() << " test_label size: " << test_label.size();
   LOG(ERROR) << "valid_prob size: " << valid_prob.size() << " valid_label size: " << valid_label.size();*/
+  // LOG(ERROR) << "SoftmaxLoss compute feature ends";
 }
 
 void CudnnSoftmaxLossLayer::ComputeGradient(int flag,
     const vector<Layer*>& srclayers) {
+  // LOG(ERROR) << "softmax compute gradients begins";
   Blob<float>* gsrcblob = srclayers[0]->mutable_grad(this);
   Copy(data_, gsrcblob);
   // gsrcblob->CopyFrom(data_);

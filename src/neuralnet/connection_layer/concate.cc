@@ -61,45 +61,65 @@ void ConcateLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
   CHECK_GT(srclayers.size(), 1);
   CHECK_EQ(num_concates_, srclayers.size());
   // calculate step for each memcpy
-  int step = srclayers[0]->data(this).shape()[concate_dim_];
-  for (unsigned i = concate_dim_ + 1; i < data_.shape().size(); ++i)
-    step *= data_.shape()[i];
-  int srclayer_offset = 0;
+  int step[srclayers.size()];
+  for (unsigned i = 0; i < srclayers.size(); i++)
+    step[i] = srclayers[i]->data(this).shape()[concate_dim_];
+  for (unsigned j = 0; j < srclayers.size(); j++)
+    for (unsigned i = concate_dim_ + 1; i < data_.shape().size(); ++i)
+      step[j] *= srclayers[j]->data(this).shape()[i];
+  int srclayer_offset[srclayers.size()];
+  for (unsigned i = 0; i < srclayers.size(); i++)
+    srclayer_offset[i] = 0;
   int concate_offset = 0;
   auto context = Singleton<Context>::Instance();
   int device = context->device_id(std::this_thread::get_id());
   // LOG(ERROR) << "concate layer compute feature before while" << "\n";
   while (concate_offset < data_.count()) {
     for (size_t i = 0; i < srclayers.size(); ++i) {
+      // LOG(ERROR) << "i: " << i;
       if (device == -1) {
         const float* src = srclayers[i]->data(this).cpu_data()
-          + srclayer_offset;
+          + srclayer_offset[i];
         float* dst = data_.mutable_cpu_data() + concate_offset;
-        memcpy(dst, src, step * sizeof(float));
+        memcpy(dst, src, step[i] * sizeof(float));
       } else {
 #ifdef USE_GPU
         const float* src = srclayers[i]->data(this).gpu_data()
-          + srclayer_offset;
+          + srclayer_offset[i];
         float* dst = data_.mutable_gpu_data() + concate_offset;
-        cudaMemcpy(dst, src, step * sizeof(float), cudaMemcpyDefault);
+        cudaMemcpy(dst, src, step[i] * sizeof(float), cudaMemcpyDefault);
 #else
         LOG(FATAL) << "GPU is supported";
 #endif
       }
-      concate_offset += step;
+      concate_offset += step[i];
     }
-    srclayer_offset += step;
+    // LOG(ERROR) << "finish for";
+    for (unsigned i = 0; i < srclayers.size(); i++)
+      srclayer_offset[i] += step[i];
+    // LOG(ERROR) << "after srclayer_offset +";
   }
+  CHECK_EQ(srclayer_offset[0], srclayers[0]->data(this).count());
+  CHECK_EQ(srclayer_offset[4], srclayers[4]->data(this).count());
+  CHECK_EQ(srclayer_offset[10], srclayers[10]->data(this).count());
+  CHECK_EQ(srclayer_offset[13], srclayers[13]->data(this).count());
+  CHECK_EQ(concate_offset, data_.count());
+  // LOG(ERROR) << "concate computefeature finish";
 }
 
 void ConcateLayer::ComputeGradient(int flag, const vector<Layer*>& srclayers) {
   CHECK_GT(srclayers.size(), 1);
   CHECK_EQ(num_concates_, srclayers.size());
   // calculate step for each memcpy
-  int step = srclayers[0]->grad(this).shape()[concate_dim_];
-  for (unsigned i = concate_dim_ + 1; i < grad_.shape().size(); ++i)
-    step *= grad_.shape()[i];
-  int srclayer_offset = 0;
+  int step[srclayers.size()];
+  for (unsigned i = 0; i < srclayers.size(); i++)
+    step[i] = srclayers[i]->grad(this).shape()[concate_dim_];
+  for (unsigned j = 0; j < srclayers.size(); j++)
+    for (unsigned i = concate_dim_ + 1; i < grad_.shape().size(); ++i)
+      step[j] *= srclayers[j]->grad(this).shape()[i];
+  int srclayer_offset[srclayers.size()];
+  for (unsigned i = 0; i < srclayers.size(); i++)
+    srclayer_offset[i] = 0;
   int concate_offset = 0;
   auto context = Singleton<Context>::Instance();
   int device = context->device_id(std::this_thread::get_id());
@@ -108,21 +128,22 @@ void ConcateLayer::ComputeGradient(int flag, const vector<Layer*>& srclayers) {
       if (device == -1) {
         const float* src = grad_.cpu_data() + concate_offset;
         float* dst = srclayers[i]->mutable_grad(this)->mutable_cpu_data()
-          + srclayer_offset;
-        memcpy(dst, src, step * sizeof(float));
+          + srclayer_offset[i];
+        memcpy(dst, src, step[i] * sizeof(float));
       } else {
 #ifdef USE_GPU
         const float* src = grad_.gpu_data() + concate_offset;
         float* dst = srclayers[i]->mutable_grad(this)->mutable_gpu_data()
-          + srclayer_offset;
-        cudaMemcpy(dst, src, step * sizeof(float), cudaMemcpyDefault);
+          + srclayer_offset[i];
+        cudaMemcpy(dst, src, step[i] * sizeof(float), cudaMemcpyDefault);
 #else
         LOG(FATAL) << "GPU is supported";
 #endif
       }
-      concate_offset += step;
+      concate_offset += step[i];
     }
-    srclayer_offset += step;
+    for (unsigned i = 0; i < srclayers.size(); i++)
+      srclayer_offset[i] += step[i];
   }
 }
 

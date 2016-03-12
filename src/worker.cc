@@ -79,7 +79,9 @@ void Worker::Run() {
     if (ValidateNow(step_) && val_net_ != nullptr) {
       CollectAll(step_, train_net_);
       LOG(ERROR) << "Validation @ step " + std::to_string(step_);
+      LOG(ERROR) << "before validate";
       Test(job_conf_.validate_steps(), kVal, val_net_);
+      LOG(ERROR) << "after validate";
     }
     if (TestNow(step_) && test_net_ != nullptr) {
       CollectAll(step_, train_net_);
@@ -91,7 +93,9 @@ void Worker::Run() {
       Checkpoint(step_, Cluster::Get()->checkpoint_folder(), train_net_);
       job_conf_.set_step(step_);
     }
+    // LOG(ERROR) << "before train one batch";
     TrainOneBatch(step_, train_net_);
+    // LOG(ERROR) << "after train one batch";
     if (DisplayNow(step_) && grp_id_ == 0 && id_ == 0) {
       Display(kTrain | kForward | kBackward,
           "Train @ step " + std::to_string(step_), train_net_);
@@ -331,7 +335,9 @@ void BPWorker::TrainOneBatch(int step, NeuralNet* net) {
 }
 
 void BPWorker::TestOneBatch(int step, Phase phase, NeuralNet* net) {
+  // LOG(ERROR) << "before TestOneBatch Forward";
   Forward(step, phase, net);
+  // LOG(ERROR) << "after TestOneBatch Forward";
 }
 
 void BPWorker::Forward(int step, Phase phase, NeuralNet* net) {
@@ -346,15 +352,18 @@ void BPWorker::Forward(int step, Phase phase, NeuralNet* net) {
       }
       // LOG(ERROR) << layer->name() << " forward";
       layer->ComputeFeature(phase | kForward, net->srclayers(layer));
+      // LOG(ERROR) << layer->name() << " forward ends";
       if (job_conf_.debug() && grp_id_ == 0)
         label[layer->name()] = layer->ToString(true, phase | kForward);
     }
   }
+  // LOG(ERROR) << "before label.size";
   if (label.size()) {
     const string path = Cluster::Get()->vis_folder() + "/fp-step"
       + std::to_string(step) +"-loc" + std::to_string(id_) + ".json";
     WriteStringToTextFile(path, net->ToGraph(false).ToJson(label));
   }
+  // LOG(ERROR) << "after label.size";
 }
 
 void BPWorker::Backward(int step, NeuralNet* net) {
@@ -363,6 +372,7 @@ void BPWorker::Backward(int step, NeuralNet* net) {
   for (auto it = layers.rbegin(); it != layers.rend(); it++) {
     Layer* layer = *it;
     if (layer->partition_id() == id_) {
+      // LOG(ERROR) << layer->name() << " backward";
       layer->ComputeGradient(kTrain | kBackward, net->srclayers(layer));
       if (job_conf_.debug() && grp_id_ == 0)
         label[layer->name()] = layer->ToString(true, kTrain | kBackward);
