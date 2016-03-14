@@ -331,6 +331,7 @@ void Worker::Display(int flag, const std::string& prefix, NeuralNet* net) {
 /****************************BPWorker**********************************/
 void BPWorker::TrainOneBatch(int step, NeuralNet* net) {
   Forward(step, kTrain, net);
+  // LOG(ERROR) << "finish TrainOneBatch Forward";
   Backward(step, net);
 }
 
