@@ -373,10 +373,13 @@ bool MultidstInputLayer::Parse(int k, int flag, const string& key,
         j_dim ++;
       }
     }
-    CHECK_EQ(group21_data_.mutable_cpu_data() + (k+1) * group21_dim_ * 12, group21dptr);
-    CHECK_EQ(group12_data_.mutable_cpu_data() + (k+1) * group12_dim_ * 12, group12dptr);
-    CHECK_EQ(group7_data_.mutable_cpu_data() + (k+1) * group7_dim_ * 12, group7dptr);
+    // CHECK_EQ(group21_data_.mutable_cpu_data() + (k+1) * group21_dim_ * 12, group21dptr);
+    // CHECK_EQ(group12_data_.mutable_cpu_data() + (k+1) * group12_dim_ * 12, group12dptr);
+    // CHECK_EQ(group7_data_.mutable_cpu_data() + (k+1) * group7_dim_ * 12, group7dptr);
     CHECK_EQ(group2_data_.mutable_cpu_data() + (k+1) * group2_dim_ * 12, group2dptr);
+    CHECK_EQ(group1_data_.mutable_cpu_data() + (k+1) * group1_dim_ * 12, group1dptr);
+    CHECK_EQ(group3_data_.mutable_cpu_data() + (k+1) * group3_dim_ * 12, group3dptr);
+    CHECK_EQ(group4_data_.mutable_cpu_data() + (k+1) * group4_dim_ * 12, group4dptr);
     /*end multi-dst*/
   } else if (image.pixel().size()) {
     CHECK_EQ(size, image.pixel().size());

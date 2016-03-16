@@ -18,8 +18,7 @@
 * under the License.
 *
 *************************************************************/
-/*1 600 2 n, n is varying...
-  at the end of Setup, add concate_dim_ = 1 manualy*/
+
 #include "singa/neuralnet/connection_layer.h"
 #include "singa/utils/singleton.h"
 #include "singa/utils/context.h"
@@ -37,10 +36,10 @@ void ConcateLayer::Setup(const LayerProto& conf,
   CHECK_GE(concate_dim_, 0);
   CHECK_LT(concate_dim_, shape.size());
   CHECK_EQ(num_concates_, srclayers.size());
-  // LOG(ERROR) << "src layer0 concate shape 0: " << srclayers[0]->data(this).shape()[0] << "\n";
-  // LOG(ERROR) << "src layer0 concate shape 1: " << srclayers[0]->data(this).shape()[1] << "\n";
-  // LOG(ERROR) << "src layer0 concate shape 2: " << srclayers[0]->data(this).shape()[2] << "\n";
-  // LOG(ERROR) << "src layer0 concate shape 3: " << srclayers[0]->data(this).shape()[3] << "\n";
+  LOG(ERROR) << "src layer0 concate shape 0: " << srclayers[0]->data(this).shape()[0] << "\n";
+  LOG(ERROR) << "src layer0 concate shape 1: " << srclayers[0]->data(this).shape()[1] << "\n";
+  LOG(ERROR) << "src layer0 concate shape 2: " << srclayers[0]->data(this).shape()[2] << "\n";
+  LOG(ERROR) << "src layer0 concate shape 3: " << srclayers[0]->data(this).shape()[3] << "\n";
   for (size_t i = 1; i < srclayers.size(); i++) {
     const vector<int>& src_shape = srclayers[i]->data(this).shape();
     for (size_t j = 0; j < shape.size(); j++)
@@ -55,13 +54,10 @@ void ConcateLayer::Setup(const LayerProto& conf,
   LOG(ERROR) << "concate shape 3 used for fan_out: " << shape[3] << "\n";
   data_.Reshape(shape);
   grad_.Reshape(shape);
-  concate_dim_ = 1;
-  if (concate_dim_ == 1)
-    LOG(ERROR) << "Attention, the concate_dim_ is manually set to 1";
 }
 
 void ConcateLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
-  // LOG(ERROR) << "concate layer compute feature begins concate dim: " << concate_dim_;
+  // LOG(ERROR) << "concate layer compute feature begins" << "\n";
   CHECK_GT(srclayers.size(), 1);
   CHECK_EQ(num_concates_, srclayers.size());
   // calculate step for each memcpy
@@ -105,10 +101,8 @@ void ConcateLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
   }
   CHECK_EQ(srclayer_offset[0], srclayers[0]->data(this).count());
   CHECK_EQ(srclayer_offset[1], srclayers[1]->data(this).count());
-  if (srclayers.size() > 4){
-    CHECK_EQ(srclayer_offset[5], srclayers[5]->data(this).count());
-    CHECK_EQ(srclayer_offset[6], srclayers[6]->data(this).count());
-  }
+  CHECK_EQ(srclayer_offset[2], srclayers[2]->data(this).count());
+  CHECK_EQ(srclayer_offset[3], srclayers[3]->data(this).count());
   CHECK_EQ(concate_offset, data_.count());
   // LOG(ERROR) << "concate computefeature finish";
 }

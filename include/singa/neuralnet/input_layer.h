@@ -176,16 +176,22 @@ class MultidstInputLayer : public SingleLabelRecordLayer {
  const Blob<float>& data(const Layer* from) override{
     if (from != nullptr){
       //LOG(ERROR)<<"not nullptr";
-      if ( strcmp((from->name()).c_str(), "Group1@00") == 0 ) //any other better solutions?
+      if ( strcmp((from->name()).c_str(), "Group1@00") == 0 || strcmp((from->name()).c_str(), "Group1f1@00") == 0 ){ //any other better solutions?
+      //  LOG(ERROR) << "return group1_data_";
         return group1_data_;
-      else if ( strcmp((from->name()).c_str(), "Group2@00") == 0 ){
-        // LOG(ERROR) << "return group2_data_";
+      }
+      else if ( strcmp((from->name()).c_str(), "Group2@00") == 0 || strcmp((from->name()).c_str(), "Group2f1@00") == 0 ){
+      //  LOG(ERROR) << "return group2_data_";
         return group2_data_;
       }
-      else if ( strcmp((from->name()).c_str(), "Group3@00") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group3@00") == 0 || strcmp((from->name()).c_str(), "Group3f1@00") == 0 ){
+      //  LOG(ERROR) << "return group3_data_";
         return group3_data_;
-      else if ( strcmp((from->name()).c_str(), "Group4@00") == 0 )
+      }
+      else if ( strcmp((from->name()).c_str(), "Group4@00") == 0 || strcmp((from->name()).c_str(), "Group4f1@00") == 0 ){
+        // LOG(ERROR) << "return group4__data_";
         return group4_data_;
+      }
       else if ( strcmp((from->name()).c_str(), "Group5@00") == 0 )
         return group5_data_;
       else if ( strcmp((from->name()).c_str(), "Group6@00") == 0 )
@@ -234,13 +240,13 @@ class MultidstInputLayer : public SingleLabelRecordLayer {
  Blob<float>* mutable_data(const Layer* from) override{
     if (from != nullptr){
       //LOG(ERROR)<<"not nullptr";
-      if ( strcmp((from->name()).c_str(), "Group1@00") == 0 ) //any other better solutions?
+      if ( strcmp((from->name()).c_str(), "Group1@00") == 0 || strcmp((from->name()).c_str(), "Group1f1@00") == 0 ) //any other better solutions?
         return &group1_data_;
-      else if ( strcmp((from->name()).c_str(), "Group2@00") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group2@00") == 0 || strcmp((from->name()).c_str(), "Group2f1@00") == 0 )
         return &group2_data_;
-      else if ( strcmp((from->name()).c_str(), "Group3@00") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group3@00") == 0 || strcmp((from->name()).c_str(), "Group3f1@00") == 0 )
         return &group3_data_;
-      else if ( strcmp((from->name()).c_str(), "Group4@00") == 0 )
+      else if ( strcmp((from->name()).c_str(), "Group4@00") == 0 || strcmp((from->name()).c_str(), "Group4f1@00") == 0 )
         return &group4_data_;
       else if ( strcmp((from->name()).c_str(), "Group5@00") == 0 )
         return &group5_data_;

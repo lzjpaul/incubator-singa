@@ -142,7 +142,8 @@ void CudnnConvLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
   // LOG(ERROR) << "convolution src data shape1: " << srclayers[0]->data(this).shape()[1];
   // LOG(ERROR) << "convolution src data shape2: " << srclayers[0]->data(this).shape()[2];
   // LOG(ERROR) << "convolution src data shape3: " << srclayers[0]->data(this).shape()[3];
-  // LOG(ERROR) << "convolution data absolute value: "  << Asum(srclayers[0]->data(this));
+  // LOG(ERROR) << "convolution src data absolute value: "  << Asum(srclayers[0]->data(this));
+  
   Blob<float> workspace(vector<int>{static_cast<int>(workspace_count_)});
   CHECK_CUDNN(cudnnConvolutionForward(handle_,
         &alpha,
