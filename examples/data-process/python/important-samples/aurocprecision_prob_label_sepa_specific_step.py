@@ -36,7 +36,7 @@ for j in range(len(pre_AUC_matrix_test[:,0])):
     else:
         print "specific step = \n", specific_step
         y_true, y_scores = all_label_matrix[(j*valid_test_num):(j*valid_test_num+valid_test_num),0].astype(np.int), all_prob_matrix[(j*valid_test_num):(j*valid_test_num+valid_test_num),0].astype(np.float) #modify here0:1018!!!!!!! less than 1018
-
+         
         num_label_0 = 0
         for i in range(valid_num, valid_test_num):
             if y_true[i] == 0:
@@ -84,6 +84,8 @@ for j in range(len(pre_AUC_matrix_test[:,0])):
 
         pre_AUC_matrix_test[j,1] = roc_auc_score(y_true[valid_num: valid_test_num], y_scores[valid_num:valid_test_num])
         print "test AUC = \n", roc_auc_score(y_true[valid_num: valid_test_num], y_scores[valid_num:valid_test_num])
+        a = numpy.asarray(y_scores[valid_num:valid_test_num], dtype = float)
+        numpy.savetxt("test_y_scores_for_check.csv", a, fmt = '%6f', delimiter=",") #modify here
         break
 
 a = numpy.asarray(label_0_probs[:, 0][np.argsort(label_0_probs[:, 1])][0:print_top_k], dtype = int)
