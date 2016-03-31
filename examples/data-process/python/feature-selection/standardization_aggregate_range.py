@@ -16,6 +16,7 @@ def readData(filename):
 train_data = readData(sys.argv[3])  #modify here
 train_matrix = np.array(train_data[0:])[:,0:]
 train_matrix = train_matrix.astype(np.float)
+print "train_matrix.shape = \n", train_matrix.shape
 
 fea_num = int (sys.argv[1]) # 1253
 time_dimension = int (sys.argv[2]) # 12
