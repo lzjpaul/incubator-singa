@@ -27,6 +27,7 @@ namespace singa {
 
 void ConcateLayer::Setup(const LayerProto& conf,
                          const vector<Layer*>& srclayers) {
+  // LOG(ERROR) << "concate layer setup";
   CHECK_GT(srclayers.size(), 1);
   Layer::Setup(conf, srclayers);
   vector<int> shape = srclayers[0]->data(this).shape();
@@ -35,7 +36,9 @@ void ConcateLayer::Setup(const LayerProto& conf,
   CHECK_GE(concate_dim_, 0);
   CHECK_LT(concate_dim_, shape.size());
   CHECK_EQ(num_concates_, srclayers.size());
+  LOG(ERROR) << 0 << "th src layer: " << srclayers[0]->name();
   for (size_t i = 1; i < srclayers.size(); i++) {
+    LOG(ERROR) << i << "th src layer: " << srclayers[i]->name();
     const vector<int>& src_shape = srclayers[i]->data(this).shape();
     for (size_t j = 0; j < shape.size(); j++)
       if (static_cast<int>(j) == concate_dim_)

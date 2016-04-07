@@ -63,6 +63,7 @@ NeuralNet* NeuralNet::Create(const NetProto& net_conf, Phase phase,
   const NetProto& full_net_conf = NetConfPreprocess(net_conf);
   NetProto conf = full_net_conf;
   conf.clear_layer();
+  LOG(ERROR) << "neural net constructed";
   // flag=0: neither exclude nor include field appears
   // flag=1: exclude field appears
   // flag=2: include field appears
