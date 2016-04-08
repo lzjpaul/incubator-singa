@@ -237,7 +237,7 @@ void Worker::Checkpoint(int step, const std::string& folder, NeuralNet* net) {
   char buf[256];
   snprintf(buf, sizeof(buf), "%s/step%d-worker%d", folder.c_str(), step, id_);
   LOG(INFO) << "checkpoint to " << buf;
-  WriteProtoToBinaryFile(bps, buf);
+  // WriteProtoToBinaryFile(bps, buf);
 }
 
 int Worker::Put(int step, Param* param) {
@@ -351,9 +351,9 @@ void BPWorker::Forward(int step, Phase phase, NeuralNet* net) {
           Collect(step, p);
         }
       }
-      // LOG(ERROR) << layer->name() << " forward";
+      LOG(ERROR) << layer->name() << " forward";
       layer->ComputeFeature(phase | kForward, net->srclayers(layer));
-      // LOG(ERROR) << layer->name() << " forward ends";
+      LOG(ERROR) << layer->name() << " forward ends";
       if (job_conf_.debug() && grp_id_ == 0)
         label[layer->name()] = layer->ToString(true, phase | kForward);
     }

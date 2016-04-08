@@ -77,4 +77,4 @@ a = numpy.asarray(correct_1_data_matrix, dtype = int)
 numpy.savetxt(sys.argv[6], a, fmt = '%d', delimiter=",") #modify here
 a = numpy.asarray(vague_data_matrix, dtype = int)
 numpy.savetxt(sys.argv[7], a, fmt = '%d', delimiter=",") #modify here
-# python select_correct_0_correct_1_vague.py train_index_1.csv NUH_DS_SOC_READMIT_DIAG_LAB_INOUT_CNN_SAMPLE_LABEL_copy.csv NUH_DS_SOC_READMIT_DIAG_LAB_INOUT_CNN_SAMPLE_LABEL_train.csv NUH_DS_SOC_READMIT_DIAG_LAB_INOUT_CNN_SAMPLE_LABEL_test.csv NUH_DS_SOC_READMIT_DIAG_LAB_INOUT_CNN_SAMPLE_LABEL_valid.csv
+# python select_correct_0_correct_1_vague.py NUH_DS_SOC_READMIT_DIAG_LAB_INOUT_CNN_SAMPLE_LABEL_test.csv correct_label_0_index.csv correct_label_1_index.csv vague_index.csv correct_label_0_data.csv correct_label_1_data.csv vague_data.csv

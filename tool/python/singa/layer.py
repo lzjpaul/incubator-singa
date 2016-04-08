@@ -260,6 +260,15 @@ class RGB(Layer):
                                   type=self.layer_type)
         self.layer.rgbimage_conf.meanfile = meanfile
 
+class Concate(Layer):
+
+    def __init__(self, dim, num):
+        self.name = 'concate'
+        self.layer_type = kConcate
+        super(Concate, self).__init__(name=generate_name(self.name), type=self.layer_type)
+        setval(self.layer.concate_conf, concate_dim=dim)
+        setval(self.layer.concate_conf, num_concates=num)
+
 class Dense(Layer):
 
     def __init__(self, output_dim=0, activation=None,

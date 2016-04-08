@@ -55,6 +55,7 @@ class Model(object):
         self.result = None
         self.last_checkpoint_path = None
         self.cudnn = False
+        self.modeltype = 'Sequential'
 
     def add(self, layer):
         '''
@@ -118,39 +119,41 @@ class Model(object):
         construct neuralnet proto
         '''
         net = NetProto()
-        slyname = self.layers[0].layer.name
-        for i in range(len(self.layers)):
-            ly = net.layer.add()
-            ly.CopyFrom(self.layers[i].layer)
-            lastly = ly
-            if self.layers[i].is_datalayer == True:
-                continue
-            getattr(ly, 'srclayers').append(slyname)
-            slyname = ly.name
-            if hasattr(self.layers[i], 'mask'):
-                mly = net.layer.add()
-                mly.CopyFrom(self.layers[i].mask)
-                getattr(mly, 'srclayers').append(slyname)
-                slyname = mly.name
-                lastly = mly
-            if hasattr(self.layers[i], 'bidirect'):
-                bly = net.layer.add()
-                bly.CopyFrom(self.layers[i].bidirect)
-                getattr(bly, 'srclayers').append(slyname)
+        if self.modeltype == 'Nonsequential':
+            for i in range(len(self.layers)):
+                ly = net.layer.add()
+                ly.CopyFrom(self.layers[i].layer)
+        else:
+            print "Sequential build"
+            slyname = self.layers[0].layer.name
+            for i in range(len(self.layers)):
+                ly = net.layer.add()
+                ly.CopyFrom(self.layers[i].layer)
+                lastly = ly
+                if self.layers[i].is_datalayer == True:
+                    continue
+                getattr(ly, 'srclayers').append(slyname)
+                print "layer name: ", slyname
+                slyname = ly.name
+                if hasattr(self.layers[i], 'mask'):
+                    mly = net.layer.add()
+                    mly.CopyFrom(self.layers[i].mask)
+                    getattr(mly, 'srclayers').append(slyname)
+                    slyname = mly.name
+                    lastly = mly
+                if hasattr(self.layers[i], 'bidirect'):
+                    bly = net.layer.add()
+                    bly.CopyFrom(self.layers[i].bidirect)
+                    getattr(bly, 'srclayers').append(slyname)
 
-        # deal with label layer (depreciated)
+            # deal with label layer (depreciated)
         if self.label == True:
             label_layer = Layer(name='label', type=kLabel)
             ly = net.layer.add()
             ly.CopyFrom(label_layer.layer)
             getattr(ly, 'srclayers').append(self.layers[0].layer.name)
             getattr(lastly, 'srclayers').append(label_layer.layer.name)
-        else:
-            if lastly.name == 'RBMVis':
-                getattr(lastly, 'srclayers').append(bly.name)
-            else:
-                getattr(lastly, 'srclayers').append(self.layers[0].layer.name)
-
+        
         # use of cudnn
         if self.cudnn == True:
             self.set_cudnn_layer_type(net)
@@ -308,7 +311,7 @@ class Model(object):
             elif ly_type == kSoftmaxLoss: cudnn_ly_type = kCudnnSoftmaxLoss
             elif ly_type == kSTanh:
                 cudnn_ly_type = kCudnnActivation
-                net.layer[i].activation_conf.type = STANH
+                net.layer[i].activation_conf.type = TANH
             elif ly_type == kSigmoid:
                 cudnn_ly_type = kCudnnActivation
                 net.layer[i].activation_conf.type = SIGMOID
@@ -342,8 +345,10 @@ class Sequential(Model):
 
     def __init__(self, name='my model', argv=[], label=False):
         super(Sequential, self).__init__(name=name, argv=argv, label=label)
+        self.modeltype = 'Sequential'
 
     def add(self, layer):
+        print "sequenctial add"
         if hasattr(layer, 'layer_type'):
             if layer.layer_type == 'AutoEncoder':
                 dim = 0
@@ -391,6 +396,67 @@ class Sequential(Model):
         else:
             self.layers.append(layer)
 
+class Nonsequential(Model):
+    ''' Nonsequential model
+    '''
+
+    def __init__(self, name='my model', argv=[], label=False):
+        super(Nonsequential, self).__init__(name=name, argv=argv, label=label)
+        self.modeltype = 'Nonsequential'
+
+    def add(self, layer, srclayers):
+        if hasattr(layer, 'layer_type'):
+            if layer.layer_type == 'AutoEncoder':
+                dim = 0
+                if layer.param_share == True:
+                    # Encoding
+                    for i in range(1, len(layer.hid_dim)+1):
+                        parw = Parameter(name='w',
+                                         init='none', level=i)
+                        parb = Parameter(name='b',
+                                         init='none', level=i)
+                        dim = layer.hid_dim[i-1]
+                        if i == len(layer.hid_dim): activation = None
+                        else: activation = layer.activation
+                        self.layers.append(Dense(dim,
+                                                 w_param=parw, b_param=parb,
+                                                 activation=activation))
+                    # Decoding
+                    for i in range(len(layer.hid_dim), 0, -1):
+                        parw = Parameter(name=generate_name('w', 2),
+                                         init='none')
+                        parb = Parameter(name=generate_name('b', 2),
+                                         init='none')
+                        setval(parw.param, share_from='w'+str(i))
+                        setval(parb.param, name='b'+str(i))
+                        if i == 1: dim = layer.out_dim
+                        else: dim = layer.hid_dim[i-2]
+                        self.layers.append(Dense(dim,
+                                                 w_param=parw, b_param=parb,
+                                                 activation=layer.activation,
+                                                 transpose=True))
+                else:
+                    # MLP
+                    for i in range(1, len(layer.hid_dim)+2):
+                        parw = Parameter(name='w',
+                                         init='none', level=i)
+                        parb = Parameter(name='b',
+                                         init='none', level=i)
+                        if i == len(layer.hid_dim)+1: dim = layer.out_dim
+                        else: dim = layer.hid_dim[i-1]
+                        self.layers.append(Dense(dim,
+                                                 w_param=parw, b_param=parb,
+                                                 activation=layer.activation))
+            else:
+                self.layers.append(layer)
+                if layer.is_datalayer != True:
+                    for i in range(len(srclayers)):
+                        getattr(self.layers[len(self.layers)-1].layer, 'srclayers').append(srclayers[i]) 
+        else:
+            self.layers.append(layer)
+            if layer.is_datalayer != True:
+                for i in range(len(srclayers)):
+                    getattr(self.layers[len(self.layers)-1].layer, 'srclayers').append(srclayers[i])
 
 class Store(object):
 

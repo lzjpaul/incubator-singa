@@ -37,10 +37,10 @@ void ConcateLayer::Setup(const LayerProto& conf,
   CHECK_GE(concate_dim_, 0);
   CHECK_LT(concate_dim_, shape.size());
   CHECK_EQ(num_concates_, srclayers.size());
-  // LOG(ERROR) << "src layer0 concate shape 0: " << srclayers[0]->data(this).shape()[0] << "\n";
-  // LOG(ERROR) << "src layer0 concate shape 1: " << srclayers[0]->data(this).shape()[1] << "\n";
-  // LOG(ERROR) << "src layer0 concate shape 2: " << srclayers[0]->data(this).shape()[2] << "\n";
-  // LOG(ERROR) << "src layer0 concate shape 3: " << srclayers[0]->data(this).shape()[3] << "\n";
+  LOG(ERROR) << "src layer0 concate shape 0: " << srclayers[0]->data(this).shape()[0] << "\n";
+  LOG(ERROR) << "src layer0 concate shape 1: " << srclayers[0]->data(this).shape()[1] << "\n";
+  LOG(ERROR) << "src layer0 concate shape 2: " << srclayers[0]->data(this).shape()[2] << "\n";
+  LOG(ERROR) << "src layer0 concate shape 3: " << srclayers[0]->data(this).shape()[3] << "\n";
   for (size_t i = 1; i < srclayers.size(); i++) {
     const vector<int>& src_shape = srclayers[i]->data(this).shape();
     for (size_t j = 0; j < shape.size(); j++)
@@ -105,7 +105,7 @@ void ConcateLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
   }
   CHECK_EQ(srclayer_offset[0], srclayers[0]->data(this).count());
   CHECK_EQ(srclayer_offset[1], srclayers[1]->data(this).count());
-  if (srclayers.size() > 4){
+  if (srclayers.size() > 3){
     CHECK_EQ(srclayer_offset[5], srclayers[5]->data(this).count());
     CHECK_EQ(srclayer_offset[6], srclayers[6]->data(this).count());
   }

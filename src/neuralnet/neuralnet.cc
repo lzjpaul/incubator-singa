@@ -105,6 +105,7 @@ NeuralNet* NeuralNet::Create(const NetProto& net_conf, Phase phase,
     param->set_share_from(from);
   }
   LOG(INFO) << "Initial NeuralNet Config is\n" << conf.DebugString();
+  LOG(ERROR) << "Initial NeuralNet Config is\n" << conf.DebugString();
   // TODO(wangwei) create net based on net type, e.g., directed, undirected, etc
   ofstream modeloutput;
   auto cluster = Cluster::Get();
