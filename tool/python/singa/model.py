@@ -125,6 +125,8 @@ class Model(object):
                 ly.CopyFrom(self.layers[i].layer)
         else:
             print "Sequential build"
+            for i in range(len(self.layers)):
+                print "all layers: ", self.layers[i].layer.name
             slyname = self.layers[0].layer.name
             for i in range(len(self.layers)):
                 ly = net.layer.add()
@@ -133,11 +135,12 @@ class Model(object):
                 if self.layers[i].is_datalayer == True:
                     continue
                 getattr(ly, 'srclayers').append(slyname)
-                print "layer name: ", slyname
+                print "1 layer name: ", ly.name
                 slyname = ly.name
                 if hasattr(self.layers[i], 'mask'):
                     mly = net.layer.add()
                     mly.CopyFrom(self.layers[i].mask)
+                    print "2 layer name: ", mly.name
                     getattr(mly, 'srclayers').append(slyname)
                     slyname = mly.name
                     lastly = mly
@@ -146,19 +149,22 @@ class Model(object):
                     bly.CopyFrom(self.layers[i].bidirect)
                     getattr(bly, 'srclayers').append(slyname)
 
-            # deal with label layer (depreciated)
+        # deal with label layer (depreciated)
         if self.label == True:
             label_layer = Layer(name='label', type=kLabel)
             ly = net.layer.add()
             ly.CopyFrom(label_layer.layer)
             getattr(ly, 'srclayers').append(self.layers[0].layer.name)
             getattr(lastly, 'srclayers').append(label_layer.layer.name)
+        if self.modeltype != 'Nonsequential':
+            getattr(lastly, 'srclayers').append(self.layers[0].layer.name)
         
         # use of cudnn
         if self.cudnn == True:
             self.set_cudnn_layer_type(net)
 
         setval(self.jobconf, neuralnet=net)
+        print "neural build end"
 
     def fit(self, data=None, alg='bp', nb_epoch=0,
             with_test=False, execpath='', device=None, **fields):
@@ -342,7 +348,6 @@ class Energy(Model):
 class Sequential(Model):
     ''' sequential model
     '''
-
     def __init__(self, name='my model', argv=[], label=False):
         super(Sequential, self).__init__(name=name, argv=argv, label=label)
         self.modeltype = 'Sequential'
