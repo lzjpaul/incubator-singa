@@ -159,8 +159,8 @@ class MaxPooling2D(Layer):
         assert pool_size != None, 'pool_size is required'
         if type(pool_size) == int:
             pool_size = (pool_size, pool_size)
-        assert type(pool_size) == tuple and pool_size[0] == pool_size[1], \
-               'pool size should be square in Singa'
+        # assert type(pool_size) == tuple and pool_size[0] == pool_size[1], \
+        #       'pool size should be square in Singa'
         super(MaxPooling2D, self).__init__(name=generate_name('pool'),
                                            type=kCPooling, **kwargs)
         fields = {'pool' : PoolingProto().MAX,

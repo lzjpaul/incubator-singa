@@ -46,8 +46,11 @@ void ConcateLayer::Setup(const LayerProto& conf,
     for (size_t j = 0; j < shape.size(); j++)
       if (static_cast<int>(j) == concate_dim_)
         shape[j] += src_shape[j];
-      else
+      else{
+        // LOG(ERROR) << " concate i: " <<i;
+        // LOG(ERROR) << " concate j: " <<j;
         CHECK_EQ(shape[j], src_shape[j]);
+      }
   }
   LOG(ERROR) << "concate shape 0: " << shape[0] << "\n";
   LOG(ERROR) << "concate shape 1: " << shape[1] << "\n";

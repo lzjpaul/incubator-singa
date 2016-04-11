@@ -45,16 +45,16 @@ void CudnnSoftmaxLossLayer::Setup(const LayerProto& conf,
 }
 void CudnnSoftmaxLossLayer::ComputeFeature(int flag,
     const vector<Layer*>& srclayers) {
-  LOG(ERROR) << "CudnnSoftmaxLoss compute feature";
+  // LOG(ERROR) << "CudnnSoftmaxLoss compute feature";
   softmax_.ComputeFeature(flag, srclayers);
   Blob<int> label(batchsize_);
-  LOG(ERROR) << "softmax batchsize: " << batchsize_;
+  // LOG(ERROR) << "softmax batchsize: " << batchsize_;
   int *labelptr = label.mutable_cpu_data();
-  LOG(ERROR) << "label count: " << srclayers[1]->aux_data(this).size();
+  // LOG(ERROR) << "label count: " << srclayers[1]->aux_data(this).size();
   // aux_data: vector<int>, convert vector to int array.
   for (int i = 0; i < batchsize_; ++i) {
     labelptr[i] = srclayers[1]->aux_data(this)[i];
-    LOG(ERROR) << "label i " << labelptr[i];
+    // LOG(ERROR) << "label i " << labelptr[i];
   }
   float *probptr = data_.mutable_cpu_data(); //release?
   Blob<float> loss(batchsize_);

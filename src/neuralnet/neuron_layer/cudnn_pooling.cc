@@ -50,6 +50,8 @@ void CudnnPoolLayer::InitCudnn() {
         pooled_height_,
         pooled_width_));
   auto pool_method = CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING;
+  // LOG(ERROR) << "src pooling pooled_height_: " << pooled_height_;
+  // LOG(ERROR) << "src pooling pooled_width_: " << pooled_width_;
   if (pool_ == PoolingProto_PoolMethod_MAX)
     pool_method = CUDNN_POOLING_MAX;
   CHECK_CUDNN(cudnnSetPooling2dDescriptor(pool_desc_,
