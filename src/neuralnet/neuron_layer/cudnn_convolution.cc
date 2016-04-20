@@ -21,6 +21,10 @@
 
 #include "singa/neuralnet/neuron_layer.h"
 #include "singa/utils/math_blob.h"
+#include <time.h>
+#include <fstream>
+#include <iostream>
+using namespace std;
 
 namespace singa {
 
@@ -140,15 +144,29 @@ void CudnnConvLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
   // LOG(ERROR) << "source layer name: " << srclayers[0]->name().c_str();
   // LOG(ERROR) << "layer name: " << this->name().c_str();
   // LOG(ERROR) << "CONV source data norm: " << Asum(srclayers[0]->data(this));
-  // LOG(INFO) << "CONV source data shape0: " << srclayers[0]->data(this).shape()[0];
-  // LOG(INFO) << "CONV source data shape1: " << srclayers[0]->data(this).shape()[1];
-  // LOG(INFO) << "CONV source data shape2: " << srclayers[0]->data(this).shape()[2];
-  // LOG(INFO) << "CONV source data shape3: " << srclayers[0]->data(this).shape()[3];
-  // LOG(INFO) << "CONV source data shape4: " << srclayers[0]->data(this).shape()[4];
-  // LOG(INFO) << "CONV weight shape0: " << weight_->data().shape()[0];
-  // LOG(INFO) << "CONV weight shape1: " << weight_->data().shape()[1];
-  // LOG(INFO) << "CONV weight shape2: " << weight_->data().shape()[2];
-
+  // LOG(ERROR) << "CONV source data shape0: " << srclayers[0]->data(this).shape()[0];
+  // LOG(ERROR) << "CONV source data shape1: " << srclayers[0]->data(this).shape()[1];
+  // LOG(ERROR) << "CONV source data shape2: " << srclayers[0]->data(this).shape()[2];
+  // LOG(ERROR) << "CONV source data shape3: " << srclayers[0]->data(this).shape()[3];
+  // LOG(ERROR) << "CONV source data shape4: " << srclayers[0]->data(this).shape()[4];
+  LOG(ERROR) << "CONV weight shape0: " << weight_->data().shape()[0];
+  LOG(ERROR) << "CONV weight shape1: " << weight_->data().shape()[1];
+  LOG(ERROR) << "CONV weight shape2: " << weight_->data().shape()[2];
+  
+  int run_version = rand()%1000;
+  if (strcmp((this->name()).c_str(), "conv1@00") == 0 && (flag&flag) == 36){
+    int count = weight_->data().count();
+    LOG(ERROR) << "weight count: " << count;
+    LOG(ERROR) << "beign printting weight_matrix";
+    const float* weightptr = weight_->data().cpu_data();
+    ofstream weightout;
+    weightout.open("/data/zhaojing/feature-map/filter-weight/version" + std::to_string(static_cast<int>(run_version)) + ".csv", ios::app);
+    int j;
+    for (j = 0; j < (count - 1); j++)
+      weightout  << static_cast<float> (weightptr[j]) << ",";
+    weightout  << static_cast<float> (weightptr[j]) << "\n";
+    weightout.close();
+  }
   /*begin check input data!!!!*/
   /*auto src = Tensor4(srclayers[0]->mutable_data(this));
   float* srcdptr = src.dptr;
