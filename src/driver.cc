@@ -76,8 +76,10 @@ void Driver::Init(int argc, char **argv) {
   RegisterLayer<RecordOutputLayer, int>(kRecordOutput);
   RegisterLayer<CSVOutputLayer, int>(kCSVOutput);
   RegisterLayer<CharRNNInputLayer, int>(kCharRNN);
+  RegisterLayer<FloatRNNInputLayer, int>(kFloatRNN);
   RegisterLayer<RNNLabelLayer, int>(kRNNLabel);
   RegisterLayer<OneHotLayer, int>(kOneHot);
+  RegisterLayer<NotOneHotLayer, int>(kNotOneHot);
   RegisterLayer<CharRNNOutputLayer, int>(kCharRNNOutput);
 
   // connection layers

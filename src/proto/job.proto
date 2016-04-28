@@ -233,7 +233,10 @@ message LayerProto {
   optional RGBImageProto rgbimage_conf = 193;
   optional DataProto sharddata_conf = 194;
   optional CharRNNProto char_rnn_conf = 195;
-  optional OnehotProto onehot_conf = 196;
+  // optional FloatRNNProto float_rnn_conf = 196;
+  optional OnehotProto onehot_conf = 197;
+  optional NotOnehotProto notonehot_conf = 198;
+
 
   // configuration for neuron layers id range [200, 300)
   optional ActivationProto activation_conf = 200;
@@ -347,6 +350,10 @@ message OnehotProto {
   optional int32 vocab_size = 1 [default = 0];
 }
 
+message NotOnehotProto {
+  optional int32 case_feature_dim = 1 [default = 0];
+}
+
 message RGBImageProto {
   // scale factor for each pixel
   optional float scale = 1 [default = 1.0];
@@ -376,6 +383,8 @@ message StoreProto {
   optional int32 random_skip = 11 [default = 0];
   optional bool has_label = 12 [default = true];
   optional bool prefetching = 13 [default = false];
+  optional int32 unroll_len = 14 [default = 12];
+  optional int32 case_feature_dim = 15 [default = 0];
 }
 
 message CharRNNProto {
@@ -385,6 +394,16 @@ message CharRNNProto {
   optional int32 unroll_len = 3 [default = 50];
   optional int32 batchsize = 4 [default = 1];
 }
+
+/*message FloatRNNProto {
+  optional string path = 1;
+  optional string vocab_path = 2;
+  // num of chars to read per instance,  should = NetProto::unroll_len
+  optional int32 unroll_len = 3 [default = 50];
+  optional int32 batchsize = 4 [default = 1];
+  optional int32 case_feature_dim = 5 [default = 0];
+
+}*/
 
 message EmbeddingProto {
   optional int32 vocab_size = 1 [default = 0];
@@ -656,6 +675,8 @@ enum LayerType {
   kCharRNN = 195;
   kRNNLabel = 196;
   kOneHot = 197;
+  kNotOneHot = 198;
+  kFloatRNN = 199;
 
   /*
    * Neuron layers

@@ -161,6 +161,16 @@ class OneHotLayer : public InputLayer {
   int batchsize_, dim_;
 };
 
+// not onehot, only parse the same vector
+class NotOneHotLayer : public InputLayer {
+ public:
+  void Setup(const LayerProto& proto, const vector<Layer*>& srclayers) override;
+  void ComputeFeature(int flag, const vector<Layer*>& srclayers);
+
+ private:
+  int batchsize_, dim_;
+};
+
 /**
  *  * Read the ASCII file as a large string used for RNN model where each character
  *   * is a single input to the unrolled RNN layer.
@@ -178,6 +188,37 @@ class CharRNNInputLayer : public InputLayer {
   string buf_;
   vector<int> start_;
   std::unordered_map<char, int> char2index_;
+};
+
+/**
+ *  * 
+ *   * 
+ *    * read the shard data input;
+ *     */
+class FloatRNNInputLayer : public SingleLabelRecordLayer {
+ public:
+  void Setup(const LayerProto& proto, const vector<Layer*>& srclayers) override;
+
+ protected:
+  /**
+   * Parse key as instance ID and val into RecordProto.
+   * @copydetails StoreInputLayer::Parse()
+   */
+  bool Parse(int k, int flag, const string& key, const string& val) override;
+  void LoadRecord(const string& backend,
+                  const string& path,
+                  Blob<float>* to) override;
+
+ private:
+  // TODO(wangwei) decode the image
+  bool encoded_;
+  int batchsize_ = 0, unroll_len_ = 1;
+  int case_feature_dim_ = 0; //input for each unrolled layer, a case
+  // unsigned offset_ = 0;
+  // string path_, vocab_path_;
+  // string buf_;
+  // vector<int> start_;
+  // std::unordered_map<char, int> char2index_;
 };
 
 /**
