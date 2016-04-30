@@ -25,6 +25,7 @@ void OneHotLayer::Setup(const LayerProto& conf,
     const vector<Layer*>& srclayers) {
   InputLayer::Setup(conf, srclayers);
   batchsize_ = srclayers.at(0)->data(unroll_index()).shape(0);
+  LOG(ERROR) << "OneHot batchsize: " << batchsize_;
   dim_ = conf.onehot_conf().vocab_size();
   data_.Reshape(batchsize_, dim_);
 }

@@ -52,6 +52,7 @@ GRULayer::~GRULayer() {
 
 void GRULayer::Setup(const LayerProto& conf,
     const vector<Layer*>& srclayers) {
+  LOG(ERROR) << "GRULayer setup begins";
   Layer::Setup(conf, srclayers);
   CHECK_LE(srclayers.size(), 2);
   const auto& src = srclayers[0]->data(this);
@@ -104,6 +105,7 @@ void GRULayer::ComputeFeature(int flag,
     const vector<Layer*>& srclayers) {
   CHECK_LE(srclayers.size(), 2);
 
+  // LOG(ERROR) << "in GRU layer ComputeFeature: " << this->name();
   // Do transpose
   Blob<float> *w_z_hx_t = Transpose(weight_z_hx_->data());
   Blob<float> *w_z_hh_t = Transpose(weight_z_hh_->data());

@@ -49,7 +49,8 @@ void StoreInputLayer::Setup(const LayerProto& conf,
   } else {
     batchsize_ = conf.store_conf().batchsize(0);
   }
-
+  LOG(ERROR) << "in storeinput.cc";
+  LOG(ERROR) << "batchsize_: " << batchsize_;
   vector<int> shape {batchsize_};
   for (int s : conf.store_conf().shape())
     shape.push_back(s);
@@ -91,7 +92,7 @@ void StoreInputLayer::fetch_data() {
 
 void StoreInputLayer::ComputeFeature(int flag,
     const vector<Layer*>& srclayers) {
-
+  // LOG(ERROR) << "in storeInput computerfeature";
   // if prefetching, wait for the thread to finish
   if (layer_conf_.store_conf().prefetching()) {
     if (thread_ == nullptr) {
@@ -103,6 +104,7 @@ void StoreInputLayer::ComputeFeature(int flag,
   } else {
     fetch_data();
   }
+  // LOG(ERROR) << "store input layer iterate batchsize";
   for (int k = 0; k < batchsize_; k++)
     Parse(k, flag, buf_keys_[k], buf_vals_[k]);
   if (layer_conf_.store_conf().prefetching())

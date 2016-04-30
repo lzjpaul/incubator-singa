@@ -35,6 +35,7 @@ InnerProductLayer::~InnerProductLayer() {
 
 void InnerProductLayer::Setup(const LayerProto& conf,
     const vector<Layer*>& srclayers) {
+  LOG(ERROR) << "InnerProdut setup begins";
   Layer::Setup(conf, srclayers);
   CHECK_EQ(srclayers.size(), 1);
   const auto& src = srclayers[0]->data(this);

@@ -549,6 +549,7 @@ void NeuralNet::CreateNetFromGraph(Graph* graph) {
     auto layer = name2layer(node->name);
     layer->Setup(*(static_cast<LayerProto*>(node->proto)), srclayers(layer));
     DLOG(INFO) << "constructing graph: " << layer->name();
+    LOG(ERROR) << "constructing graph: " << layer->name();
     layerinfo[layer->name()] = IntVecToString(layer->data(nullptr).shape());
     for (auto param : layer->GetParams()) {
       param->set_id(paramid++);

@@ -29,11 +29,12 @@ void NotOneHotLayer::Setup(const LayerProto& conf,
   LOG(ERROR) << "notonehot batchsize: " << batchsize_;
   dim_ = conf.notonehot_conf().case_feature_dim();
   data_.Reshape(batchsize_, dim_);
+  LOG(ERROR) << "NotOneHotLayer data_.count(): " << data_.count();
 }
 
 void NotOneHotLayer::ComputeFeature(int flag, const vector<Layer*>& srclayers) {
   float* ptr = data_.mutable_cpu_data();
-  LOG(ERROR) << "NotOneHotLayer data_.count(): " << data_.count();
+  // LOG(ERROR) << "NotOneHotLayer data_.count(): " << data_.count();
   memset(ptr, 0, sizeof(float) * data_.count());
   const float* idx = srclayers[0]->data(unroll_index()).cpu_data();
   for (int i = 0; i < data_.count(); i++){

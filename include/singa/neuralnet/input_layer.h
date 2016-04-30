@@ -212,7 +212,7 @@ class FloatRNNInputLayer : public SingleLabelRecordLayer {
  private:
   // TODO(wangwei) decode the image
   bool encoded_;
-  int batchsize_ = 0, unroll_len_ = 1;
+  int unroll_len_ = 1;
   int case_feature_dim_ = 0; //input for each unrolled layer, a case
   // unsigned offset_ = 0;
   // string path_, vocab_path_;

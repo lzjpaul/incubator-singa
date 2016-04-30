@@ -80,20 +80,23 @@ void Worker::Run() {
     << " start on " << (device >= 0 ? "GPU " + std::to_string(device) : "CPU");
   if (device >= 0)
     context->ActivateDevice(device);
-
+  LOG(ERROR) << "before cluster get";
   auto cluster = Cluster::Get();
   int svr_grp = grp_id_ / cluster->nworker_groups_per_server_group();
   CHECK(cluster->runtime()->JoinSGroup(grp_id_, id_, svr_grp));
   step_ = job_conf_.step();
   InitSockets(train_net_);
   InitNetParams(job_conf_, train_net_);
+  LOG(ERROR) << "before test and stop";
   while (!StopNow(step_)) {
     if (ValidateNow(step_) && val_net_ != nullptr) {
+      LOG(ERROR) << "in valid now";
       CollectAll(step_, train_net_);
       LOG(ERROR) << "Validation @ step " + std::to_string(step_);
       Test(job_conf_.validate_steps(), kVal, val_net_);
     }
     if (TestNow(step_) && test_net_ != nullptr) {
+      LOG(ERROR) << "in test now";
       CollectAll(step_, train_net_);
       LOG(ERROR) << "Test @ step " + std::to_string(step_);
       Test(job_conf_.test_steps(), kTest, test_net_);
@@ -335,8 +338,10 @@ int Worker::Update(int step, Param* param) {
 
 int Worker::CollectAll(int step, NeuralNet* net) {
   auto& layers = net->layers();
+  // LOG(ERROR) << "in CollectALL";
   for (auto& layer : layers) {
-    if (layer->partition_id() == id_) {
+    // LOG(ERROR) << "CollectAll layer name: " << layer->name();
+    if (layer->partition_id() == id_ && layer->unroll_index() == 0) {
       for (Param* p : layer->GetParams()) {
         Collect(step, p);
       }
@@ -346,9 +351,12 @@ int Worker::CollectAll(int step, NeuralNet* net) {
 }
 
 int Worker::Collect(int step, Param* param) {
+  // LOG(ERROR) << "in Collect function";
   while (param->version() <= param->last_version()) {
     std::this_thread::sleep_for(std::chrono::milliseconds(kCollectSleepTime));
     // LOG(ERROR) << "wait  "<< param->id() << " at " << step << " by " <<id_;
+    // LOG(ERROR) << "wait  "<< param->id() << " at " << step << " by " <<id_;
+    // LOG(ERROR) << "name  "<< param->name();
   }
   return 1;
 }

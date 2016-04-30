@@ -44,7 +44,7 @@ void FloatRNNInputLayer::Setup(const LayerProto& conf,
   datavec_.clear();
   // each unroll layer has a input blob
   for (int i = 0; i < unroll_len_; i++) {
-    datavec_.push_back(new Blob<float>(batchsize_*case_feature_dim_));
+    datavec_.push_back(new Blob<float>(batchsize_, case_feature_dim_));
   }
 }
 
@@ -67,7 +67,7 @@ bool FloatRNNInputLayer::Parse(int k, int flag, const string& key,
   RecordProto image;
   image.ParseFromString(value);
   int size = data_.count() / batchsize_;
-  LOG(ERROR) << "parse batchsize number k:" << k;
+  // LOG(ERROR) << "parse batchsize number k:" << k;
   // LOG(ERROR) << "size: " << size;
   // LOG(ERROR) << "key" << key;
   if (image.data_size() != 15036)
@@ -75,7 +75,7 @@ bool FloatRNNInputLayer::Parse(int k, int flag, const string& key,
   if (image.data_size()) {
     CHECK_EQ(size, image.data_size());
     float* ptr = data_.mutable_cpu_data() + k * size; //15036, 12 cases
-    float* group1dptr;
+    // float* group1dptr;
     // if (group1_dim_ != 0){
     //  group1dptr=group1_data_.mutable_cpu_data() + k * group1_dim_ * 12;
     //LOG(ERROR)<<"diagdptr over";
@@ -91,7 +91,7 @@ bool FloatRNNInputLayer::Parse(int k, int flag, const string& key,
     for (int i = 0; i < size; i++){
       i_dim = i / case_feature_dim_; //which case
       j_dim = i % case_feature_dim_; //which element of the case
-      LOG(ERROR) << "i_dim: " << i_dim << " j_dim: " << j_dim;
+      // LOG(ERROR) << "i_dim: " << i_dim << " j_dim: " << j_dim;
       // !!!!! each datavector element is batchsize*case_feature_dim_
       float* case_ptr = datavec_[i_dim]->mutable_cpu_data();
       case_ptr[k * case_feature_dim_ + j_dim] = image.data(i);
