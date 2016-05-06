@@ -78,8 +78,9 @@ void CudnnActivationLayer::ComputeFeature(int flag,
     InitCudnn();
   float alpha = 1.0f, beta = 0.0f;
 
-  // LOG(ERROR) << "flag indicate" << (flag&flag);
+  LOG(ERROR) << "flag indicate" << (flag&flag);
   // LOG(INFO) << "layer name: " << this->name().c_str();
+  LOG(ERROR) << "layer name: " << this->name().c_str();
   // LOG(INFO) << "RELU source data norm: " << Asum(srclayers[0]->data(this)); 
   // LOG(INFO) << "RELU source data shape0: " << srclayers[0]->data(this).shape()[0];
   // LOG(INFO) << "RELU source data shape1: " << srclayers[0]->data(this).shape()[1];
@@ -88,13 +89,17 @@ void CudnnActivationLayer::ComputeFeature(int flag,
   // LOG(INFO) << "RELU source data shape4: " << srclayers[0]->data(this).shape()[4];
   // 528 log, 544 line
   //check : featuremapptr + = height * width && j is reused?
-  if (strcmp((this->name()).c_str(), "relu1@@00") == 0 && (flag&flag) == 36){
+  // LOG(ERROR) << "before printting feature map";
+  if (strcmp((this->name()).c_str(), "relu1@00") == 0 && (flag&flag) == 36){
     int topk = 10;
     int batchsize = srclayers[0]->data(this).shape()[0];
     int filter_num = srclayers[0]->data(this).shape()[1];
     int height = srclayers[0]->data(this).shape()[2];
     int width = srclayers[0]->data(this).shape()[3];
     int count = srclayers[0]->data(this).count();
+    LOG(ERROR) << "filter_num: " << filter_num;
+    LOG(ERROR) << "height: " << height;
+    LOG(ERROR) << "width: " << width;
     LOG(ERROR) << "beign printting feature map";
     const float* featuremapptr = srclayers[0]->data(this).cpu_data();
     ofstream featuremapout;

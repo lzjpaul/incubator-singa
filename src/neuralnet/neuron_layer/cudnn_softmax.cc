@@ -49,6 +49,7 @@ void CudnnSoftmaxLayer::ComputeFeature(int flag,
     InitCudnn();
   const float alpha = 1.0f, beta = 0.0f;
   CHECK_EQ(srclayers.at(0)->data(this).shape().size(), 2);
+  // LOG(ERROR) << "src layer name: " << srclayers.at(0)->name();
   CHECK_CUDNN(cudnnSoftmaxForward(handle_,
         CUDNN_SOFTMAX_ACCURATE,
         CUDNN_SOFTMAX_MODE_INSTANCE,

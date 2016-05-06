@@ -58,16 +58,21 @@ void InnerProductLayer::Setup(const LayerProto& conf,
 void InnerProductLayer::ComputeFeature(int flag,
     const vector<Layer*>& srclayers) {
   // LOG(INFO) << "inner source data norm: " << Asum(srclayers[0]->data(this));
-  // LOG(INFO) << "inner product src layer shape0: " << srclayers[0]->data(this).shape()[0];
-  // LOG(INFO) << "inner product src layer shape1: " << srclayers[0]->data(this).shape()[1];
-  // LOG(INFO) << "inner product src layer shape2: " << srclayers[0]->data(this).shape()[2];
-  // LOG(INFO) << "inner product src layer shape3: " << srclayers[0]->data(this).shape()[3];
+  // LOG(ERROR) << "inner product src layer count: " << srclayers[0]->data(this).count();
+  // LOG(ERROR) << "inner product src layer shape0: " << srclayers[0]->data(this).shape()[0];
+  // LOG(ERROR) << "inner product src layer shape1: " << srclayers[0]->data(this).shape()[1];
+  // LOG(ERROR) << "inner product src layer shape2: " << srclayers[0]->data(this).shape()[2];
+  // LOG(ERROR) << "inner product src layer shape3: " << srclayers[0]->data(this).shape()[3];
   // LOG(INFO) << "inner product src layer shape4: " << srclayers[0]->data(this).shape()[4];
-  // LOG(INFO) << "inner product weight shape0: " << weight_->data().shape()[0];
+  LOG(INFO) << "inner product weight shape0: " << weight_->data().shape()[0];
   // LOG(ERROR) << "inner product weight shape1: " << weight_->data().shape()[1];
 
   MMDot(srclayers[0]->data(this), weight_->data().T(), &data_);
   MVAddRow(bias_->data(), &data_);
+  // LOG(ERROR) << "inner layer name: " << this->name();
+  // LOG(ERROR) << "inner product data shape size: " << data_.shape().size();
+  // LOG(ERROR) << "inner product data shape0: " << data_.shape()[0];
+  // LOG(ERROR) << "inner product data shape1: " << data_.shape()[1];
 }
 
 void InnerProductLayer::ComputeGradient(int flag,
