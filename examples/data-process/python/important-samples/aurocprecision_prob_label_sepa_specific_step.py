@@ -92,6 +92,11 @@ a = numpy.asarray(label_0_probs[:, 0][np.argsort(label_0_probs[:, 1])][0:print_t
 numpy.savetxt(sys.argv[7], a, fmt = '%d', delimiter=",") #modify here
 b = numpy.asarray(label_1_probs[:, 0][np.argsort(-label_1_probs[:, 1])][0:print_top_k], dtype = int)
 numpy.savetxt(sys.argv[8], b, fmt = '%d', delimiter=",") #modify here
-c= b = numpy.asarray(np.argsort(y_scores_05_distance[valid_num:valid_test_num])[0:print_top_k], dtype = int)
-numpy.savetxt(sys.argv[9], b, fmt = '%d', delimiter=",") #modify here
+c = numpy.asarray(np.argsort(y_scores_05_distance[valid_num:valid_test_num])[0:print_top_k], dtype = int)
+numpy.savetxt(sys.argv[9], c, fmt = '%d', delimiter=",") #modify here
+d = numpy.asarray(label_0_probs[:, 0][np.argsort(-label_0_probs[:, 1])][0:print_top_k], dtype = int)
+numpy.savetxt(sys.argv[10], d, fmt = '%d', delimiter=",") #modify here
+e = numpy.asarray(label_1_probs[:, 0][np.argsort(label_1_probs[:, 1])][0:print_top_k], dtype = int)
+numpy.savetxt(sys.argv[11], e, fmt = '%d', delimiter=",") #modify here
+# python aurocprecision_prob_label_sepa_specific_step.py 1940 2910 1-16-1SRC-KB/label.csv 1-16-1SRC-KB/prob.csv 512 20 1-16-1SRC-KB/correct_label_0_index.csv 1-16-1SRC-KB/correct_label_1_index.csv 1-16-1SRC-KB/vague_index.csv 1-16-1SRC-KB/incorrect_label_0_index.csv 1-16-1SRC-KB/incorrect_label_1_index.csv
 # python aurocprecision_prob_label_sepa_specific_step.py 1940 2910 2-5-CNN-PEARSON-3-best-models/version8199/label.csv 2-5-CNN-PEARSON-3-best-models/version8199/prob.csv 175 20 correct_label_0_index.csv correct_label_1_index.csv vague_index.csv
