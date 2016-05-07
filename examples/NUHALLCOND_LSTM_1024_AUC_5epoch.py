@@ -21,7 +21,7 @@ from keras.utils.data_utils import get_file
 from sklearn.metrics import roc_auc_score
 import random
 import sys
-
+import numpy
 
 batch_size = 100 #modify for test and valid
 nb_classes = 2
@@ -92,5 +92,8 @@ print('Test accuracy:', score[1])
 y_score = model.predict_proba(test_data_matrix)
 print ("roc")
 print ("roc = ", roc_auc_score(test_label_matrix, y_score))
-
+c = numpy.asarray(y_score, dtype = float)
+numpy.savetxt("LSTM_1024_5_epoch_prediction.txt", c, fmt = '%6f', delimiter=",") #modify here
+d = numpy.asarray(test_label_matrix, dtype = int)
+numpy.savetxt("LSTM_1024_5_epoch_label.txt", d, fmt = '%d', delimiter=",") #modify here
 # sudo python NUHALLCOND_LSTM.py /data1/zhaojing/NUHALLCOND/NUH_DS_SOC_READMIT_DIAG_LAB_INOUTPATIENT_CNN_SAMPLE_DIAG_1src_KB_train_data_normrange_1.csv /data1/zhaojing/NUHALLCOND/NUH_DS_SOC_READMIT_DIAG_LAB_INOUTPATIENT_CNN_SAMPLE_DIAG_1src_KB_train_label_normrange_1.csv /data1/zhaojing/NUHALLCOND/NUH_DS_SOC_READMIT_DIAG_LAB_INOUTPATIENT_CNN_SAMPLE_DIAG_1src_KB_test_data_normrange_1.csv /data1/zhaojing/NUHALLCOND/NUH_DS_SOC_READMIT_DIAG_LAB_INOUTPATIENT_CNN_SAMPLE_DIAG_1src_KB_test_label_normrange_1.csv
