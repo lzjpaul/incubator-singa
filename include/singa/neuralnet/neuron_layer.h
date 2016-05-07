@@ -316,6 +316,7 @@ class CudnnActivationLayer : public ActivationLayer, public CudnnBase {
 
  protected:
   cudnnActivationMode_t mode_;
+  int run_version_;
 };
 
 /**
