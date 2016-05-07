@@ -39,5 +39,6 @@ for j in range(len(pre_AUC_matrix_test[:,0])):
         a = numpy.asarray(y_scores[valid_num:valid_test_num], dtype = float)
         numpy.savetxt(sys.argv[7], a, fmt = '%6f', delimiter=",") #modify here
         break
+#python score_prob_many_steps_to_1.py 1940 2910 1-16-1SRC-KB/label.csv 1-16-1SRC-KB/prob.csv 512 20 1-16-1SRC-KB/correct_label_0_index.csv 1-16-1SRC-KB/1step_prob.csv
 # python aurocprecision_prob_label_sepa_specific_step.py 1940 2910 1-16-1SRC-KB/label.csv 1-16-1SRC-KB/prob.csv 512 20 1-16-1SRC-KB/correct_label_0_index.csv 1-16-1SRC-KB/correct_label_1_index.csv 1-16-1SRC-KB/vague_index.csv 1-16-1SRC-KB/incorrect_label_0_index.csv 1-16-1SRC-KB/incorrect_label_1_index.csv
 # python aurocprecision_prob_label_sepa_specific_step.py 1940 2910 2-5-CNN-PEARSON-3-best-models/version8199/label.csv 2-5-CNN-PEARSON-3-best-models/version8199/prob.csv 175 20 correct_label_0_index.csv correct_label_1_index.csv vague_index.csv
