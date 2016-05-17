@@ -58,28 +58,31 @@ case_feature_dim = 1253
 
 train_data_matrix = train_data_matrix.reshape(4850, case_num, case_feature_dim)
 test_data_matrix = test_data_matrix.reshape(2910, case_num, case_feature_dim)
+print ("before max of first case: ", max(train_data_matrix[0,0,:]))
 
 last_case_idx = 0
 for i in range(4850):
-    print("i is: ", i)
+    # print("i is: ", i)
     last_case_idx = case_num # defaultly regard as the last one
     for j in range(case_num):
         if sum(train_data_matrix[i,j,:]) == 0:
             last_case_idx = j
-            print("last_case_idx: ", j)
+      #      print("last_case_idx: ", j)
             break
     for k in range(last_case_idx):
         intermediate = train_data_matrix[i, k, :]
         train_data_matrix[i, k, :] = train_data_matrix[i, (k + case_num - last_case_idx), :]
         train_data_matrix[i, (k + case_num - last_case_idx), :] = intermediate
 
+print ("after max of first case: ", max(train_data_matrix[0,0,:]))
+
 for i in range(2910):
-    print("i is: ", i)
+    # print("i is: ", i)
     last_case_idx = case_num # defaultly regard as the last one
     for j in range(case_num):
         if sum(test_data_matrix[i,j,:]) == 0:
             last_case_idx = j
-            print("last_case_idx: ", j)
+       #     print("last_case_idx: ", j)
             break
     for k in range(last_case_idx):
         intermediate = test_data_matrix[i, k, :]
@@ -89,29 +92,4 @@ for i in range(2910):
 print ("train_data_matrix = ", train_data_matrix.shape)
 print ("test_data_matrix = ", test_data_matrix.shape)
 
-nb_classes = 2
-train_label_matrix = np_utils.to_categorical(train_label_matrix, nb_classes)
-test_label_matrix = np_utils.to_categorical(test_label_matrix, nb_classes)
-# convert class vectors to binary class matrices
-#Y_train = np_utils.to_categorical(y_train, nb_classes)
-#Y_test = np_utils.to_categorical(y_test, nb_classes)
-print('Build model...')
-model = Sequential()
-model.add(LSTM(512, return_sequences=False, input_shape=(case_num, case_feature_dim)))
-model.add(Dropout(0.2))
-model.add(Dense(2))
-model.add(Activation('softmax'))
-
-model.summary()
-
-model.compile(loss='categorical_crossentropy',
-              optimizer=RMSprop(),
-              metrics=['accuracy'])
-
-history = model.fit(train_data_matrix, train_label_matrix,
-                    batch_size=batch_size, nb_epoch=nb_epoch,
-                    verbose=1, validation_data=(test_data_matrix, test_label_matrix))
-score = model.evaluate(test_data_matrix, test_label_matrix, verbose=0)
-print('Test score:', score[0])
-print('Test accuracy:', score[1])
 # sudo python NUHALLCOND_LSTM.py /data1/zhaojing/NUHALLCOND/NUH_DS_SOC_READMIT_DIAG_LAB_INOUTPATIENT_CNN_SAMPLE_DIAG_1src_KB_train_data_normrange_1.csv /data1/zhaojing/NUHALLCOND/NUH_DS_SOC_READMIT_DIAG_LAB_INOUTPATIENT_CNN_SAMPLE_DIAG_1src_KB_train_label_normrange_1.csv /data1/zhaojing/NUHALLCOND/NUH_DS_SOC_READMIT_DIAG_LAB_INOUTPATIENT_CNN_SAMPLE_DIAG_1src_KB_test_data_normrange_1.csv /data1/zhaojing/NUHALLCOND/NUH_DS_SOC_READMIT_DIAG_LAB_INOUTPATIENT_CNN_SAMPLE_DIAG_1src_KB_test_label_normrange_1.csv
