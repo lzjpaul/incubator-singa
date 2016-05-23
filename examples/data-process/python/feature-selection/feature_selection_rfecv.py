@@ -5,8 +5,8 @@ from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 from sklearn.utils import column_or_1d
 from sklearn.svm import SVC
-from sklearn.cross_validation import StratifiedKFold
 from sklearn.feature_selection import RFECV
+from sklearn.cross_validation import StratifiedKFold
 
 import sys
 
@@ -30,8 +30,9 @@ selected_fea_num = int(sys.argv[3])
 print "X.shape = \n", X.shape
 print "y.shape = \n", y.shape
 svc = SVC(kernel="linear", C=1)
-rfecv = RFECV(estimator=svc, step=1, cv=StratifiedKFold(y, 2), scoring='accuracy')
+rfecv = RFECV(estimator=svc, step=0.02, cv=StratifiedKFold(y, 2), scoring='accuracy')
 X_new = rfecv.fit(X, y)
 #X_new = SelectKBest(chi2, k=selected_fea_num).fit(X, y)
 print "selected features = \n", X_new.get_support(indices=True)
-# python feature_selection_rfecv.py /ssd/zhaojing/cnn/NUHALLCOND/NUH_DS_SOC_READMIT_DIAG_LAB_INOUTPATIENT_CNN_SAMPLE_DIAG_1src_KB_traintestvaliddata_normrange_aggregated.csv /ssd/zhaojing/cnn/NUHALLCOND/NUH_DS_SOC_READMIT_DIAG_LAB_INOUTPATIENT_CNN_SAMPLE_DIAG_1src_KB_traintestvalidlabel_normrange.csv 20
+print "each time reduce 2% feature"
+# python feature_selection_rfe.py /ssd/zhaojing/cnn/NUHALLCOND/NUH_DS_SOC_READMIT_DIAG_LAB_INOUTPATIENT_CNN_SAMPLE_DIAG_1src_KB_traintestvaliddata_normrange_aggregated.csv /ssd/zhaojing/cnn/NUHALLCOND/NUH_DS_SOC_READMIT_DIAG_LAB_INOUTPATIENT_CNN_SAMPLE_DIAG_1src_KB_traintestvalidlabel_normrange.csv 3
