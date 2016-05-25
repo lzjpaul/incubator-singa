@@ -27,5 +27,21 @@ print "X.shape = \n", X.shape
 print "y.shape = \n", y.shape
 X_new = SelectKBest(chi2, k=selected_fea_num).fit(X, y)
 print "selected features = \n", X_new.get_support(indices=True)
+
+print "occurrence matrix, features only record appear or not"
+for i in range(len(X[:,0])):
+    for j in range(len(X[0,:])):
+        if X[i][j] > float(0):
+            X[i][j] = float(1)
+
+print "max(X[0,:]) = \n", max(X[0,:])
+print "max(X[100,:]) = \n", max(X[100,:])
+print "max(X[200,:]) = \n", max(X[200,:])
+print "max(X[1000,:]) = \n", max(X[1000,:])
+
+print "X.shape = \n", X.shape
+print "y.shape = \n", y.shape
+X_new = SelectKBest(chi2, k=selected_fea_num).fit(X, y)
+print "selected features = \n", X_new.get_support(indices=True)
 # python feature_selection_Univariate.py /ssd/zhaojing/cnn/NUHALLCOND/VISIT_DIAG_aggcnt_1/subsample1/NUH_DS_SOC_READMIT_DIAG_LAB_INOUTPATIENT_CNN_SAMPLE_DIAG_1src_KB_VISIT_DIAG_aggcnt_1_train_data_normrange_1.csv /ssd/zhaojing/cnn/NUHALLCOND/VISIT_DIAG_aggcnt_1/subsample1/NUH_DS_SOC_READMIT_DIAG_LAB_INOUTPATIENT_CNN_SAMPLE_DIAG_1src_KB_VISIT_DIAG_aggcnt_1_train_label_normrange_1.csv 20
 # python feature_selection_Univariate.py /ssd/zhaojing/cnn/NUHALLCOND/NUH_DS_SOC_READMIT_DIAG_LAB_INOUTPATIENT_CNN_SAMPLE_DIAG_1src_KB_traintestvaliddata_normrange_aggregated.csv /ssd/zhaojing/cnn/NUHALLCOND/NUH_DS_SOC_READMIT_DIAG_LAB_INOUTPATIENT_CNN_SAMPLE_DIAG_1src_KB_traintestvalidlabel_normrange.csv 3
