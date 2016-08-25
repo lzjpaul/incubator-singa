@@ -54,11 +54,22 @@ for i in range(lab_num):
 	for k in range(case_num):
 	    if sum(lab_origin_data_matrix[j, (case_length * k + 4 * i):(case_length * k + 4 * i + 4)]) > 0:
 		non_zero_cases = non_zero_cases + 1
+    print "lab index i = \n ", i
     print "non_zero_cases = \n", non_zero_cases
-    case_lab_mean[4 * i] = case_lab_tol[4 * i] / non_zero_cases
-    case_lab_mean[4 * i + 1] = case_lab_tol[4 * i + 1] / non_zero_cases
-    case_lab_mean[4 * i + 2] = case_lab_tol[4 * i + 2] / non_zero_cases
-    case_lab_mean[4 * i + 3] = case_lab_tol[4 * i + 3] / non_zero_cases
+    if non_zero_cases > 0:
+        case_lab_mean[4 * i] = case_lab_tol[4 * i] / non_zero_cases
+        case_lab_mean[4 * i + 1] = case_lab_tol[4 * i + 1] / non_zero_cases
+        case_lab_mean[4 * i + 2] = case_lab_tol[4 * i + 2] / non_zero_cases
+        case_lab_mean[4 * i + 3] = case_lab_tol[4 * i + 3] / non_zero_cases
+    elif non_zero_cases == 0:
+        print "H tol = \n", case_lab_tol[4 * i]
+        print "L tol = \n", case_lab_tol[4 * i + 1]
+        print "N tol = \n", case_lab_tol[4 * i + 2]
+        print "Unknown tol = \n", case_lab_tol[4 * i + 3]
+        case_lab_mean[4 * i] = 0
+        case_lab_mean[4 * i + 1] = 0
+        case_lab_mean[4 * i + 2] = 0
+        case_lab_mean[4 * i + 3] = 0
 
 # traverse all the samples
 # check is it float?
@@ -68,10 +79,16 @@ for j in range(len(lab_origin_data_matrix[:,0])):
 	    sample_case_lab_tol = 0
 	    sample_case_lab_tol = sum(lab_origin_data_matrix[j, (case_length * k + 4 * i):(case_length * k + 4 * i + 4)]) + sample_case_lab_tol # check correct ??? w + x +y + z
 	    sample_case_lab_tol = sum(case_lab_mean[(4 * i) : (4 * i + 4)]) + sample_case_lab_tol # a + b + c + d + w + x +y + z
-	    lab_laplacian_data_matrix[j, (case_length * k + 4 * i)] = (lab_origin_data_matrix[j, (case_length * k + 4 * i)] + case_lab_mean[4 * i]) / sample_case_lab_tol
-	    lab_laplacian_data_matrix[j, (case_length * k + 4 * i + 1)] = (lab_origin_data_matrix[j, (case_length * k + 4 * i + 1)] + case_lab_mean[4 * i + 1]) / sample_case_lab_tol
-	    lab_laplacian_data_matrix[j, (case_length * k + 4 * i + 2)] = (lab_origin_data_matrix[j, (case_length * k + 4 * i + 2)] + case_lab_mean[4 * i + 2]) / sample_case_lab_tol
-	    lab_laplacian_data_matrix[j, (case_length * k + 4 * i + 3)] = (lab_origin_data_matrix[j, (case_length * k + 4 * i + 3)] + case_lab_mean[4 * i + 3]) / sample_case_lab_tol
+            if sample_case_lab_tol > 0:
+	        lab_laplacian_data_matrix[j, (case_length * k + 4 * i)] = (lab_origin_data_matrix[j, (case_length * k + 4 * i)] + case_lab_mean[4 * i]) / sample_case_lab_tol
+	        lab_laplacian_data_matrix[j, (case_length * k + 4 * i + 1)] = (lab_origin_data_matrix[j, (case_length * k + 4 * i + 1)] + case_lab_mean[4 * i + 1]) / sample_case_lab_tol
+	        lab_laplacian_data_matrix[j, (case_length * k + 4 * i + 2)] = (lab_origin_data_matrix[j, (case_length * k + 4 * i + 2)] + case_lab_mean[4 * i + 2]) / sample_case_lab_tol
+	        lab_laplacian_data_matrix[j, (case_length * k + 4 * i + 3)] = (lab_origin_data_matrix[j, (case_length * k + 4 * i + 3)] + case_lab_mean[4 * i + 3]) / sample_case_lab_tol
+            elif sample_case_lab_tol == 0:
+                lab_laplacian_data_matrix[j, (case_length * k + 4 * i)] = 0
+                lab_laplacian_data_matrix[j, (case_length * k + 4 * i + 1)] = 0
+                lab_laplacian_data_matrix[j, (case_length * k + 4 * i + 2)] = 0
+                lab_laplacian_data_matrix[j, (case_length * k + 4 * i + 3)] = 0
 
 #output
 a = numpy.asarray(lab_laplacian_data_matrix, dtype = float)
