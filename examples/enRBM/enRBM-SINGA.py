@@ -52,7 +52,7 @@ def load_train_data(data_file, label_file, train_num, correl_file):
 
 
 
-def train(data_file, label_file, correl_file, h_dim, train_num, use_gpu, num_epoch=20, batch_size=100):
+def train(data_file, label_file, correl_file, h_dim, train_num, use_gpu, num_epoch=4, batch_size=100):
     print 'Start intialization............'
     lr = 0.1   # Learning rate
     weight_decay  = 0.0001
@@ -170,8 +170,8 @@ def train(data_file, label_file, correl_file, h_dim, train_num, use_gpu, num_epo
         validerrorsum = tensor.sum(tensor.square((tvaliddata - tvalidnegvissample)))
         print 'valid errorsum = %f' % (validerrorsum)
 
-        if epoch == num_epoch:
-            return tensor.to_numpy(tvalidposhidprob), valid_y
+    
+    return tensor.to_numpy(tvalidposhidprob), valid_y
 
 
 if __name__ == '__main__':
@@ -191,7 +191,7 @@ if __name__ == '__main__':
     # validposhidprob = tensor.to_numpy(tvalidposhidprob)
     print "validposhidprob shape = \n", validposhidprob.shape
     print "valid_y shape = \n", valid_y.shape
-    a = numpy.asarray(validposhidprob, dtype = float)
-    b= numpy.asarray(valid_y, dtype = int)
-    numpy.savetxt('transformed_feature.csv', a, fmt = '%6f', delimiter=",")
-    numpy.savetxt('label.csv', b, fmt = '%d', delimiter=",")
+    a = np.asarray(validposhidprob, dtype = float)
+    b= np.asarray(valid_y, dtype = int)
+    np.savetxt('transformed_feature.csv', a, fmt = '%6f', delimiter=",")
+    np.savetxt('label.csv', b, fmt = '%d', delimiter=",")
