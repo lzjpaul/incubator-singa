@@ -43,7 +43,7 @@ def load_train_data(data_file, label_file, train_num, correl_file):
     validlabel = label[idx[train_num:]].astype(np.int)
     print traindata.shape, validdata.shape, trainlabel.shape, validlabel.shape
     file = open(correl_file)
-    correldata = np.genfromtxt(file, delimiter=",")
+    correldata = np.genfromtxt(file, delimiter=",") #this file is for the feature correlation matrix
     file.close()
     print correldata.shape
     correlmatrix = correldata.reshape((traindata.shape[1], traindata.shape[1])).astype(np.float32)
@@ -52,41 +52,35 @@ def load_train_data(data_file, label_file, train_num, correl_file):
 
 
 
-def train(data_file, label_file, correl_file, h_dim, train_num, use_gpu, num_epoch=4, batch_size=100):
+def train(data_file, label_file, correl_file, h_dim, train_num, use_gpu, num_epoch=10, batch_size=100):
     print 'Start intialization............'
     lr = 0.1   # Learning rate
     weight_decay  = 0.0001
     hdim = h_dim
     print "hdim = \n", hdim
-    # print "vdim = \n", vdim
     nonnegative_constant = 0.1 # nonnegative penalty
     smooth_constant = 0.01 # smooth penalty
 
-    # opt = optimizer.SGD(momentum=0.8, weight_decay=weight_decay)
 
-    #?? learning rates and momentum are not changed here
+    #CHECK learning rates and momentum are not changed here
     opt = optimizer.SGD(momentum=0.5, weight_decay=weight_decay)
 
     print 'Loading data ..................'
     train_x, valid_x, train_y, valid_y, correlmatrix = load_train_data(data_file, label_file, train_num, correl_file)
-
+    
     tcorrelmatrix = tensor.from_numpy(correlmatrix)
 
     num_train_batch = train_x.shape[0] / batch_size
     print "num_train_batch = %d " % (num_train_batch)
-
     vdim = train_x.shape[1]
     print "vdim = \n", vdim
-    #?? the following four rows have been moved here from previous lines
-    #?? the initialization should be the same as matlab code
-    # tweight = tensor.Tensor((vdim, hdim))
-    # tweight.gaussian(0.0, 0.1)
+    
+    #CHECK the following initilizations have been moved here after loading data
     tweight = tensor.from_numpy(np.zeros((vdim, hdim), dtype = np.float32))
     tvbias = tensor.from_numpy(np.zeros(vdim, dtype = np.float32))
     thbias = tensor.from_numpy(np.zeros(hdim, dtype = np.float32))
 
-    #?? move from previous lines
-    print "use_gpu: \n", use_gpu
+    #CHECK the following initializations have been moved here after tensor declarations
     if use_gpu:
         dev = device.create_cuda_gpu()
     else:
@@ -107,7 +101,7 @@ def train(data_file, label_file, correl_file, h_dim, train_num, use_gpu, num_epo
             tposhidprob.add_row(thbias)
             tposhidprob = tensor.sigmoid(tposhidprob)
 
-            #?? sparsity of the hidden
+            #CHECK sparsity of the hidden
 
             tposhidrandom = tensor.Tensor(tposhidprob.shape, dev)
             tposhidrandom.uniform(0.0, 1.0)
@@ -134,13 +128,14 @@ def train(data_file, label_file, correl_file, h_dim, train_num, use_gpu, num_epo
             tgvbias = tensor.sum(tnegvissample, 0) - tensor.sum(tdata, 0)
             tghbias = tensor.sum(tneghidprob, 0) - tensor.sum(tposhidprob, 0)
 
-            #?? nonnegative restriction (adding before momentum??)
             tweightzero = tensor.from_numpy(np.zeros((vdim, hdim), dtype = np.float32))
             tweightltzero = tensor.gt(tweight, tweightzero)
-            #?? it is inverse order of substraction??? --- * correct?? -- check apply_with_lr -- no lr here
+            #CHECK order of substraction
+            #CHECK multiplication * 
+            #CHECK no lr here
             tgweight = tgweight + nonnegative_constant * tweightltzero 
 
-            #?? smoothness (adding before momentum??) -- no lr here even in matlab code ..?
+            #CHECK no lr here even in matlab code
             tgweight = tgweight + smooth_constant * tensor.mult(tcorrelmatrix, tweight)
 
             opt.apply_with_lr(epoch, lr / batch_size, tgweight, tweight, 'w')
@@ -169,8 +164,7 @@ def train(data_file, label_file, correl_file, h_dim, train_num, use_gpu, num_epo
 
         validerrorsum = tensor.sum(tensor.square((tvaliddata - tvalidnegvissample)))
         print 'valid errorsum = %f' % (validerrorsum)
-
-    
+        
     return tensor.to_numpy(tvalidposhidprob), valid_y
 
 
@@ -188,10 +182,11 @@ if __name__ == '__main__':
     assert os.path.exists(args.labelfile), 'Pls check the label file'
     assert os.path.exists(args.correlfile), 'Pls check the correl file'
     validposhidprob, valid_y = train(args.datafile, args.labelfile, args.correlfile, args.hdim, args.trainnum, args.use_gpu)
-    # validposhidprob = tensor.to_numpy(tvalidposhidprob)
     print "validposhidprob shape = \n", validposhidprob.shape
     print "valid_y shape = \n", valid_y.shape
+    # save the transformed features and label files for next step logistic regression
     a = np.asarray(validposhidprob, dtype = float)
     b= np.asarray(valid_y, dtype = int)
     np.savetxt('transformed_feature.csv', a, fmt = '%6f', delimiter=",")
     np.savetxt('label.csv', b, fmt = '%d', delimiter=",")
+#running script: python enRBM-SINGA.py /data/zhaojing/regularization/CMSHF/CMS_HF_VECTOR_Regulariz_diag_features.txt /data/zhaojing/regularization/CMSHF/CMS_HF_VECTOR_Regulariz_label.csv /data/zhaojing/regularization/CMSHF/CMSHFSimilarityMatrix2level.txt 100 600
