@@ -17,6 +17,7 @@
 # (1) smoothness and non-negative are set to zero
 
 import numpy as np
+from numpy import linalg as LA
 import os
 import gzip
 import argparse
@@ -29,6 +30,13 @@ from singa import tensor
 
 
 from singa.proto import core_pb2
+
+def matrix_1_norm(matrix):
+    normsum = 0.0
+    for i in range(matrix.shape[0]):
+        # print 'matrix shape: ', matrix[i, :].shape
+        normsum = normsum + LA.norm(matrix[i, :], 1)
+    return normsum
 
 def load_train_data(data_file, label_file, train_num, correl_file):
     file = open(data_file)
@@ -101,6 +109,7 @@ def train(data_file, label_file, correl_file, h_dim, train_num, use_gpu, num_epo
             tdata.to_device(dev)
             tposhidprob = tensor.mult(tdata, tweight)
             tposhidprob.add_row(thbias)
+            # print 'tposhidprob: ', np.linalg.norm(tensor.to_numpy(tposhidprob))
             tposhidprob = tensor.sigmoid(tposhidprob)
 
             #CHECK sparsity of the hidden
@@ -121,8 +130,9 @@ def train(data_file, label_file, correl_file, h_dim, train_num, use_gpu, num_epo
 
             tneghidprob = tensor.mult(tnegvissample, tweight)
             tneghidprob.add_row(thbias)
+            # print 'tneghidprob: ', np.linalg.norm(tensor.to_numpy(tneghidprob))
             tneghidprob = tensor.sigmoid(tneghidprob)
-            error = tensor.sum(tensor.square((tdata - tnegvissample)))
+            error = tensor.sum(tensor.abs((tdata - tnegvissample)))
             trainerrorsum = error + trainerrorsum
             # print 'error this batch = ', error
             sample_num = sample_num + tdata.shape[0]
@@ -130,22 +140,30 @@ def train(data_file, label_file, correl_file, h_dim, train_num, use_gpu, num_epo
             tgweight = tensor.mult(tnegvissample.T(), tneghidprob) -\
                     tensor.mult(tdata.T(), tposhidprob)
             tgvbias = tensor.sum(tnegvissample, 0) - tensor.sum(tdata, 0)
-            print 'tgvbias sum(tdata): ', np.linalg.norm(tensor.to_numpy(tensor.sum(tdata, 0)))
-            print 'tgvbias sum(tnegvissample): ', np.linalg.norm(tensor.to_numpy(tensor.sum(tnegvissample, 0)))
-            
-            tghbias = tensor.sum(tneghidprob, 0) - tensor.sum(tposhidprob, 0)
-            print 'tgvbias sum(tposhidprob): ', np.linalg.norm(tensor.to_numpy(tensor.sum(tposhidprob, 0)))
-            print 'tgvbias sum(tneghidprob): ', np.linalg.norm(tensor.to_numpy(tensor.sum(tneghidprob, 0)))
-           
- 
-            print 'tgweight pos: ', np.linalg.norm(tensor.to_numpy(tensor.mult(tdata.T(), tposhidprob)))
-            print 'tgweight neg: ', np.linalg.norm(tensor.to_numpy(tensor.mult(tnegvissample.T(), tneghidprob)))
-            print 'error this batch = ', error
+            #print 'tgvbias sum(tdata): ', np.linalg.norm(tensor.to_numpy(tensor.sum(tdata, 0)))
+            #print 'tgvbias sum(tnegvissample): ', np.linalg.norm(tensor.to_numpy(tensor.sum(tnegvissample, 0)))
+            # print 'tgvbias sum(tdata): ', LA.norm(tensor.to_numpy(tensor.sum(tdata, 0)), 1)
+            # print 'tensor.to_numpy(tensor.sum(tdata, 0)) shape: ', tensor.to_numpy(tensor.sum(tdata, 0)).shape
+            # print 'tgvbias sum(tnegvissample): ', LA.norm(tensor.to_numpy(tensor.sum(tnegvissample, 0)), 1)
 
-            print 'lr: ', lr
-            print 'weight_decay: ', weight_decay
+            tghbias = tensor.sum(tneghidprob, 0) - tensor.sum(tposhidprob, 0)
+            #print 'tgvbias sum(tposhidprob): ', np.linalg.norm(tensor.to_numpy(tensor.sum(tposhidprob, 0)))
+            #print 'tgvbias sum(tneghidprob): ', np.linalg.norm(tensor.to_numpy(tensor.sum(tneghidprob, 0)))
+            # print 'tgvbias sum(tposhidprob): ', LA.norm(tensor.to_numpy(tensor.sum(tposhidprob, 0)), 1)
+            # print 'tgvbias sum(tneghidprob): ', LA.norm(tensor.to_numpy(tensor.sum(tneghidprob, 0)), 1)
+ 
+ 
+            #print 'tgweight pos: ', np.linalg.norm(tensor.to_numpy(tensor.mult(tdata.T(), tposhidprob)))
+            #print 'tgweight neg: ', np.linalg.norm(tensor.to_numpy(tensor.mult(tnegvissample.T(), tneghidprob)))
+            # print 'tgweight pos: ', matrix_1_norm(tensor.to_numpy(tensor.mult(tdata.T(), tposhidprob)))
+            # print 'tgweight neg: ', matrix_1_norm(tensor.to_numpy(tensor.mult(tnegvissample.T(), tneghidprob)))
+
+            #print 'error this batch = ', error
+
+            #print 'lr: ', lr
+            #print 'weight_decay: ', weight_decay
             # print 'momentum: ', momentum
-            print '\n'
+            #print '\n'
             tweightzero = tensor.from_numpy(np.zeros((vdim, hdim), dtype = np.float32))
             tweightltzero = tensor.gt(tweight, tweightzero)
             #CHECK order of substraction
