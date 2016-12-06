@@ -27,7 +27,11 @@ from singa import device
 from singa import tensor
 from singa.proto import core_pb2
 
-def load_dataset(data_path, label_path, correl_path, train_num):
+data_path = '/data/zhaojing/regularization/CMSHF/CMS_HF_VECTOR_Regulariz_diag_features.txt'
+label_path = '/data/zhaojing/regularization/CMSHF/CMS_HF_VECTOR_Regulariz_label.csv'
+correl_path = '/data/zhaojing/regularization/CMSHF/CMSHFSimilarityMatrix2level.txt'
+
+def load_dataset(train_num):
     file = open(data_path)
     data = np.genfromtxt(file, delimiter=",")
     file.close()
@@ -51,7 +55,7 @@ def load_dataset(data_path, label_path, correl_path, train_num):
 
 
 
-def train(data_path, label_path, correl_path, h_dim, train_num, use_gpu, num_epoch=10, batch_size=100):
+def train(h_dim, train_num, use_gpu, num_epoch=10, batch_size=100):
     print 'Start intialization............'
     lr = 0.1   # Learning rate
     weight_decay  = 0.0002
@@ -65,7 +69,7 @@ def train(data_path, label_path, correl_path, h_dim, train_num, use_gpu, num_epo
     opt = optimizer.SGD(momentum=0.5, weight_decay=weight_decay)
 
     print 'Loading data ..................'
-    train_x, valid_x, train_y, valid_y, correlmatrix = load_dataset(data_path, label_path, correl_path, train_num)
+    train_x, valid_x, train_y, valid_y, correlmatrix = load_dataset(train_num)
     tcorrelmatrix = tensor.from_numpy(correlmatrix)
     num_train_batch = train_x.shape[0] / batch_size
     print "num_train_batch =  ", (num_train_batch)
@@ -159,10 +163,7 @@ def train(data_path, label_path, correl_path, h_dim, train_num, use_gpu, num_epo
     return tensor.to_numpy(tvalidposhidprob), valid_y
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Train RBM over Healthcare EMR data')
-    parser.add_argument('-dp', type=str, default='CMS_HF_VECTOR_Regulariz_diag_features.txt', help='the dataset path')
-    parser.add_argument('-lp', type=str, default='CMS_HF_VECTOR_Regulariz_label.csv', help='the labelfile path')
-    parser.add_argument('-cp', type=str, default='CMSHFSimilarityMatrix2level.txt', help='the correlationfile path')
+    parser = argparse.ArgumentParser(description='Train RBM over MNIST')
     parser.add_argument('-d', type=int, default=200, help='hidden dimension')
     parser.add_argument('-n', type=int, default=600, help='the number of training samples')
     parser.add_argument('-p', '--port', default=9999, help='listening port')
@@ -179,7 +180,7 @@ if __name__ == '__main__':
         print "runing with cpu"
         dev = device.get_default_device()
 
-    validposhidprob, valid_y = train(args.dp, args.lp, args. cp, args.d, args.n, args.use_gpu)
+    validposhidprob, valid_y = train(args.d, args.n, args.use_gpu)
     print "validposhidprob shape = \n", validposhidprob.shape
     print "valid_y shape = \n", valid_y.shape
     # save the transformed features and label files for next step logistic regression
