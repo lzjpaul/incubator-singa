@@ -31,41 +31,6 @@ data_path = '/data/zhaojing/regularization/CMSHF/CMS_HF_VECTOR_Regulariz_diag_fe
 label_path = '/data/zhaojing/regularization/CMSHF/CMS_HF_VECTOR_Regulariz_label.csv'
 correl_path = '/data/zhaojing/regularization/CMSHF/CMSHFSimilarityMatrix2level.txt'
 
-'''
-def main():
-    try:
-        print "in main"
-        parser = argparse.ArgumentParser(description='Train RBM over MNIST')
-        parser.add_argument('-d', type=int, default=100, help='hidden dimension')
-        parser.add_argument('-n', type=int, default=600, help='the number of training samples')
-        parser.add_argument('-p', '--port', default=9999, help='listening port')
-        parser.add_argument('-C', '--use_cpu', action="store_true")
-    
-        args = parser.parse_args()
-        # port = args.port
-
-        use_cpu = args.use_cpu
-        if use_cpu:
-            print "runing with cpu"
-            dev = device.get_default_device()
-        else:
-            print "runing with gpu"
-            dev = device.create_cuda_gpu()
-        
-        validposhidprob, valid_y = train(args.d, args.n, args.use_gpu)
-        print "validposhidprob shape = \n", validposhidprob.shape
-        print "valid_y shape = \n", valid_y.shape
-        # save the transformed features and label files for next step logistic regression
-        a = np.asarray(validposhidprob, dtype = float)
-        b= np.asarray(valid_y, dtype = int)
-        np.savetxt('transformed_feature.csv', a, fmt = '%6f', delimiter=",")
-        np.savetxt('label.csv', b, fmt = '%d', delimiter=",")
-    except SystemExit:
-        return
-    except:
-        traceback.print_exc()
-        sys.stderr.write("  for help use --help \n\n")
-'''
 def load_dataset(train_num):
     file = open(data_path)
     data = np.genfromtxt(file, delimiter=",")
@@ -205,7 +170,7 @@ if __name__ == '__main__':
     parser.add_argument('-G', '--use_gpu', action="store_true")
     
     args = parser.parse_args()
-    # port = args.port
+    port = args.port
 
     use_gpu = args.use_gpu
     if use_gpu:
