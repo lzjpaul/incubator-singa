@@ -1,12 +1,12 @@
 #!/bin/bash
-hostfile="/home/singa/zhaojing/NUH-singa/incubator-singa/script/marbleslaves_a_1"
+hostfile="/home/singa/zhaojing/NUH-singa/incubator-singa/script/marbleslaves_ab"
 
 hosts=(`cat $hostfile |cut -d ' ' -f1`)
 
 #for i in 1 2 3; do ssh awan-0-0$i-0 "hostname"; done
 
 #for i in ${hosts[@]}
-for i in `cat /home/singa/zhaojing/NUH-singa/incubator-singa/script/marbleslaves_a_1`
+for i in `cat /home/singa/zhaojing/NUH-singa/incubator-singa/script/marbleslaves_ab`
 do
     echo $i
       echo "ssh $i"
@@ -17,6 +17,7 @@ do
         # ssh $i "scp -r singa@logbase-gw:/data/zhaojing/software/ /data/zhaojing/"
         # ssh $i "scp -r singa@logbase-gw:/data/zhaojing/marble/ /data/zhaojing/"
         # ssh $i "scp -r singa@logbase-gw:/data/zhaojing/cnn/MARBLE/label/ /data/zhaojing/cnn/MARBLE/"
-        ssh $i "scp -r singa@logbase-gw:/data/zhaojing/regularization /data/zhaojing/"
+        # ssh $i "scp -r singa@logbase-gw:/data/zhaojing/regularization /data/zhaojing/"
         # ssh $i "scp -r singa@logbase-gw:/data/zhaojing/cnn/MARBLE/PEARSON-3/ /data/zhaojing/cnn/MARBLE/"
+        ssh $i "mkdir /data/zhaojing/regularization/log1209/"
       done
