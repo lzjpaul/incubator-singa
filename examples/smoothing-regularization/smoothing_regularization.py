@@ -49,7 +49,7 @@ class Smoothing_Regularization(BaseEstimator, LinearClassifierMixin):
             self.n_iter_, self.w_ = optimizator_gd.smoothing_optimizator_avg(X, y, self.lambd, self.C,
                                                         self.max_iter, self.eps, self.alpha, self.decay, self.batch_size)
         else:
-            print "using smoothing_optimizator_singa"
+            # print "using smoothing_optimizator_singa"
             # print "self.batch_size: ", self.batch_size
             self.n_iter_, self.w_ = optimizator_gd.smoothing_optimizator_singa(X, y, self.lambd, self.C,
                                                         self.max_iter, self.eps, self.alpha, self.decay, self.batch_size)

@@ -47,21 +47,26 @@ def smoothing_grad_descent(batch_X, batch_y, w, param, C):
     # print 'res.sum(axis=0) shape: ', res.sum(axis=0).shape
     return grad + res.sum(axis=0)
 
-def smoothing_grad_descent_gpu(batch_X, batch_y, w, param, C):
-    dev = device.create_cuda_gpu()
-
+def smoothing_grad_descent_gpu(batch_X, batch_y, w, param, C, dev):
+    # print "in smoothing_grad_descent_gpu first line"
+    # dev = device.create_cuda_gpu()
+    # print "in smoothing_grad_descent_gpu, before to_device(gpu)"
     if sparse.issparse(batch_X): batch_X = batch_X.toarray()
-    
+   
+    # print "before tbatch_X.to_device(dev)" 
     tbatch_X = tensor.from_numpy(batch_X)
     tbatch_X.to_device(dev)
+    w = w.reshape(1, w.shape[0])
     tw = tensor.from_numpy(w)
     tw.to_device(dev)
     tbatch_y = tensor.from_numpy(batch_y)
     tbatch_y.to_device(dev)
-
-    tgrad =  param * ((tensor.exp(tw) - 1.) / (tensor.exp(w) + 1.)) # log(1+e^(-w)) + log(1+e^(w))
-    # print 'grad.shape: ', grad.shape
+    # print "before tgrad ="
+    tgrad =  param * ((tensor.exp(tw) - 1.) / (tensor.exp(tw) + 1.)) # log(1+e^(-w)) + log(1+e^(w))
+    # print "after tgrad"
+    # print 'after tgrad grad.shape: ', grad.shape
     tf1 = tensor.exp( ((-1) * tbatch_y) * tensor.mult(tw, tbatch_X.T()) )
+    # print "after tf1"
     tres = tbatch_X
     tres.mult_column(C * ((-1) * tbatch_y) * (tf1 / (1.0 + tf1)))
     # print 'res.shape: ', res.shape
@@ -172,7 +177,7 @@ def smoothing_optimizator_singa(X, y, lambd, C, max_iter, eps, alpha, decay, bat
         dev = device.create_cuda_gpu()
     else:
         dev = device.get_default_device()
-
+    cpudev = device.get_default_device()
     tw.to_device(dev)
 
 
@@ -182,6 +187,7 @@ def smoothing_optimizator_singa(X, y, lambd, C, max_iter, eps, alpha, decay, bat
     X = X[idx]
     y = y[idx]
     epoch = 0
+    # print "smoothing_optimizator_singa ~~"
     while True:
         # sparse matrix works, random.shuffle
         # shuffle: next time shuffle index will be forgetten (static variable: smoothing_grad_descent.idx)
@@ -198,11 +204,13 @@ def smoothing_optimizator_singa(X, y, lambd, C, max_iter, eps, alpha, decay, bat
             y = y[idx]
 
         batch_X, batch_y = X[index : (index + batch_size)], y[index : (index + batch_size)]
-        tw.to_device(device.get_default_device())
-        tgw = smoothing_grad_descent_gpu(batch_X, batch_y, tensor.to_numpy(tw), lambd, C)
-        tw_update = alpha * smoothing_grad_descent_gpu(batch_X, batch_y, tensor.to_numpy(tw), lambd, C)
+        # print "before smoothing_grad_descent_gpu"
+        tw.to_device(cpudev)
+        # print "after tw.to_device(device.get_default_device())"
+        tgw = smoothing_grad_descent_gpu(batch_X, batch_y, tensor.to_numpy(tw), lambd, C, dev)
+        tw_update = alpha * smoothing_grad_descent_gpu(batch_X, batch_y, tensor.to_numpy(tw), lambd, C, dev)
         tw.to_device(dev)
-        tw_update.to_device(device.get_default_device())
+        tw_update.to_device(cpudev)
         # w -= w_update
         alpha -= alpha * decay
         # !!!! here regularization no need to divided by /batchsize!!
@@ -210,11 +218,12 @@ def smoothing_optimizator_singa(X, y, lambd, C, max_iter, eps, alpha, decay, bat
         # !!!! here regularization no need to divided by /batchsize!!
         k += 1
         # if k % 200 == 0:
-        #     print "smoothing_optimizator k: ", k
+        # print "smoothing_optimizator k: ", k
         batch_iter = batch_iter + 1
         if k >= max_iter or np.linalg.norm(tensor.to_numpy(tw_update), ord=2) < eps:
             break
     print "smoothing opt final k: ", k
+    tw.to_device(cpudev)
     return k, tensor.to_numpy(tw)
 
 def smoothing_optimizator(X, y, lambd, C, max_iter, eps, alpha, decay, batch_size, use_gpu=False):

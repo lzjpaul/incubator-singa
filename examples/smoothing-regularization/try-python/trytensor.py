@@ -3,6 +3,8 @@ import numpy as np
 from singa import device
 
 dev = device.create_cuda_gpu()
+# dev1 = device.create_cuda_gpu()
+
 # dev = device.get_default_device()
 cpudev = device.get_default_device()
 
@@ -46,6 +48,14 @@ print "element-wise mul: ", tensor.to_numpy(eltwise_mul_res)
 eltwise_mul_res.to_device(dev)
 
 eltwise_mul_res_2 = eltwise_div_res * tdivide
+eltwise_div_res.to_device(cpudev)
+tdivide.to_device(cpudev)
+print "eltwise_div_res shape: ", tensor.to_numpy(eltwise_div_res).shape
+print "tdivide shape: ", tensor.to_numpy(tdivide).shape
+
+eltwise_div_res.to_device(dev)
+tdivide.to_device(dev)
+
 
 eltwise_mul_res_2.to_device(cpudev)
 print "element-wise mul2: ", tensor.to_numpy(eltwise_mul_res_2)
