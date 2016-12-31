@@ -155,10 +155,10 @@ if __name__ == '__main__':
             print st
 
             number_jobs = 1
-            if args.njob == 100:
-                number_jobs = -1
+            if args.njob == 1:
+                number_jobs = 1
             else:
-                number_jobs = args.njob
+                number_jobs = -1
             print "number_jobs: ", number_jobs
             gs = GridSearchCV(clf, param_grid, scoring=scoring, cv=param_folds, n_jobs=number_jobs)
             gs.fit(X[train_index], y[train_index])
