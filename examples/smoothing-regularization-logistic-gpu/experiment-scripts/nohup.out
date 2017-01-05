@@ -1,0 +1,1576 @@
+/home/zhaojing/smooth-regularization/incubator-singa/pysinga/local/lib/python2.7/site-packages/sklearn/cross_validation.py:44: DeprecationWarning: This module was deprecated in version 0.18 in favor of the model_selection module into which all the refactored classes and functions are moved. Also note that the interface of the new CV iterators are different from that of this module. This module will be removed in 0.20.
+  "This module will be removed in 0.20.", DeprecationWarning)
+/home/zhaojing/smooth-regularization/incubator-singa/pysinga/local/lib/python2.7/site-packages/sklearn/grid_search.py:43: DeprecationWarning: This module was deprecated in version 0.18 in favor of the model_selection module into which all the refactored classes and functions are moved. This module will be removed in 0.20.
+  DeprecationWarning)
+svmlight X shape:  (16000, 3231949)
+svmlight Y shape:  (16000,)
+using data loader
+#process is 1?
+sparsify?:  True
+X.shape = 
+(16000, 3231949)
+X dtype = 
+float64
+y.shape = 
+(16000,)
+isinstance(X, list):  False
+idx:  [13184 13298 12893 ..., 12815  7293  1289]
+clf_name: 
+Smoothing_Regularization
+2017-01-05 22:37:12
+number_jobs:  3
+Fitting 3 folds for each of 8 candidates, totalling 24 fits
+/home/zhaojing/smooth-regularization/incubator-singa/pysinga/local/lib/python2.7/site-packages/sklearn/cross_validation.py:44: DeprecationWarning: This module was deprecated in version 0.18 in favor of the model_selection module into which all the refactored classes and functions are moved. Also note that the interface of the new CV iterators are different from that of this module. This module will be removed in 0.20.
+  "This module will be removed in 0.20.", DeprecationWarning)
+/home/zhaojing/smooth-regularization/incubator-singa/pysinga/local/lib/python2.7/site-packages/sklearn/grid_search.py:43: DeprecationWarning: This module was deprecated in version 0.18 in favor of the model_selection module into which all the refactored classes and functions are moved. This module will be removed in 0.20.
+  DeprecationWarning)
+svmlight X shape:  (16000, 3231949)
+svmlight Y shape:  (16000,)
+using data loader
+#process is 1?
+sparsify?:  True
+X.shape = 
+(16000, 3231949)
+X dtype = 
+float64
+y.shape = 
+(16000,)
+isinstance(X, list):  False
+idx:  [13184 13298 12893 ..., 12815  7293  1289]
+clf_name: 
+Smoothing_Regularization
+2017-01-05 22:41:50
+number_jobs:  3
+Fitting 3 folds for each of 8 candidates, totalling 24 fits
+[CV] estimator__C=1.0, estimator__lambd=1000, estimator__batch_size=50 
+fit begin y:  [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 1 1 0 1 1 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0
+ 0 1 0 1 0 1 1 1 1 0 0 1 1 0 1 0 1 0 1 0 1 0 1 1 1 0 0 1 0 0 1 0 0 0 0 0 0
+ 1 1 1 0 0 0 1 0 0 1 1 1 1 0 0 1 1 1 0 0 1 0 0 1 1 0]
+in Smoothing_Regularization fit
+fit X shape:  (8532, 3231949)
+fit y shape:  (8532,)
+fit y norm:  56.3914887195
+fit y after unique:  [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 1 1 0 1 1 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0
+ 0 1 0 1 0 1 1 1 1 0 0 1 1 0 1 0 1 0 1 0 1 0 1 1 1 0 0 1 0 0 1 0 0 0 0 0 0
+ 1 1 1 0 0 0 1 0 0 1 1 1 1 0 0 1 1 1 0 0 1 0 0 1 1 0]
+fit y after unique self.classes_:  [0 1]
+smoothing_optimizator k:  2
+smoothing_optimizator k:  4
+smoothing_optimizator k:  6
+smoothing_optimizator k:  8
+smoothing_optimizator k:  10
+smoothing_optimizator k:  12
+smoothing_optimizator k:  14
+smoothing_optimizator k:  16
+smoothing_optimizator k:  18
+smoothing_optimizator k:  20
+smoothing_optimizator k:  22
+smoothing_optimizator k:  24
+smoothing_optimizator k:  26
+smoothing_optimizator k:  28
+smoothing_optimizator k:  30
+smoothing_optimizator k:  32
+smoothing_optimizator k:  34
+smoothing_optimizator k:  36
+smoothing_optimizator k:  38
+smoothing_optimizator k:  40
+smoothing_optimizator k:  42
+smoothing_optimizator k:  44
+smoothing_optimizator k:  46
+smoothing_optimizator k:  48
+smoothing_optimizator k:  50
+smoothing_optimizator k:  52
+smoothing_optimizator k:  54
+smoothing_optimizator k:  56
+smoothing_optimizator k:  58
+smoothing_optimizator k:  60
+smoothing_optimizator k:  62
+smoothing_optimizator k:  64
+smoothing_optimizator k:  66
+smoothing_optimizator k:  68
+smoothing_optimizator k:  70
+smoothing_optimizator k:  72
+smoothing_optimizator k:  74
+smoothing_optimizator k:  76
+smoothing_optimizator k:  78
+smoothing_optimizator k:  80
+smoothing_optimizator k:  82
+smoothing_optimizator k:  84
+smoothing_optimizator k:  86
+smoothing_optimizator k:  88
+smoothing_optimizator k:  90
+smoothing_optimizator k:  92
+smoothing_optimizator k:  94
+smoothing_optimizator k:  96
+smoothing_optimizator k:  98
+smoothing_optimizator k:  100
+smoothing_optimizator k:  102
+smoothing_optimizator k:  104
+smoothing_optimizator k:  106
+smoothing_optimizator k:  108
+smoothing_optimizator k:  110
+smoothing_optimizator k:  112
+smoothing_optimizator k:  114
+smoothing_optimizator k:  116
+smoothing_optimizator k:  118
+smoothing_optimizator k:  120
+smoothing_optimizator k:  122
+smoothing_optimizator k:  124
+smoothing_optimizator k:  126
+smoothing_optimizator k:  128
+smoothing_optimizator k:  130
+smoothing_optimizator k:  132
+smoothing_optimizator k:  134
+smoothing_optimizator k:  136
+smoothing_optimizator k:  138
+smoothing_optimizator k:  140
+smoothing_optimizator k:  142
+smoothing_optimizator k:  144
+smoothing_optimizator k:  146
+smoothing_optimizator k:  148
+smoothing_optimizator k:  150
+smoothing_optimizator k:  152
+smoothing_optimizator k:  154
+smoothing_optimizator k:  156
+smoothing_optimizator k:  158
+smoothing_optimizator k:  160
+smoothing_optimizator k:  162
+smoothing_optimizator k:  164
+smoothing_optimizator k:  166
+smoothing_optimizator k:  168
+smoothing_optimizator k:  170
+smoothing_optimizator k:  172
+smoothing_optimizator k:  174
+smoothing_optimizator k:  176
+smoothing_optimizator k:  178
+smoothing_optimizator k:  180
+smoothing_optimizator k:  182
+smoothing_optimizator k:  184
+smoothing_optimizator k:  186
+smoothing_optimizator k:  188
+smoothing_optimizator k:  190
+smoothing_optimizator k:  192
+smoothing_optimizator k:  194
+smoothing_optimizator k:  196
+smoothing_optimizator k:  198
+smoothing_optimizator k:  200
+smoothing_optimizator k:  202
+smoothing_optimizator k:  204
+smoothing_optimizator k:  206
+smoothing_optimizator k:  208
+smoothing_optimizator k:  210
+smoothing_optimizator k:  212
+smoothing_optimizator k:  214
+smoothing_optimizator k:  216
+smoothing_optimizator k:  218
+smoothing_optimizator k:  220
+smoothing_optimizator k:  222
+smoothing_optimizator k:  224
+smoothing_optimizator k:  226
+smoothing_optimizator k:  228
+smoothing_optimizator k:  230
+smoothing_optimizator k:  232
+sm[CV] estimator__C=1.0, estimator__lambd=1000, estimator__batch_size=50 
+fit begin y:  [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 1 1 0 0 0 1 0 0 1 0 0 1 1 0 0 0
+ 1 0 0 0 0 0 1 0 0 0 1 1 1 1 0 0 0 0 0 1 1 1 0 1 0 1 1 0 1 0 0 0 0 0 0 0 0
+ 0 1 0 1 0 0 1 0 1 0 0 1 0 0 1 0 1 0 0 0 0 1 0 0 0 0]
+in Smoothing_Regularization fit
+fit X shape:  (8533, 3231949)
+fit y shape:  (8533,)
+fit y norm:  56.3914887195
+fit y after unique:  [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 1 1 0 0 0 1 0 0 1 0 0 1 1 0 0 0
+ 1 0 0 0 0 0 1 0 0 0 1 1 1 1 0 0 0 0 0 1 1 1 0 1 0 1 1 0 1 0 0 0 0 0 0 0 0
+ 0 1 0 1 0 0 1 0 1 0 0 1 0 0 1 0 1 0 0 0 0 1 0 0 0 0]
+fit y after unique self.classes_:  [0 1]
+smoothing_optimizator k:  2
+smoothing_optimizator k:  4
+smoothing_optimizator k:  6
+smoothing_optimizator k:  8
+smoothing_optimizator k:  10
+smoothing_optimizator k:  12
+smoothing_optimizator k:  14
+smoothing_optimizator k:  16
+smoothing_optimizator k:  18
+smoothing_optimizator k:  20
+smoothing_optimizator k:  22
+smoothing_optimizator k:  24
+smoothing_optimizator k:  26
+smoothing_optimizator k:  28
+smoothing_optimizator k:  30
+smoothing_optimizator k:  32
+smoothing_optimizator k:  34
+smoothing_optimizator k:  36
+smoothing_optimizator k:  38
+smoothing_optimizator k:  40
+smoothing_optimizator k:  42
+smoothing_optimizator k:  44
+smoothing_optimizator k:  46
+smoothing_optimizator k:  48
+smoothing_optimizator k:  50
+smoothing_optimizator k:  52
+smoothing_optimizator k:  54
+smoothing_optimizator k:  56
+smoothing_optimizator k:  58
+smoothing_optimizator k:  60
+smoothing_optimizator k:  62
+smoothing_optimizator k:  64
+smoothing_optimizator k:  66
+smoothing_optimizator k:  68
+smoothing_optimizator k:  70
+smoothing_optimizator k:  72
+smoothing_optimizator k:  74
+smoothing_optimizator k:  76
+smoothing_optimizator k:  78
+smoothing_optimizator k:  80
+smoothing_optimizator k:  82
+smoothing_optimizator k:  84
+smoothing_optimizator k:  86
+smoothing_optimizator k:  88
+smoothing_optimizator k:  90
+smoothing_optimizator k:  92
+smoothing_optimizator k:  94
+smoothing_optimizator k:  96
+smoothing_optimizator k:  98
+smoothing_optimizator k:  100
+smoothing_optimizator k:  102
+smoothing_optimizator k:  104
+smoothing_optimizator k:  106
+smoothing_optimizator k:  108
+smoothing_optimizator k:  110
+smoothing_optimizator k:  112
+smoothing_optimizator k:  114
+smoothing_optimizator k:  116
+smoothing_optimizator k:  118
+smoothing_optimizator k:  120
+smoothing_optimizator k:  122
+smoothing_optimizator k:  124
+smoothing_optimizator k:  126
+smoothing_optimizator k:  128
+smoothing_optimizator k:  130
+smoothing_optimizator k:  132
+smoothing_optimizator k:  134
+smoothing_optimizator k:  136
+smoothing_optimizator k:  138
+smoothing_optimizator k:  140
+smoothing_optimizator k:  142
+smoothing_optimizator k:  144
+smoothing_optimizator k:  146
+smoothing_optimizator k:  148
+smoothing_optimizator k:  150
+smoothing_optimizator k:  152
+smoothing_optimizator k:  154
+smoothing_optimizator k:  156
+smoothing_optimizator k:  158
+smoothing_optimizator k:  160
+smoothing_optimizator k:  162
+smoothing_optimizator k:  164
+smoothing_optimizator k:  166
+smoothing_optimizator k:  168
+smoothing_optimizator k:  170
+smoothing_optimizator k:  172
+smoothing_optimizator k:  174
+smoothing_optimizator k:  176
+smoothing_optimizator k:  178
+smoothing_optimizator k:  180
+smoothing_optimizator k:  182
+smoothing_optimizator k:  184
+smoothing_optimizator k:  186
+smoothing_optimizator k:  188
+smoothing_optimizator k:  190
+smoothing_optimizator k:  192
+smoothing_optimizator k:  194
+smoothing_optimizator k:  196
+smoothing_optimizator k:  198
+smoothing_optimizator k:  200
+smoothing_optimizator k:  202
+smoothing_optimizator k:  204
+smoothing_optimizator k:  206
+smoothing_optimizator k:  208
+smoothing_optimizator k:  210
+smoothing_optimizator k:  212
+smoothing_optimizator k:  214
+smoothing_optimizator k:  216
+smoothing_optimizator k:  218
+smoothing_optimizator k:  220
+smoothing_optimizator k:  222
+smoothing_optimizator k:  224
+smoothing_optimizator k:  226
+smoothing_optimizator k:  228
+smoothing_optimizator k:  230
+smoothing_optimizator k:  232
+sm[CV] estimator__C=1.0, estimator__lambd=1000, estimator__batch_size=50 
+fit begin y:  [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 1 1 0 0 0 1 0 0 1 0 0 1 1 0 0 0
+ 1 0 0 0 0 0 1 0 0 0 1 1 1 1 0 0 0 0 0 1 1 1 0 1 0 1 1 0 1 0 0 0 0 0 0 0 0
+ 0 1 0 1 0 0 1 0 1 0 0 1 0 0 1 0 1 0 0 0 0 1 0 0 0 0]
+in Smoothing_Regularization fit
+fit X shape:  (8533, 3231949)
+fit y shape:  (8533,)
+fit y norm:  56.3914887195
+fit y after unique:  [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 1 1 0 0 0 1 0 0 1 0 0 1 1 0 0 0
+ 1 0 0 0 0 0 1 0 0 0 1 1 1 1 0 0 0 0 0 1 1 1 0 1 0 1 1 0 1 0 0 0 0 0 0 0 0
+ 0 1 0 1 0 0 1 0 1 0 0 1 0 0 1 0 1 0 0 0 0 1 0 0 0 0]
+fit y after unique self.classes_:  [0 1]
+smoothing_optimizator k:  2
+smoothing_optimizator k:  4
+smoothing_optimizator k:  6
+smoothing_optimizator k:  8
+smoothing_optimizator k:  10
+smoothing_optimizator k:  12
+smoothing_optimizator k:  14
+smoothing_optimizator k:  16
+smoothing_optimizator k:  18
+smoothing_optimizator k:  20
+smoothing_optimizator k:  22
+smoothing_optimizator k:  24
+smoothing_optimizator k:  26
+smoothing_optimizator k:  28
+smoothing_optimizator k:  30
+smoothing_optimizator k:  32
+smoothing_optimizator k:  34
+smoothing_optimizator k:  36
+smoothing_optimizator k:  38
+smoothing_optimizator k:  40
+smoothing_optimizator k:  42
+smoothing_optimizator k:  44
+smoothing_optimizator k:  46
+smoothing_optimizator k:  48
+smoothing_optimizator k:  50
+smoothing_optimizator k:  52
+smoothing_optimizator k:  54
+smoothing_optimizator k:  56
+smoothing_optimizator k:  58
+smoothing_optimizator k:  60
+smoothing_optimizator k:  62
+smoothing_optimizator k:  64
+smoothing_optimizator k:  66
+smoothing_optimizator k:  68
+smoothing_optimizator k:  70
+smoothing_optimizator k:  72
+smoothing_optimizator k:  74
+smoothing_optimizator k:  76
+smoothing_optimizator k:  78
+smoothing_optimizator k:  80
+smoothing_optimizator k:  82
+smoothing_optimizator k:  84
+smoothing_optimizator k:  86
+smoothing_optimizator k:  88
+smoothing_optimizator k:  90
+smoothing_optimizator k:  92
+smoothing_optimizator k:  94
+smoothing_optimizator k:  96
+smoothing_optimizator k:  98
+smoothing_optimizator k:  100
+smoothing_optimizator k:  102
+smoothing_optimizator k:  104
+smoothing_optimizator k:  106
+smoothing_optimizator k:  108
+smoothing_optimizator k:  110
+smoothing_optimizator k:  112
+smoothing_optimizator k:  114
+smoothing_optimizator k:  116
+smoothing_optimizator k:  118
+smoothing_optimizator k:  120
+smoothing_optimizator k:  122
+smoothing_optimizator k:  124
+smoothing_optimizator k:  126
+smoothing_optimizator k:  128
+smoothing_optimizator k:  130
+smoothing_optimizator k:  132
+smoothing_optimizator k:  134
+smoothing_optimizator k:  136
+smoothing_optimizator k:  138
+smoothing_optimizator k:  140
+smoothing_optimizator k:  142
+smoothing_optimizator k:  144
+smoothing_optimizator k:  146
+smoothing_optimizator k:  148
+smoothing_optimizator k:  150
+smoothing_optimizator k:  152
+smoothing_optimizator k:  154
+smoothing_optimizator k:  156
+smoothing_optimizator k:  158
+smoothing_optimizator k:  160
+smoothing_optimizator k:  162
+smoothing_optimizator k:  164
+smoothing_optimizator k:  166
+smoothing_optimizator k:  168
+smoothing_optimizator k:  170
+smoothing_optimizator k:  172
+smoothing_optimizator k:  174
+smoothing_optimizator k:  176
+smoothing_optimizator k:  178
+smoothing_optimizator k:  180
+smoothing_optimizator k:  182
+smoothing_optimizator k:  184
+smoothing_optimizator k:  186
+smoothing_optimizator k:  188
+smoothing_optimizator k:  190
+smoothing_optimizator k:  192
+smoothing_optimizator k:  194
+smoothing_optimizator k:  196
+smoothing_optimizator k:  198
+smoothing_optimizator k:  200
+smoothing_optimizator k:  202
+smoothing_optimizator k:  204
+smoothing_optimizator k:  206
+smoothing_optimizator k:  208
+smoothing_optimizator k:  210
+smoothing_optimizator k:  212
+smoothing_optimizator k:  214
+smoothing_optimizator k:  216
+smoothing_optimizator k:  218
+smoothing_optimizator k:  220
+smoothing_optimizator k:  222
+smoothing_optimizator k:  224
+smoothing_optimizator k:  226
+smoothing_optimizator k:  228
+smoothing_optimizator k:  230
+smoothing_optimizator k:  232
+smoothing_optimizator k:  234
+smoothing_optimizator k:  236
+smoothing_optimizator k:  238
+smoothing_optimizator k:  240
+smoothing_optimizator k:  242
+smoothing_optimizator k:  244
+smoothing_optimizator k:  246
+smoothing_optimizator k:  248
+smoothing_optimizator k:  250
+smoothing_optimizator k:  252
+smoothing_optimizator k:  254
+smoothing_optimizator k:  256
+smoothing_optimizator k:  258
+smoothing_optimizator k:  260
+smoothing_optimizator k:  262
+smoothing_optimizator k:  264
+smoothing_optimizator k:  266
+smoothing_optimizator k:  268
+smoothing_optimizator k:  270
+smoothing_optimizator k:  272
+smoothing_optimizator k:  274
+smoothing_optimizator k:  276
+smoothing_optimizator k:  278
+smoothing_optimizator k:  280
+smoothing_optimizator k:  282
+smoothing_optimizator k:  284
+smoothing_optimizator k:  286
+smoothing_optimizator k:  288
+smoothing_optimizator k:  290
+smoothing_optimizator k:  292
+smoothing_optimizator k:  294
+smoothing_optimizator k:  296
+smoothing_optimizator k:  298
+smoothing_optimizator k:  300
+smoothing_optimizator k:  302
+smoothing_optimizator k:  304
+smoothing_optimizator k:  306
+smoothing_optimizator k:  308
+smoothing_optimizator k:  310
+smoothing_optimizator k:  312
+smoothing_optimizator k:  314
+smoothing_optimizator k:  316
+smoothing_optimizator k:  318
+smoothing_optimizator k:  320
+smoothing_optimizator k:  322
+smoothing_optimizator k:  324
+smoothing_optimizator k:  326
+smoothing_optimizator k:  328
+smoothing_optimizator k:  330
+smoothing_optimizator k:  332
+smoothing_optimizator k:  334
+smoothing_optimizator k:  336
+smoothing_optimizator k:  338
+smoothing_optimizator k:  340
+smoothing_optimizator k:  342
+smoothing_optimizator k:  344
+smoothing_optimizator k:  346
+smoothing_optimizator k:  348
+smoothing_optimizator k:  350
+smoothing_optimizator k:  352
+smoothing_optimizator k:  354
+smoothing_optimizator k:  356
+smoothing_optimizator k:  358
+smoothing_optimizator k:  360
+smoothing_optimizator k:  362
+smoothing_optimizator k:  364
+smoothing_optimizator k:  366
+smoothing_optimizator k:  368
+smoothing_optimizator k:  370
+smoothing_optimizator k:  372
+smoothing_optimizator k:  374
+smoothing_optimizator k:  376
+smoothing_optimizator k:  378
+smoothing_optimizator k:  380
+smoothing_optimizator k:  382
+smoothing_optimizator k:  384
+smoothing_optimizator k:  386
+smoothing_optimizator k:  388
+smoothing_optimizator k:  390
+smoothing_optimizator k:  392
+smoothing_optimizator k:  394
+smoothing_optimizator k:  396
+smoothing_optimizator k:  398
+smoothing_optimizator k:  400
+smoothing_optimizator k:  402
+smoothing_optimizator k:  404
+smoothing_optimizator k:  406
+smoothing_optimizator k:  408
+smoothing_optimizator k:  410
+smoothing_optimizator k:  412
+smoothing_optimizator k:  414
+smoothing_optimizator k:  416
+smoothing_optimizator k:  418
+smoothing_optimizator k:  420
+smoothing_optimizator k:  422
+smoothing_optimizator k:  424
+smoothing_optimizator k:  426
+smoothing_optimizator k:  428
+smoothing_optimizator k:  430
+smoothing_optimizator k:  432
+smoothing_optimizator k:  434
+smoothing_optimizator k:  436
+smoothing_optimizator k:  438
+smoothing_optimizator k:  440
+smoothing_optimizator k:  442
+smoothing_optimizator k:  444
+smoothing_optimizator k:  446
+smoothing_optimizator k:  448
+smoothing_optimizator k:  450
+smoothing_optimizator k:  452
+smoothing_optimizator k:  454
+smoothing_optimizator k:  456
+smoothing_optimizator k:  458
+smoothing_optimizator k:  460
+smoothing_optimizator k:  462
+smoothing_optimizator k:  464
+smoothing_optimizator k:  466
+smoothing_optimizator k:  468
+smoothing_optimizator k:  470
+smoothing_optimizator k:  472
+smoothing_optimizator k:  474
+smoothing_optimizator k:  476
+smoothing_optimizator k:  478
+smoothing_optimizator k:  480
+smoothing_optimizator k:  482
+smoothing_optimizator k:  484
+smoothing_optimizator k:  486
+smoothing_optimizator k:  488
+smoothing_optimizator k:  490
+smoothing_optimizator k:  492
+smoothing_optimizator k:  494
+smoothing_optimizator k:  496
+smoothing_optimizator k:  498
+smoothing_optimizator k:  500
+smoothing_optimizator k:  502
+smoothing_optimizator k:  504
+smoothing_optimizaoothing_optimizator k:  234
+smoothing_optimizator k:  236
+smoothing_optimizator k:  238
+smoothing_optimizator k:  240
+smoothing_optimizator k:  242
+smoothing_optimizator k:  244
+smoothing_optimizator k:  246
+smoothing_optimizator k:  248
+smoothing_optimizator k:  250
+smoothing_optimizator k:  252
+smoothing_optimizator k:  254
+smoothing_optimizator k:  256
+smoothing_optimizator k:  258
+smoothing_optimizator k:  260
+smoothing_optimizator k:  262
+smoothing_optimizator k:  264
+smoothing_optimizator k:  266
+smoothing_optimizator k:  268
+smoothing_optimizator k:  270
+smoothing_optimizator k:  272
+smoothing_optimizator k:  274
+smoothing_optimizator k:  276
+smoothing_optimizator k:  278
+smoothing_optimizator k:  280
+smoothing_optimizator k:  282
+smoothing_optimizator k:  284
+smoothing_optimizator k:  286
+smoothing_optimizator k:  288
+smoothing_optimizator k:  290
+smoothing_optimizator k:  292
+smoothing_optimizator k:  294
+smoothing_optimizator k:  296
+smoothing_optimizator k:  298
+smoothing_optimizator k:  300
+smoothing_optimizator k:  302
+smoothing_optimizator k:  304
+smoothing_optimizator k:  306
+smoothing_optimizator k:  308
+smoothing_optimizator k:  310
+smoothing_optimizator k:  312
+smoothing_optimizator k:  314
+smoothing_optimizator k:  316
+smoothing_optimizator k:  318
+smoothing_optimizator k:  320
+smoothing_optimizator k:  322
+smoothing_optimizator k:  324
+smoothing_optimizator k:  326
+smoothing_optimizator k:  328
+smoothing_optimizator k:  330
+smoothing_optimizator k:  332
+smoothing_optimizator k:  334
+smoothing_optimizator k:  336
+smoothing_optimizator k:  338
+smoothing_optimizator k:  340
+smoothing_optimizator k:  342
+smoothing_optimizator k:  344
+smoothing_optimizator k:  346
+smoothing_optimizator k:  348
+smoothing_optimizator k:  350
+smoothing_optimizator k:  352
+smoothing_optimizator k:  354
+smoothing_optimizator k:  356
+smoothing_optimizator k:  358
+smoothing_optimizator k:  360
+smoothing_optimizator k:  362
+smoothing_optimizator k:  364
+smoothing_optimizator k:  366
+smoothing_optimizator k:  368
+smoothing_optimizator k:  370
+smoothing_optimizator k:  372
+smoothing_optimizator k:  374
+smoothing_optimizator k:  376
+smoothing_optimizator k:  378
+smoothing_optimizator k:  380
+smoothing_optimizator k:  382
+smoothing_optimizator k:  384
+smoothing_optimizator k:  386
+smoothing_optimizator k:  388
+smoothing_optimizator k:  390
+smoothing_optimizator k:  392
+smoothing_optimizator k:  394
+smoothing_optimizator k:  396
+smoothing_optimizator k:  398
+smoothing_optimizator k:  400
+smoothing_optimizator k:  402
+smoothing_optimizator k:  404
+smoothing_optimizator k:  406
+smoothing_optimizator k:  408
+smoothing_optimizator k:  410
+smoothing_optimizator k:  412
+smoothing_optimizator k:  414
+smoothing_optimizator k:  416
+smoothing_optimizator k:  418
+smoothing_optimizator k:  420
+smoothing_optimizator k:  422
+smoothing_optimizator k:  424
+smoothing_optimizator k:  426
+smoothing_optimizator k:  428
+smoothing_optimizator k:  430
+smoothing_optimizator k:  432
+smoothing_optimizator k:  434
+smoothing_optimizator k:  436
+smoothing_optimizator k:  438
+smoothing_optimizator k:  440
+smoothing_optimizator k:  442
+smoothing_optimizator k:  444
+smoothing_optimizator k:  446
+smoothing_optimizator k:  448
+smoothing_optimizator k:  450
+smoothing_optimizator k:  452
+smoothing_optimizator k:  454
+smoothing_optimizator k:  456
+smoothing_optimizator k:  458
+smoothing_optimizator k:  460
+smoothing_optimizator k:  462
+smoothing_optimizator k:  464
+smoothing_optimizator k:  466
+smoothing_optimizator k:  468
+smoothing_optimizator k:  470
+smoothing_optimizator k:  472
+smoothing_optimizator k:  474
+smoothing_optimizator k:  476
+smoothing_optimizator k:  478
+smoothing_optimizator k:  480
+smoothing_optimizator k:  482
+smoothing_optimizator k:  484
+smoothing_optimizator k:  486
+smoothing_optimizator k:  488
+smoothing_optimizator k:  490
+smoothing_optimizator k:  492
+smoothing_optimizator k:  494
+smoothing_optimizator k:  496
+smoothing_optimizator k:  498
+smoothing_optimizator k:  500
+smoothing_optimizator k:  502
+smoothing_optimizator k:  504
+smoothing_optimizaoothing_optimizator k:  234
+smoothing_optimizator k:  236
+smoothing_optimizator k:  238
+smoothing_optimizator k:  240
+smoothing_optimizator k:  242
+smoothing_optimizator k:  244
+smoothing_optimizator k:  246
+smoothing_optimizator k:  248
+smoothing_optimizator k:  250
+smoothing_optimizator k:  252
+smoothing_optimizator k:  254
+smoothing_optimizator k:  256
+smoothing_optimizator k:  258
+smoothing_optimizator k:  260
+smoothing_optimizator k:  262
+smoothing_optimizator k:  264
+smoothing_optimizator k:  266
+smoothing_optimizator k:  268
+smoothing_optimizator k:  270
+smoothing_optimizator k:  272
+smoothing_optimizator k:  274
+smoothing_optimizator k:  276
+smoothing_optimizator k:  278
+smoothing_optimizator k:  280
+smoothing_optimizator k:  282
+smoothing_optimizator k:  284
+smoothing_optimizator k:  286
+smoothing_optimizator k:  288
+smoothing_optimizator k:  290
+smoothing_optimizator k:  292
+smoothing_optimizator k:  294
+smoothing_optimizator k:  296
+smoothing_optimizator k:  298
+smoothing_optimizator k:  300
+smoothing_optimizator k:  302
+smoothing_optimizator k:  304
+smoothing_optimizator k:  306
+smoothing_optimizator k:  308
+smoothing_optimizator k:  310
+smoothing_optimizator k:  312
+smoothing_optimizator k:  314
+smoothing_optimizator k:  316
+smoothing_optimizator k:  318
+smoothing_optimizator k:  320
+smoothing_optimizator k:  322
+smoothing_optimizator k:  324
+smoothing_optimizator k:  326
+smoothing_optimizator k:  328
+smoothing_optimizator k:  330
+smoothing_optimizator k:  332
+smoothing_optimizator k:  334
+smoothing_optimizator k:  336
+smoothing_optimizator k:  338
+smoothing_optimizator k:  340
+smoothing_optimizator k:  342
+smoothing_optimizator k:  344
+smoothing_optimizator k:  346
+smoothing_optimizator k:  348
+smoothing_optimizator k:  350
+smoothing_optimizator k:  352
+smoothing_optimizator k:  354
+smoothing_optimizator k:  356
+smoothing_optimizator k:  358
+smoothing_optimizator k:  360
+smoothing_optimizator k:  362
+smoothing_optimizator k:  364
+smoothing_optimizator k:  366
+smoothing_optimizator k:  368
+smoothing_optimizator k:  370
+smoothing_optimizator k:  372
+smoothing_optimizator k:  374
+smoothing_optimizator k:  376
+smoothing_optimizator k:  378
+smoothing_optimizator k:  380
+smoothing_optimizator k:  382
+smoothing_optimizator k:  384
+smoothing_optimizator k:  386
+smoothing_optimizator k:  388
+smoothing_optimizator k:  390
+smoothing_optimizator k:  392
+smoothing_optimizator k:  394
+smoothing_optimizator k:  396
+smoothing_optimizator k:  398
+smoothing_optimizator k:  400
+smoothing_optimizator k:  402
+smoothing_optimizator k:  404
+smoothing_optimizator k:  406
+smoothing_optimizator k:  408
+smoothing_optimizator k:  410
+smoothing_optimizator k:  412
+smoothing_optimizator k:  414
+smoothing_optimizator k:  416
+smoothing_optimizator k:  418
+smoothing_optimizator k:  420
+smoothing_optimizator k:  422
+smoothing_optimizator k:  424
+smoothing_optimizator k:  426
+smoothing_optimizator k:  428
+smoothing_optimizator k:  430
+smoothing_optimizator k:  432
+smoothing_optimizator k:  434
+smoothing_optimizator k:  436
+smoothing_optimizator k:  438
+smoothing_optimizator k:  440
+smoothing_optimizator k:  442
+smoothing_optimizator k:  444
+smoothing_optimizator k:  446
+smoothing_optimizator k:  448
+smoothing_optimizator k:  450
+smoothing_optimizator k:  452
+smoothing_optimizator k:  454
+smoothing_optimizator k:  456
+smoothing_optimizator k:  458
+smoothing_optimizator k:  460
+smoothing_optimizator k:  462
+smoothing_optimizator k:  464
+smoothing_optimizator k:  466
+smoothing_optimizator k:  468
+smoothing_optimizator k:  470
+smoothing_optimizator k:  472
+smoothing_optimizator k:  474
+smoothing_optimizator k:  476
+smoothing_optimizator k:  478
+smoothing_optimizator k:  480
+smoothing_optimizator k:  482
+smoothing_optimizator k:  484
+smoothing_optimizator k:  486
+smoothing_optimizator k:  488
+smoothing_optimizator k:  490
+smoothing_optimizator k:  492
+smoothing_optimizator k:  494
+smoothing_optimizator k:  496
+smoothing_optimizator k:  498
+smoothing_optimizator k:  500
+smoothing_optimizator k:  502
+smoothing_optimizator k:  504
+smoothing_optimizator k:  506
+smoothing_optimizator k:  508
+smoothing_optimizator k:  510
+smoothing_optimizator k:  512
+smoothing_optimizator k:  514
+smoothing_optimizator k:  516
+smoothing_optimizator k:  518
+smoothing_optimizator k:  520
+smoothing_optimizator k:  522
+smoothing_optimizator k:  524
+smoothing_optimizator k:  526
+smoothing_optimizator k:  528
+smoothing_optimizator k:  530
+smoothing_optimizator k:  532
+smoothing_optimizator k:  534
+smoothing_optimizator k:  536
+smoothing_optimizator k:  538
+smoothing_optimizator k:  540
+smoothing_optimizator k:  542
+smoothing_optimizator k:  544
+smoothing_optimizator k:  546
+smoothing_optimizator k:  548
+smoothing_optimizator k:  550
+smoothing_optimizator k:  552
+smoothing_optimizator k:  554
+smoothing_optimizator k:  556
+smoothing_optimizator k:  558
+smoothing_optimizator k:  560
+smoothing_optimizator k:  562
+smoothing_optimizator k:  564
+smoothing_optimizator k:  566
+smoothing_optimizator k:  568
+smoothing_optimizator k:  570
+smoothing_optimizator k:  572
+smoothing_optimizator k:  574
+smoothing_optimizator k:  576
+smoothing_optimizator k:  578
+smoothing_optimizator k:  580
+smoothing_optimizator k:  582
+smoothing_optimizator k:  584
+smoothing_optimizator k:  586
+smoothing_optimizator k:  588
+smoothing_optimizator k:  590
+smoothing_optimizator k:  592
+smoothing_optimizator k:  594
+smoothing_optimizator k:  596
+smoothing_optimizator k:  598
+smoothing_optimizator k:  600
+smoothing_optimizator k:  602
+smoothing_optimizator k:  604
+smoothing_optimizator k:  606
+smoothing_optimizator k:  608
+smoothing_optimizator k:  610
+smoothing_optimizator k:  612
+smoothing_optimizator k:  614
+smoothing_optimizator k:  616
+smoothing_optimizator k:  618
+smoothing_optimizator k:  620
+smoothing_optimizator k:  622
+smoothing_optimizator k:  624
+smoothing_optimizator k:  626
+smoothing_optimizator k:  628
+smoothing_optimizator k:  630
+smoothing_optimizator k:  632
+smoothing_optimizator k:  634
+smoothing_optimizator k:  636
+smoothing_optimizator k:  638
+smoothing_optimizator k:  640
+smoothing_optimizator k:  642
+smoothing_optimizator k:  644
+smoothing_optimizator k:  646
+smoothing_optimizator k:  648
+smoothing_optimizator k:  650
+smoothing_optimizator k:  652
+smoothing_optimizator k:  654
+smoothing_optimizator k:  656
+smoothing_optimizator k:  658
+smoothing_optimizator k:  660
+smoothing_optimizator k:  662
+smoothing_optimizator k:  664
+smoothing_optimizator k:  666
+smoothing_optimizator k:  668
+smoothing_optimizator k:  670
+smoothing_optimizator k:  672
+smoothing_optimizator k:  674
+smoothing_optimizator k:  676
+smoothing_optimizator k:  678
+smoothing_optimizator k:  680
+smoothing_optimizator k:  682
+smoothing_optimizator k:  684
+smoothing_optimizator k:  686
+smoothing_optimizator k:  688
+smoothing_optimizator k:  690
+smoothing_optimizator k:  692
+smoothing_optimizator k:  694
+smoothing_optimizator k:  696
+smoothing_optimizator k:  698
+smoothing_optimizator k:  700
+smoothing_optimizator k:  702
+smoothing_optimizator k:  704
+smoothing_optimizator k:  706
+smoothing_optimizator k:  708
+smoothing_optimizator k:  710
+smoothing_optimizator k:  712
+smoothing_optimizator k:  714
+smoothing_optimizator k:  716
+smoothing_optimizator k:  718
+smoothing_optimizator k:  720
+smoothing_optimizator k:  722
+smoothing_optimizator k:  724
+smoothing_optimizator k:  726
+smoothing_optimizator k:  728
+smoothing_optimizator k:  730
+smoothing_optimizator k:  732
+smoothing_optimizator k:  734
+smoothing_optimizator k:  736
+smoothing_optimizator k:  738
+smoothing_optimizator k:  740
+smoothing_optimizator k:  742
+smoothing_optimizator k:  744
+smoothing_optimizator k:  746
+smoothing_optimizator k:  748
+smoothing_optimizator k:  750
+smoothing_optimizator k:  752
+smoothing_optimizator k:  754
+smoothing_optimizator k:  756
+smoothing_optimizator k:  758
+smoothing_optimizator k:  760
+smoothing_optimizator k:  762
+smoothing_optimizator k:  764
+smoothing_optimizator k:  766
+smoothing_optimizator k:  768
+smoothing_optimizator k:  770
+smoothing_optimizator k:  772
+smoothing_optimizator k:  774
+smoothing_optimizator k:  776
+smoothing_optimizator k:  778
+smootor k:  506
+smoothing_optimizator k:  508
+smoothing_optimizator k:  510
+smoothing_optimizator k:  512
+smoothing_optimizator k:  514
+smoothing_optimizator k:  516
+smoothing_optimizator k:  518
+smoothing_optimizator k:  520
+smoothing_optimizator k:  522
+smoothing_optimizator k:  524
+smoothing_optimizator k:  526
+smoothing_optimizator k:  528
+smoothing_optimizator k:  530
+smoothing_optimizator k:  532
+smoothing_optimizator k:  534
+smoothing_optimizator k:  536
+smoothing_optimizator k:  538
+smoothing_optimizator k:  540
+smoothing_optimizator k:  542
+smoothing_optimizator k:  544
+smoothing_optimizator k:  546
+smoothing_optimizator k:  548
+smoothing_optimizator k:  550
+smoothing_optimizator k:  552
+smoothing_optimizator k:  554
+smoothing_optimizator k:  556
+smoothing_optimizator k:  558
+smoothing_optimizator k:  560
+smoothing_optimizator k:  562
+smoothing_optimizator k:  564
+smoothing_optimizator k:  566
+smoothing_optimizator k:  568
+smoothing_optimizator k:  570
+smoothing_optimizator k:  572
+smoothing_optimizator k:  574
+smoothing_optimizator k:  576
+smoothing_optimizator k:  578
+smoothing_optimizator k:  580
+smoothing_optimizator k:  582
+smoothing_optimizator k:  584
+smoothing_optimizator k:  586
+smoothing_optimizator k:  588
+smoothing_optimizator k:  590
+smoothing_optimizator k:  592
+smoothing_optimizator k:  594
+smoothing_optimizator k:  596
+smoothing_optimizator k:  598
+smoothing_optimizator k:  600
+smoothing_optimizator k:  602
+smoothing_optimizator k:  604
+smoothing_optimizator k:  606
+smoothing_optimizator k:  608
+smoothing_optimizator k:  610
+smoothing_optimizator k:  612
+smoothing_optimizator k:  614
+smoothing_optimizator k:  616
+smoothing_optimizator k:  618
+smoothing_optimizator k:  620
+smoothing_optimizator k:  622
+smoothing_optimizator k:  624
+smoothing_optimizator k:  626
+smoothing_optimizator k:  628
+smoothing_optimizator k:  630
+smoothing_optimizator k:  632
+smoothing_optimizator k:  634
+smoothing_optimizator k:  636
+smoothing_optimizator k:  638
+smoothing_optimizator k:  640
+smoothing_optimizator k:  642
+smoothing_optimizator k:  644
+smoothing_optimizator k:  646
+smoothing_optimizator k:  648
+smoothing_optimizator k:  650
+smoothing_optimizator k:  652
+smoothing_optimizator k:  654
+smoothing_optimizator k:  656
+smoothing_optimizator k:  658
+smoothing_optimizator k:  660
+smoothing_optimizator k:  662
+smoothing_optimizator k:  664
+smoothing_optimizator k:  666
+smoothing_optimizator k:  668
+smoothing_optimizator k:  670
+smoothing_optimizator k:  672
+smoothing_optimizator k:  674
+smoothing_optimizator k:  676
+smoothing_optimizator k:  678
+smoothing_optimizator k:  680
+smoothing_optimizator k:  682
+smoothing_optimizator k:  684
+smoothing_optimizator k:  686
+smoothing_optimizator k:  688
+smoothing_optimizator k:  690
+smoothing_optimizator k:  692
+smoothing_optimizator k:  694
+smoothing_optimizator k:  696
+smoothing_optimizator k:  698
+smoothing_optimizator k:  700
+smoothing_optimizator k:  702
+smoothing_optimizator k:  704
+smoothing_optimizator k:  706
+smoothing_optimizator k:  708
+smoothing_optimizator k:  710
+smoothing_optimizator k:  712
+smoothing_optimizator k:  714
+smoothing_optimizator k:  716
+smoothing_optimizator k:  718
+smoothing_optimizator k:  720
+smoothing_optimizator k:  722
+smoothing_optimizator k:  724
+smoothing_optimizator k:  726
+smoothing_optimizator k:  728
+smoothing_optimizator k:  730
+smoothing_optimizator k:  732
+smoothing_optimizator k:  734
+smoothing_optimizator k:  736
+smoothing_optimizator k:  738
+smoothing_optimizator k:  740
+smoothing_optimizator k:  742
+smoothing_optimizator k:  744
+smoothing_optimizator k:  746
+smoothing_optimizator k:  748
+smoothing_optimizator k:  750
+smoothing_optimizator k:  752
+smoothing_optimizator k:  754
+smoothing_optimizator k:  756
+smoothing_optimizator k:  758
+smoothing_optimizator k:  760
+smoothing_optimizator k:  762
+smoothing_optimizator k:  764
+smoothing_optimizator k:  766
+smoothing_optimizator k:  768
+smoothing_optimizator k:  770
+smoothing_optimizator k:  772
+smoothing_optimizator k:  774
+smoothing_optimizator k:  776
+smoothing_optimizator k:  778
+smootor k:  506
+smoothing_optimizator k:  508
+smoothing_optimizator k:  510
+smoothing_optimizator k:  512
+smoothing_optimizator k:  514
+smoothing_optimizator k:  516
+smoothing_optimizator k:  518
+smoothing_optimizator k:  520
+smoothing_optimizator k:  522
+smoothing_optimizator k:  524
+smoothing_optimizator k:  526
+smoothing_optimizator k:  528
+smoothing_optimizator k:  530
+smoothing_optimizator k:  532
+smoothing_optimizator k:  534
+smoothing_optimizator k:  536
+smoothing_optimizator k:  538
+smoothing_optimizator k:  540
+smoothing_optimizator k:  542
+smoothing_optimizator k:  544
+smoothing_optimizator k:  546
+smoothing_optimizator k:  548
+smoothing_optimizator k:  550
+smoothing_optimizator k:  552
+smoothing_optimizator k:  554
+smoothing_optimizator k:  556
+smoothing_optimizator k:  558
+smoothing_optimizator k:  560
+smoothing_optimizator k:  562
+smoothing_optimizator k:  564
+smoothing_optimizator k:  566
+smoothing_optimizator k:  568
+smoothing_optimizator k:  570
+smoothing_optimizator k:  572
+smoothing_optimizator k:  574
+smoothing_optimizator k:  576
+smoothing_optimizator k:  578
+smoothing_optimizator k:  580
+smoothing_optimizator k:  582
+smoothing_optimizator k:  584
+smoothing_optimizator k:  586
+smoothing_optimizator k:  588
+smoothing_optimizator k:  590
+smoothing_optimizator k:  592
+smoothing_optimizator k:  594
+smoothing_optimizator k:  596
+smoothing_optimizator k:  598
+smoothing_optimizator k:  600
+smoothing_optimizator k:  602
+smoothing_optimizator k:  604
+smoothing_optimizator k:  606
+smoothing_optimizator k:  608
+smoothing_optimizator k:  610
+smoothing_optimizator k:  612
+smoothing_optimizator k:  614
+smoothing_optimizator k:  616
+smoothing_optimizator k:  618
+smoothing_optimizator k:  620
+smoothing_optimizator k:  622
+smoothing_optimizator k:  624
+smoothing_optimizator k:  626
+smoothing_optimizator k:  628
+smoothing_optimizator k:  630
+smoothing_optimizator k:  632
+smoothing_optimizator k:  634
+smoothing_optimizator k:  636
+smoothing_optimizator k:  638
+smoothing_optimizator k:  640
+smoothing_optimizator k:  642
+smoothing_optimizator k:  644
+smoothing_optimizator k:  646
+smoothing_optimizator k:  648
+smoothing_optimizator k:  650
+smoothing_optimizator k:  652
+smoothing_optimizator k:  654
+smoothing_optimizator k:  656
+smoothing_optimizator k:  658
+smoothing_optimizator k:  660
+smoothing_optimizator k:  662
+smoothing_optimizator k:  664
+smoothing_optimizator k:  666
+smoothing_optimizator k:  668
+smoothing_optimizator k:  670
+smoothing_optimizator k:  672
+smoothing_optimizator k:  674
+smoothing_optimizator k:  676
+smoothing_optimizator k:  678
+smoothing_optimizator k:  680
+smoothing_optimizator k:  682
+smoothing_optimizator k:  684
+smoothing_optimizator k:  686
+smoothing_optimizator k:  688
+smoothing_optimizator k:  690
+smoothing_optimizator k:  692
+smoothing_optimizator k:  694
+smoothing_optimizator k:  696
+smoothing_optimizator k:  698
+smoothing_optimizator k:  700
+smoothing_optimizator k:  702
+smoothing_optimizator k:  704
+smoothing_optimizator k:  706
+smoothing_optimizator k:  708
+smoothing_optimizator k:  710
+smoothing_optimizator k:  712
+smoothing_optimizator k:  714
+smoothing_optimizator k:  716
+smoothing_optimizator k:  718
+smoothing_optimizator k:  720
+smoothing_optimizator k:  722
+smoothing_optimizator k:  724
+smoothing_optimizator k:  726
+smoothing_optimizator k:  728
+smoothing_optimizator k:  730
+smoothing_optimizator k:  732
+smoothing_optimizator k:  734
+smoothing_optimizator k:  736
+smoothing_optimizator k:  738
+smoothing_optimizator k:  740
+smoothing_optimizator k:  742
+smoothing_optimizator k:  744
+smoothing_optimizator k:  746
+smoothing_optimizator k:  748
+smoothing_optimizator k:  750
+smoothing_optimizator k:  752
+smoothing_optimizator k:  754
+smoothing_optimizator k:  756
+smoothing_optimizator k:  758
+smoothing_optimizator k:  760
+smoothing_optimizator k:  762
+smoothing_optimizator k:  764
+smoothing_optimizator k:  766
+smoothing_optimizator k:  768
+smoothing_optimizator k:  770
+smoothing_optimizator k:  772
+smoothing_optimizator k:  774
+smoothing_optimizator k:  776
+smoothing_optimizator k:  778
+smoothing_optimizator k:  780
+smoothing_optimizator k:  782
+smoothing_optimizator k:  784
+smoothing_optimizator k:  786
+smoothing_optimizator k:  788
+smoothing_optimizator k:  790
+smoothing_optimizator k:  792
+smoothing_optimizator k:  794
+smoothing_optimizator k:  796
+smoothing_optimizator k:  798
+smoothing_optimizator k:  800
+smoothing_optimizator k:  802
+smoothing_optimizator k:  804
+smoothing_optimizator k:  806
+smoothing_optimizator k:  808
+smoothing_optimizator k:  810
+smoothing_optimizator k:  812
+smoothing_optimizator k:  814
+smoothing_optimizator k:  816
+smoothing_optimizator k:  818
+smoothing_optimizator k:  820
+smoothing_optimizator k:  822
+smoothing_optimizator k:  824
+smoothing_optimizator k:  826
+smoothing_optimizator k:  828
+smoothing_optimizator k:  830
+smoothing_optimizator k:  832
+smoothing_optimizator k:  834
+smoothing_optimizator k:  836
+smoothing_optimizator k:  838
+smoothing_optimizator k:  840
+smoothing_optimizator k:  842
+smoothing_optimizator k:  844
+smoothing_optimizator k:  846
+smoothing_optimizator k:  848
+smoothing_optimizator k:  850
+smoothing_optimizator k:  852
+smoothing_optimizator k:  854
+smoothing_optimizator k:  856
+smoothing_optimizator k:  858
+smoothing_optimizator k:  860
+smoothing_optimizator k:  862
+smoothing_optimizator k:  864
+smoothing_optimizator k:  866
+smoothing_optimizator k:  868
+smoothing_optimizator k:  870
+smoothing_optimizator k:  872
+smoothing_optimizator k:  874
+smoothing_optimizator k:  876
+smoothing_optimizator k:  878
+smoothing_optimizator k:  880
+smoothing_optimizator k:  882
+smoothing_optimizator k:  884
+smoothing_optimizator k:  886
+smoothing_optimizator k:  888
+smoothing_optimizator k:  890
+smoothing_optimizator k:  892
+smoothing_optimizator k:  894
+smoothing_optimizator k:  896
+smoothing_optimizator k:  898
+smoothing_optimizator k:  900
+smoothing_optimizator k:  902
+smoothing_optimizator k:  904
+smoothing_optimizator k:  906
+smoothing_optimizator k:  908
+smoothing_optimizator k:  910
+smoothing_optimizator k:  912
+smoothing_optimizator k:  914
+smoothing_optimizator k:  916
+smoothing_optimizator k:  918
+smoothing_optimizator k:  920
+smoothing_optimizator k:  922
+smoothing_optimizator k:  924
+smoothing_optimizator k:  926
+smoothing_optimizator k:  928
+smoothing_optimizator k:  930
+smoothing_optimizator k:  932
+smoothing_optimizator k:  934
+smoothing_optimizator k:  936
+smoothing_optimizator k:  938
+smoothing_optimizator k:  940
+smoothing_optimizator k:  942
+smoothing_optimizator k:  944
+smoothing_optimizator k:  946
+smoothing_optimizator k:  948
+smoothing_optimizator k:  950
+smoothing_optimizator k:  952
+smoothing_optimizator k:  954
+smoothing_optimizator k:  956
+smoothing_optimizator k:  958
+smoothing_optimizator k:  960
+smoothing_optimizator k:  962
+smoothing_optimizator k:  964
+smoothing_optimizator k:  966
+smoothing_optimizator k:  968
+smoothing_optimizator k:  970
+smoothing_optimizator k:  972
+smoothing_optimizator k:  974
+smoothing_optimizator k:  976
+smoothing_optimizator k:  978
+smoothing_optimizator k:  980
+smoothing_optimizator k:  982
+smoothing_optimizator k:  984
+smoothing_optimizator k:  986
+smoothing_optimizator k:  988
+smoothing_optimizator k:  990
+smoothing_optimizator k:  992
+smoothing_optimizator k:  994
+smoothing_optimizator k:  996
+smoothing_optimizator k:  998
+smoothing_optimizator k:  1000
+smoothing opt avg final k:  1000
+in Smoothing_Regularization fit
+fit self.intercept_ shape:  (1,)
+fit self.intercept_ norm:  nan
+fit self.coef_:  [[ nan  nan  nan ...,  nan  nan  nan]]
+in logistic_ovr multiclass.py 181818
+in logistic_ovr multiclass.py 181818 X norm: [CV] estimator__C=1.0, estimator__lambd=100, estimator__batch_size=50 
+ fit begin y:  [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 1 1 0 1 1 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0
+ 0 1 0 1 0 1 1 1 1 0 0 1 1 0 1 0 1 0 1 0 1 0 1 1 1 0 0 1 0 0 1 0 0 0 0 0 0
+ 1 1 1 0 0 0 1 0 0 1 1 1 1 0 0 1 1 1 0 0 1 0 0 1 1 0]
+in Smoothing_Regularization fit
+fit X shape:  (8532, 3231949)
+fit y shape:  (8532,)
+fit y norm:  56.3914887195
+fit y after unique:  [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 1 1 0 1 1 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0
+ 0 1 Traceback (most recent call last):
+  File "/home/zhaojing/smooth-regularization/incubator-singa/examples/smoothing-regularization-logistic-gpu/Example-iris-smoothing.py", line 179, in <module>
+    gs.fit(X[train_index], y[train_index])
+  File "/home/zhaojing/smooth-regularization/incubator-singa/pysinga/local/lib/python2.7/site-packages/sklearn/grid_search.py", line 829, in fit
+    return self._fit(X, y, ParameterGrid(self.param_grid))
+  File "/home/zhaojing/smooth-regularization/incubator-singa/pysinga/local/lib/python2.7/site-packages/sklearn/grid_search.py", line 573, in _fit
+    for parameters in parameter_iterable
+  File "/home/zhaojing/smooth-regularization/incubator-singa/pysinga/local/lib/python2.7/site-packages/sklearn/externals/joblib/parallel.py", line 768, in __call__
+    self.retrieve()
+  File "/home/zhaojing/smooth-regularization/incubator-singa/pysinga/local/lib/python2.7/site-packages/sklearn/externals/joblib/parallel.py", line 719, in retrieve
+    raise exception
+sklearn.externals.joblib.my_exceptions.JoblibValueError: JoblibValueError
+___________________________________________________________________________
+Multiprocessing exception:
+...........................................................................
+/home/zhaojing/smooth-regularization/incubator-singa/examples/smoothing-regularization-logistic-gpu/Example-iris-smoothing.py in <module>()
+    174                 number_jobs = -1
+    175             else:
+    176                 number_jobs = args.njob
+    177             print "number_jobs: ", number_jobs
+    178             gs = GridSearchCV(clf, param_grid, scoring=scoring, cv=param_folds, n_jobs=number_jobs, verbose=5)
+--> 179             gs.fit(X[train_index], y[train_index])
+    180             best_clf = gs.best_estimator_
+    181 
+    182             score = accuracy_score(y[test_index], best_clf.predict(X[test_index]))
+    183             result_df.loc[i, clf_name] = score
+
+...........................................................................
+/home/zhaojing/smooth-regularization/incubator-singa/pysinga/local/lib/python2.7/site-packages/sklearn/grid_search.py in fit(self=GridSearchCV(cv=3, error_score='raise',
+       e...jobs', refit=True, scoring='accuracy', verbose=5), X=<12799x3231949 sparse matrix of type '<type 'num... stored elements in Compressed Sparse Row format>, y=array([ 1.,  1.,  1., ...,  1.,  1.,  1.]))
+    824         y : array-like, shape = [n_samples] or [n_samples, n_output], optional
+    825             Target relative to X for classification or regression;
+    826             None for unsupervised learning.
+    827 
+    828         """
+--> 829         return self._fit(X, y, ParameterGrid(self.param_grid))
+        self._fit = <bound method GridSearchCV._fit of GridSearchCV(...obs', refit=True, scoring='accuracy', verbose=5)>
+        X = <12799x3231949 sparse matrix of type '<type 'num... stored elements in Compressed Sparse Row format>
+        y = array([ 1.,  1.,  1., ...,  1.,  1.,  1.])
+        self.param_grid = {'estimator__C': [1.0], 'estimator__batch_size': [50], 'estimator__lambd': [1000, 100, 10, 1, 0.1, 0.01, 0.001, 0.0001]}
+    830 
+    831 
+    832 class RandomizedSearchCV(BaseSearchCV):
+    833     """Randomized search on hyper parameters.
+
+...........................................................................
+/home/zhaojing/smooth-regularization/incubator-singa/pysinga/local/lib/python2.7/site-packages/sklearn/grid_search.py in _fit(self=GridSearchCV(cv=3, error_score='raise',
+       e...jobs', refit=True, scoring='accuracy', verbose=5), X=<12799x3231949 sparse matrix of type '<type 'num... stored elements in Compressed Sparse Row format>, y=array([ 1.,  1.,  1., ...,  1.,  1.,  1.]), parameter_iterable=<sklearn.grid_search.ParameterGrid object>)
+    568         )(
+    569             delayed(_fit_and_score)(clone(base_estimator), X, y, self.scorer_,
+    570                                     train, test, self.verbose, parameters,
+    571                                     self.fit_params, return_parameters=True,
+    572                                     error_score=self.error_score)
+--> 573                 for parameters in parameter_iterable
+        parameters = undefined
+        parameter_iterable = <sklearn.grid_search.ParameterGrid object>
+    574                 for train, test in cv)
+    575 
+    576         # Out is a list of triplet: score, estimator, n_test_samples
+    577         n_fits = len(out)
+
+...........................................................................
+/home/zhaojing/smooth-regularization/incubator-singa/pysinga/local/lib/python2.7/site-packages/sklearn/externals/joblib/parallel.py in __call__(self=Parallel(n_jobs=3), iterable=<generator object <genexpr>>)
+    763             if pre_dispatch == "all" or n_jobs == 1:
+    764                 # The iterable was consumed all at once by the above for loop.
+    765                 # No need to wait for async callbacks to trigger to
+    766                 # consumption.
+    767                 self._iterating = False
+--> 768             self.retrieve()
+        self.retrieve = <bound method Parallel.retrieve of Parallel(n_jobs=3)>
+    769             # Make sure that we get a last message telling us we are done
+    770             elapsed_time = time.time() - self._start_time
+    771             self._print('Done %3i out of %3i | elapsed: %s finished',
+    772                         (len(self._output), len(self._output),
+
+---------------------------------------------------------------------------
+Sub-process traceback:
+---------------------------------------------------------------------------
+ValueError                                         Thu Jan  5 22:58:51 2017
+PID: 32535Python 2.7.6: /home/zhaojing/smooth-regularization/incubator-singa/pysinga/bin/python
+...........................................................................
+/home/zhaojing/smooth-regularization/incubator-singa/pysinga/local/lib/python2.7/site-packages/sklearn/externals/joblib/parallel.py in __call__(self=<sklearn.externals.joblib.parallel.BatchedCalls object>)
+    126     def __init__(self, iterator_slice):
+    127         self.items = list(iterator_slice)
+    128         self._size = len(self.items)
+    129 
+    130     def __call__(self):
+--> 131         return [func(*args, **kwargs) for func, args, kwargs in self.items]
+        func = <function _fit_and_score>
+        args = (LogisticOneVsRestClassifier(estimator=Smoothing_...mbd=1000, max_iter=1000),
+              n_jobs=1), <12799x3231949 sparse matrix of type '<type 'num... stored elements in Compressed Sparse Row format>, array([ 1.,  1.,  1., ...,  1.,  1.,  1.]), make_scorer(accuracy_score), array([ 4227,  4231,  4232, ..., 12796, 12797, 12798]), array([   0,    1,    2, ..., 4278, 4279, 4280]), 5, {'estimator__C': 1.0, 'estimator__batch_size': 50, 'estimator__lambd': 1000}, {})
+        kwargs = {'error_score': 'raise', 'return_parameters': True}
+        self.items = [(<function _fit_and_score>, (LogisticOneVsRestClassifier(estimator=Smoothing_...mbd=1000, max_iter=1000),
+              n_jobs=1), <12799x3231949 sparse matrix of type '<type 'num... stored elements in Compressed Sparse Row format>, array([ 1.,  1.,  1., ...,  1.,  1.,  1.]), make_scorer(accuracy_score), array([ 4227,  4231,  4232, ..., 12796, 12797, 12798]), array([   0,    1,    2, ..., 4278, 4279, 4280]), 5, {'estimator__C': 1.0, 'estimator__batch_size': 50, 'estimator__lambd': 1000}, {}), {'error_score': 'raise', 'return_parameters': True})]
+    132 
+    133     def __len__(self):
+    134         return self._size
+    135 
+
+...........................................................................
+/home/zhaojing/smooth-regularization/incubator-singa/pysinga/local/lib/python2.7/site-packages/sklearn/cross_validation.py in _fit_and_score(estimator=LogisticOneVsRestClassifier(estimator=Smoothing_...mbd=1000, max_iter=1000),
+              n_jobs=1), X=<12799x3231949 sparse matrix of type '<type 'num... stored elements in Compressed Sparse Row format>, y=array([ 1.,  1.,  1., ...,  1.,  1.,  1.]), scorer=make_scorer(accuracy_score), train=array([ 4227,  4231,  4232, ..., 12796, 12797, 12798]), test=array([   0,    1,    2, ..., 4278, 4279, 4280]), verbose=5, parameters={'estimator__C': 1.0, 'estimator__batch_size': 50, 'estimator__lambd': 1000}, fit_params={}, return_train_score=False, return_parameters=True, error_score='raise')
+   1679                              " numeric value. (Hint: if using 'raise', please"
+   1680                              " make sure that it has been spelled correctly.)"
+   1681                              )
+   1682 
+   1683     else:
+-> 1684         test_score = _score(estimator, X_test, y_test, scorer)
+        test_score = undefined
+        estimator = LogisticOneVsRestClassifier(estimator=Smoothing_...mbd=1000, max_iter=1000),
+              n_jobs=1)
+        X_test = <4267x3231949 sparse matrix of type '<type 'nump... stored elements in Compressed Sparse Row format>
+        y_test = array([ 1.,  1.,  1., ..., -1., -1., -1.])
+        scorer = make_scorer(accuracy_score)
+   1685         if return_train_score:
+   1686             train_score = _score(estimator, X_train, y_train, scorer)
+   1687 
+   1688     scoring_time = time.time() - start_time
+
+...........................................................................
+/home/zhaojing/smooth-regularization/incubator-singa/pysinga/local/lib/python2.7/site-packages/sklearn/cross_validation.py in _score(estimator=LogisticOneVsRestClassifier(estimator=Smoothing_...mbd=1000, max_iter=1000),
+              n_jobs=1), X_test=<4267x3231949 sparse matrix of type '<type 'nump... stored elements in Compressed Sparse Row format>, y_test=array([ 1.,  1.,  1., ..., -1., -1., -1.]), scorer=make_scorer(accuracy_score))
+   1736 def _score(estimator, X_test, y_test, scorer):
+   1737     """Compute the score of an estimator on a given test set."""
+   1738     if y_test is None:
+   1739         score = scorer(estimator, X_test)
+   1740     else:
+-> 1741         score = scorer(estimator, X_test, y_test)
+        score = undefined
+        scorer = make_scorer(accuracy_score)
+        estimator = LogisticOneVsRestClassifier(estimator=Smoothing_...mbd=1000, max_iter=1000),
+              n_jobs=1)
+        X_test = <4267x3231949 sparse matrix of type '<type 'nump... stored elements in Compressed Sparse Row format>
+        y_test = array([ 1.,  1.,  1., ..., -1., -1., -1.])
+   1742     if hasattr(score, 'item'):
+   1743         try:
+   1744             # e.g. unwrap memmapped scalars
+   1745             score = score.item()
+
+...........................................................................
+/home/zhaojing/smooth-regularization/incubator-singa/pysinga/local/lib/python2.7/site-packages/sklearn/metrics/scorer.py in __call__(self=make_scorer(accuracy_score), estimator=LogisticOneVsRestClassifier(estimator=Smoothing_...mbd=1000, max_iter=1000),
+              n_jobs=1), X=<4267x3231949 sparse matrix of type '<type 'nump... stored elements in Compressed Sparse Row format>, y_true=array([ 1.,  1.,  1., ..., -1., -1., -1.]), sample_weight=None)
+     86         score : float
+     87             Score function applied to prediction of estimator on X.
+     88         """
+     89         super(_PredictScorer, self).__call__(estimator, X, y_true,
+     90                                              sample_weight=sample_weight)
+---> 91         y_pred = estimator.predict(X)
+        y_pred = undefined
+        estimator.predict = <bound method LogisticOneVsRestClassifier.predic...bd=1000, max_iter=1000),
+              n_jobs=1)>
+        X = <4267x3231949 sparse matrix of type '<type 'nump... stored elements in Compressed Sparse Row format>
+     92         if sample_weight is not None:
+     93             return self._sign * self._score_func(y_true, y_pred,
+     94                                                  sample_weight=sample_weight,
+     95                                                  **self._kwargs)
+
+...........................................................................
+/home/zhaojing/smooth-regularization/incubator-singa/examples/smoothing-regularization-logistic-gpu/logistic_ovr.py in predict(self=LogisticOneVsRestClassifier(estimator=Smoothing_...mbd=1000, max_iter=1000),
+              n_jobs=1), X=<4267x3231949 sparse matrix of type '<type 'nump... stored elements in Compressed Sparse Row format>)
+     29         -------
+     30         y : (sparse) array-like, shape = [n_samples, ], [n_samples, n_classes].
+     31             Predicted multi-class targets.
+     32         """
+     33         print "in logistic_ovr multiclass.py 181818"
+---> 34         print "in logistic_ovr multiclass.py 181818 X norm: ", np.linalg.norm(X)
+        X = <4267x3231949 sparse matrix of type '<type 'nump... stored elements in Compressed Sparse Row format>
+     35         print "in logistic_ovr multiclass.py 181818 X shape: ", X.shape
+     36         # print "in logistic_ovr multiclass.py 181818 max X: ", max(X)
+     37         check_is_fitted(self, 'estimators_')
+     38         if (hasattr(self.estimators_[0], "decision_function") and
+
+...........................................................................
+/usr/lib/python2.7/dist-packages/numpy/linalg/linalg.py in norm(x=array(<4267x3231949 sparse matrix of type '<type...s in Compressed Sparse Row format>, dtype=object), ord=None, axis=None)
+   2051     """
+   2052     x = asarray(x)
+   2053 
+   2054     # Check the default case first and handle it immediately.
+   2055     if ord is None and axis is None:
+-> 2056         return sqrt(add.reduce((x.conj() * x).real, axis=None))
+        x.conj = <built-in method conj of numpy.ndarray object>
+        x.real = array(<4267x3231949 sparse matrix of type '<type...s in Compressed Sparse Row format>, dtype=object)
+        axis = None
+   2057 
+   2058     # Normalize the `axis` argument to a tuple.
+   2059     nd = x.ndim
+   2060     if axis is None:
+
+...........................................................................
+/usr/lib/python2.7/dist-packages/scipy/sparse/base.py in __mul__(self=<4267x3231949 sparse matrix of type '<type 'nump... stored elements in Compressed Sparse Row format>, other=<4267x3231949 sparse matrix of type '<type 'nump... stored elements in Compressed Sparse Row format>)
+    297             # scalar value
+    298             return self._mul_scalar(other)
+    299 
+    300         if issparse(other):
+    301             if self.shape[1] != other.shape[0]:
+--> 302                 raise ValueError('dimension mismatch')
+    303             return self._mul_sparse_matrix(other)
+    304 
+    305         try:
+    306             other.shape
+
+ValueError: dimension mismatch
+___________________________________________________________________________
