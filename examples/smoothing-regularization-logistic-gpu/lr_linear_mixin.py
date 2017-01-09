@@ -28,7 +28,7 @@ class LogisticLinearClassifierMixin(LinearClassifierMixin):
             class would be predicted.
         """
         print "in LogisticLinearClassifierMixin 12121212"
-        print "in LogisticLinearClassifierMixin  X norm: ", np.linalg.norm(X)
+        # print "in LogisticLinearClassifierMixin  X norm: ", np.linalg.norm(X)
         print "in LogisticLinearClassifierMixin  X shape: ", X.shape
 
         if not hasattr(self, 'coef_') or self.coef_ is None:

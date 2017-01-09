@@ -31,7 +31,7 @@ class LogisticOneVsRestClassifier(OneVsRestClassifier):
             Predicted multi-class targets.
         """
         print "in logistic_ovr multiclass.py 181818"
-        print "in logistic_ovr multiclass.py 181818 X norm: ", np.linalg.norm(X)
+        # print "in logistic_ovr multiclass.py 181818 X norm: ", np.linalg.norm(X)
         print "in logistic_ovr multiclass.py 181818 X shape: ", X.shape
         # print "in logistic_ovr multiclass.py 181818 max X: ", max(X)
         check_is_fitted(self, 'estimators_')
@@ -70,10 +70,12 @@ class LogisticOneVsRestClassifier(OneVsRestClassifier):
                     print "decision function is not sigmoid"
                     sys.exit(1)
                 print "in logistic_ovr where (_predict_binary(e, X) > thresh)[0] norm: ", np.linalg.norm(np.array(pred > .5, dtype = np.int))
+                print "in logistic_ovr np.array(pred > .5, dtype = np.int)[0:100]: ", np.array(pred > .5, dtype = np.int)[0:100]
                 indices.extend(np.where(pred > thresh)[0])
                 indptr.append(len(indices))
             data = np.ones(len(indices), dtype=int)
             indicator = sp.csc_matrix((data, indices, indptr),
                                       shape=(n_samples, len(self.estimators_)))
             print "in logistic_ovr self.label_binarizer_.inverse_transform(indicator) norm: ", np.linalg.norm(self.label_binarizer_.inverse_transform(indicator))
+            print "in logistic_ovr self.label_binarizer_.inverse_transform(indicator)[0:100]: ", self.label_binarizer_.inverse_transform(indicator)[0:100]
             return self.label_binarizer_.inverse_transform(indicator)
