@@ -17,7 +17,7 @@ from singa import device
 from singa import tensor
 
 
-def huber_grad_descent_avg(batch_X, batch_y, w, v, param, C, is_l1):
+def huber_grad_descent_avg(batch_X, batch_y, w, v, param, C, is_l1, dev):
     if sparse.issparse(batch_X): batch_X = batch_X.toarray()
     # print "in huber gd avg"
     tbatch_X = tensor.from_numpy(batch_X)
@@ -194,6 +194,7 @@ def huber_optimizator_avg(X, y, lambd, l1_ratio_or_mu, C, max_iter, eps, alpha, 
         vgd_avg = alpha * vgd_avg
         vgd_avg = np.reshape(vgd_avg, vgd_avg.shape[1])
         v -= vgd_avg
+        print "vgd_avg norm: ", np.linalg.norm(vgd_avg)
         # w -= alpha * grad_descent_avg(batch_X, batch_y, w, v, lambd, C, False, dev)
         twgd_avg = grad_descent_avg(batch_X, batch_y, w, v, lambd, C, False, dev)
         twgd_avg.to_device(cpudev)
@@ -201,7 +202,8 @@ def huber_optimizator_avg(X, y, lambd, l1_ratio_or_mu, C, max_iter, eps, alpha, 
         wgd_avg = alpha * wgd_avg
         wgd_avg = np.reshape(wgd_avg, wgd_avg.shape[1])
         w -= wgd_avg
-        
+        print "wgd_avg norm: ", np.linalg.norm(wgd_avg)
+
         alpha -= alpha * decay
         k += 1
         print "huber_optimizator k: ", k
@@ -223,6 +225,7 @@ def non_huber_optimizator_avg(X, y, lambd, l1_ratio_or_mu, C, max_iter, eps, alp
  
     batch_iter = 0
     idx = np.random.permutation(X.shape[0])
+    # print "data idx: ", idx
     X = X[idx]
     y = y[idx]
     if clf_name == 'lasso':
@@ -259,13 +262,14 @@ def non_huber_optimizator_avg(X, y, lambd, l1_ratio_or_mu, C, max_iter, eps, alp
         w_update = np.reshape(w_update, w_update.shape[1])
         # print "w_update shape: ", w_update.shape
         # print "w shape: ", w.shape
+        # print "w_update norm: ", np.linalg.norm(w_update)
         w -= w_update
         alpha -= alpha * decay
         k += 1
-        if k % 6 == 0:
-            print "smoothing_optimizator k: ", k
+        if k % 100 == 0:
+            print "non_huber_optimizator k: ", k
         batch_iter = batch_iter + 1
-        if k >= 10 or np.linalg.norm(w_update, ord=2) < eps:
+        if k >= 1000 or np.linalg.norm(w_update, ord=2) < eps:
             break
     print "smoothing opt avg final k: ", k
     return k, w

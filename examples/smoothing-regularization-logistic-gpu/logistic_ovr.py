@@ -50,10 +50,10 @@ class LogisticOneVsRestClassifier(OneVsRestClassifier):
             argmaxima = np.zeros(n_samples, dtype=int)
             for i, e in enumerate(self.estimators_):
                 pred = _predict_binary(e, X)
-                print "max pred: ", max(pred)
-                print "min pred: ", min(pred)
+                print "in logistic_ovr.py max pred: ", max(pred)
+                print "in logistic_ovr.py min pred: ", min(pred)
                 if (max(pred) > 1. or min(pred) < 0.):
-                    print "decision function is not sigmoid"
+                    print "in logistic_ovr.py decision function is not sigmoid"
                     sys.exit(1)
                 np.maximum(maxima, pred, out=maxima)
                 argmaxima[maxima == pred] = i
@@ -64,10 +64,10 @@ class LogisticOneVsRestClassifier(OneVsRestClassifier):
             for e in self.estimators_:
                 # here I modify myself
                 pred = _predict_binary(e, X)
-                print "max pred: ", max(pred)
-                print "min pred: ", min(pred)
+                print "in logistic_ovr.py max pred: ", max(pred)
+                print "in logistic_ovr.py min pred: ", min(pred)
                 if (max(pred) > 1. or min(pred) < 0.):
-                    print "decision function is not sigmoid"
+                    print "in logistic_ovr.py decision function is not sigmoid"
                     sys.exit(1)
                 print "in logistic_ovr where (_predict_binary(e, X) > thresh)[0] norm: ", np.linalg.norm(np.array(pred > .5, dtype = np.int))
                 print "in logistic_ovr np.array(pred > .5, dtype = np.int)[0:100]: ", np.array(pred > .5, dtype = np.int)[0:100]
