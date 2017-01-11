@@ -37,7 +37,7 @@ Example usage::
 
 from . import singa_wrap as singa
 import tensor
-
+from sklearn.metrics import roc_auc_score
 
 class Metric(object):
     '''Base metric class.
@@ -83,3 +83,12 @@ class Accuracy(Metric):
     '''
     def __init__(self):
         self.swig_metric = singa.Accuracy()
+
+class AUC(Metric):
+    '''Compute the top one accuracy for singel label prediction tasks.
+
+    It calls the C++ functions to do the calculation.
+    '''
+    def evaluate(self, x, y);
+        print "AUC predictions: ", x[0:10]
+        return roc_auc_score(y, x)
