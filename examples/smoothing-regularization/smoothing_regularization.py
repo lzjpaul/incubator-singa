@@ -42,6 +42,8 @@ class Smoothing_Regularization(BaseEstimator, LogisticLinearClassifierMixin):
         if min(y_train) == 0:
             y_train = 2. * y_train - 1
             y_test = 2. * y_test - 1
+        print "y_train[0:100]: ", y_train[0:100]
+        print "y_test[0:100]: ", y_test[0:100]
         if self.fit_intercept:
             if sparse.issparse(X_train):
                 # X = np.hstack((X.toarray(), np.ones((X.shape[0], 1))))
@@ -59,8 +61,10 @@ class Smoothing_Regularization(BaseEstimator, LogisticLinearClassifierMixin):
         #                                                self.max_iter, self.eps, self.alpha, self.decay, self.batch_size)
         #else:
             # print "using smoothing_optimizator_avg"
-            # print "self.batch_size: ", self.batch_size
-        self.n_iter_, self.w_ = optimizator_gd.non_huber_optimizator_avg(X_train, y_train, X_test, y_test, self.lambd, 0., self.C,
+        print "self.lambd: ", self.lambd
+        print "self.alpha: ", self.alpha
+        print "self.C: ", self.C
+        self.n_iter_, self.w_, self.best_accuracy_, self.best_accuracy_step_ = optimizator_gd.non_huber_optimizator_avg(X_train, y_train, X_test, y_test, self.lambd, 0., self.C,
                                                      (y_train.shape[0] * 10 / self.batch_size), self.eps, self.alpha, self.decay, self.batch_size, 'smoothing')
         self.coef_ = self.w_.reshape((1, X_train.shape[1]))
         self.intercept_ = 0.0
@@ -70,8 +74,8 @@ class Smoothing_Regularization(BaseEstimator, LogisticLinearClassifierMixin):
         print "in Smoothing_Regularization fit"
         print "fit self.intercept_ shape: ", self.intercept_.shape
         print "fit self.intercept_ norm: ", np.linalg.norm(self.intercept_)
-        print "fit self.coef_: ", self.coef_
-        return self
+        print "fit self.coef_ shape: ", self.coef_.shape
+        return self.best_accuracy_, self.best_accuracy_step_
 
     def predict_proba(self, X_train):
         return super(Smoothing_Regularization, self).decision_function(X_train)

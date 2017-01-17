@@ -60,7 +60,7 @@ def huber_grad_descent_avg(batch_X, batch_y, w, v, param, C, is_l1):
     # print "grad shape: ", grad.shape
     # print "ressum shape: ", ressum.shape
     # print "isspmatrix_csr(grad + ressum)", sparse.isspmatrix_csr(grad + ressum)
-    print "grad + sparse.csr_matrix(ressum) norm: ", linalg.norm(grad + sparse.csr_matrix(ressum))
+    # print "grad + sparse.csr_matrix(ressum) norm: ", linalg.norm(grad + sparse.csr_matrix(ressum))
     return grad + sparse.csr_matrix(ressum)
 
 def lasso_grad_descent_avg(batch_X, batch_y, w, param, l1_ratio_or_mu, C):
@@ -187,9 +187,9 @@ def huber_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_or_m
         alpha -= alpha * decay
         k += 1
 
-        if k % 20 == 0:
+        if k % 20 == 0: # 20
             print "huber_optimizator k: ", k
-        if k % 100 == 0:
+        if k % 60 == 0: # 100
             print "test at step: ", k
             accuracy = testaccuracy(w, v, X_test, y_test, 'huber')
             print "accuracy this step: ", accuracy
@@ -205,7 +205,7 @@ def huber_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_or_m
         if k >= max_iter:
             break
     print "huber opt avg final k: ", k
-    return k, w.toarray(), v.toarray()
+    return k, w.toarray(), v.toarray(), best_accuracy, best_accuracy_step
 
 # only one weight w, not w + v
 def non_huber_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_or_mu, C, max_iter, eps, alpha, decay, batch_size, clf_name):
@@ -255,14 +255,14 @@ def non_huber_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_
 
         batch_X, batch_y = X_train[index : (index + batch_size)], y_train[index : (index + batch_size)]
         w_update = alpha * grad_descent_avg(batch_X, batch_y, w, lambd, l1_ratio_or_mu, C)
-        print "w_update norm: ", linalg.norm(w_update)
+        # print "w_update norm: ", linalg.norm(w_update)
         w -= w_update
         alpha -= alpha * decay
         k += 1
 
         if k % 20 == 0:
             print "non_huber_optimizator k: ", k
-        if k % 100 == 0:
+        if k % 60 == 0:
             print "test at step: ", k
             accuracy = testaccuracy(w, w, X_test, y_test, 'non-huber')
             print "accuracy this step: ", accuracy
@@ -277,4 +277,4 @@ def non_huber_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_
         if k >= max_iter:
             break
     print "non_huber opt avg final k: ", k
-    return k, w.toarray()
+    return k, w.toarray(), best_accuracy, best_accuracy_step

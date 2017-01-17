@@ -54,14 +54,14 @@ class HuberSVC(BaseEstimator, LogisticLinearClassifierMixin):
         #else:
             # print "using huber_optimizator_avg"
             # print "self.batch_size: ", self.batch_size
-        self.n_iter_, self.w_, self.v_ = optimizator_gd.huber_optimizator_avg(X_train, y_train, X_test, y_test, self.lambd, self.mu, self.C,
+        self.n_iter_, self.w_, self.v_, self.best_accuracy_, self.best_accuracy_step_ = optimizator_gd.huber_optimizator_avg(X_train, y_train, X_test, y_test, self.lambd, self.mu, self.C,
                                                     (y_train.shape[0] * 10 / self.batch_size), self.eps, self.alpha, self.decay, self.batch_size, 'huber')
         self.coef_ = np.add(self.w_, self.v_).reshape((1, X_train.shape[1]))
         self.intercept_ = 0.0
         if self.fit_intercept:
             self.intercept_ = self.coef_[:,-1]
             self.coef_ = self.coef_[:,:-1]
-        return self
+        return self.best_accuracy_, self.best_accuracy_step_
 
     def predict_proba(self, X_train):
         return super(HuberSVC, self).decision_function(X_train)
