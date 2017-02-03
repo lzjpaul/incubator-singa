@@ -7,43 +7,17 @@ Latent Dirichlet Allocation
 # to line 51
 # check: Tao + overall logic (self.gaussians[w] = pi)
 # nk is a vector!!!!
-# gamma_function merge
 # inf potential danger?
-# line 41
 import numpy as np
 import scipy as sp
 import sys
-# from scipy.special import gammaln
+from scipy.special import gammaln
 
 def sample_index(p):
     """
     Sample from the Multinomial distribution and return the sample index.
     """
     return np.random.multinomial(1,p).argmax()
-
-def log_gamma(alpha):
-    if alpha < 1:
-        print "ak is too small (small than 0.5)"
-        exit(1)
-    if ((alpha - np.int(alpha)) == 0): # integer
-        res = 0
-        if alpha == 1:
-            return res
-        else: #alpha >= 2
-            alpha = alpha - 1
-            while alpha >= 1:
-                res += np.log(alpha)
-                alpha = (alpha - 1)
-    else: #1.5, 2.5, 3.5 ...
-        # alphan = (alpha - 0.5)
-        alphan = np.int(alpha)
-        res = 0
-        for n in range((alphan + 1), (2 * alphan + 1)):
-            res += np.log(n)
-        res -= alphan * np.log(4)
-        res += 0.5 * np.log(np.pi)
-    return res
-
 
 def log_multi(alpha, K=None):
     """
@@ -55,31 +29,6 @@ def log_multi(alpha, K=None):
     else:
         # alpha is assumed to be a scalar
         return K * np.log(alpha) - np.log(K*alpha)
-
-def gamma_division(ak):
-    if ak < 1:
-        print "ak is too small (small than 0.5)"
-        exit(1)
-
-    if ((ak-np.int(ak)) == 0.5): # 2.5, 3.5, ...
-        ak = np.int(ak) # the least is (1.5 - 0.5) == 1 ....
-        product = 1.0 / np.power(np.pi, 0.5)
-        t = (2 * ak - 1)
-        while t >= 1:
-            product = product * (t + 1) / t
-            t = (t - 2)
-        return product
-
-    else:   # integer
-        if ak == 1:
-            return np.power(np.pi, 0.5) * 3 / 4
-        else:
-            product = 0.5 * np.power(np.pi, 0.5)
-            t = (2 * ak - 2)
-            while t >= 2:
-                product = product * (t + 1) / t
-                t = (t -2)
-            return product
 
 class LdaSampler(object):
 
@@ -112,7 +61,7 @@ class LdaSampler(object):
     def _weight_cond_pi(self, w, k, weight_vec):
         term1 = np.power((1 - (0.5 * weight_vec[w] * weight_vec[w] / (self.nbk[k] + 0.5 * weight_vec[w] * weight_vec[w]))), (self.a + self.nk[k] / 2.0))
         term2 = 1.0 / np.power((self.nbk[k] + 0.5 * weight_vec[w] * weight_vec[w]), 0.5)
-        term3 = gamma_division((self.a + self.nk[k] / 2.0))
+        term3 = np.exp(gammaln(0.5 + self.a + self.nk[k] / 2.0) - gammaln(self.a + self.nk[k] / 2.0))
         return (term1 * term2 * term3)
 
     def _conditional_distribution(self, w, weight_vec):
@@ -136,7 +85,7 @@ class LdaSampler(object):
 
         for k in xrange(self.n_gaussians):
             lik += (self.nk[k] / 2.0) * (-1) * np.log(2 * np.pi)
-            lik += log_gamma(self.a + (self.nk[k] / 2.0))
+            lik += gammaln(self.a + (self.nk[k] / 2.0))
             lik -= (self.a + (self.nk[k] / 2.0)) * np.log(self.nbk[k])
 
         lik += log_multi(self.nk+self.alpha)
@@ -181,7 +130,7 @@ class LdaSampler(object):
         return theta_vec, lambda_vec
 
 if __name__ == "__main__":
-
+    np.random.seed(10)
     n_gaussians = int(sys.argv[1])
     weight_vec = np.random.rand(1000)
     print "weight_vec.shape[0]: ", weight_vec.shape[0] #one-dimension array
