@@ -87,6 +87,8 @@ class LdaSampler(object):
         """
         Conditional distribution (vector of size n_topics).
         """
+        if w % 2000 == 0:
+            print "w: ", w
         left = np.zeros(self.nk.shape[0])
         for k in range(self.nk.shape[0]):
             left[k] = self._weight_cond_pi(w, k, weight_vec)
@@ -123,6 +125,7 @@ class LdaSampler(object):
         """
         Run the Gibbs sampler.
         """
+        print "num_iter: ", num_iter
         if num_iter == 0:
             print "num_iter: ", num_iter
             print "initialization"
@@ -130,7 +133,7 @@ class LdaSampler(object):
 
         # joint_liklihood = 0
         for it in xrange(maxiter):
-            print "iteration: ", it
+            # print "iteration: ", it
             for w in range(weight_vec.shape[0]):
                 # print "w: ", w
                 self.nk[self.gaussians[w]] -= 1

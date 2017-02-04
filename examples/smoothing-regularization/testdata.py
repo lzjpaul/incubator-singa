@@ -30,4 +30,3 @@ def testaccuracy(w, v, x_test, y_test, clf_name):
     accuracy = accuracy_score(y_test, y_pred)
     print "test score: ", accuracy
     return accuracy
-
