@@ -1,3 +1,4 @@
+# term1, term2 and term3 are using element, not vector
 """
 (C) Zhaojing, Shaofeng, Jinyang - 2017
 
@@ -65,17 +66,31 @@ class LdaSampler(object):
         # print "self.nbk: ", self.nbk
         # print "self.gaussians: ", self.gaussians
 
+    def _weight_cond_pi(self, w, k, weight_vec):
+        # print "w: ", w
+        # print "k: ", k
+        # print "weight_vec[w]: ", weight_vec[w]
+        # print "self.nbk[k]: ", self.nbk[k]
+        # print "self.nk[k]: ", self.nk[k]
+        term1 = np.power((1 - (0.5 * weight_vec[w] * weight_vec[w] / (self.nbk[k] + 0.5 * weight_vec[w] * weight_vec[w]))), (self.a + self.nk[k] / 2.0))
+        if term1 == float('Inf'):
+            print "term1 overflow"
+            exit(1)
+        term2 = 1.0 / np.power((self.nbk[k] + 0.5 * weight_vec[w] * weight_vec[w]), 0.5)
+        term3 = np.exp(gammaln(0.5 + self.a + self.nk[k] / 2.0) - gammaln(self.a + self.nk[k] / 2.0))
+        # print "term1: ", term1
+        # print "term2: ", term2
+        # print "term3: ", term3
+        # print "(term1 * term2 * term3): ", (term1 * term2 * term3)
+        return (term1 * term2 * term3)
+
     def _conditional_distribution(self, w, weight_vec):
         """
         Conditional distribution (vector of size n_topics).
         """
-        # left = np.zeros(self.nk.shape[0])
-        # for k in range(self.nk.shape[0]):
-        #    left[k] = self._weight_cond_pi(w, k, weight_vec)
-        left_term1 = np.power((1 - (0.5 * weight_vec[w] * weight_vec[w] / (self.nbk + 0.5 * weight_vec[w] * weight_vec[w]))), (self.a + self.nk / 2.0))
-        left_term2 = 1.0 / np.power((self.nbk + 0.5 * weight_vec[w] * weight_vec[w]), 0.5)
-        left_term3 = np.exp(gammaln(0.5 + self.a + self.nk / 2.0) - gammaln(self.a + self.nk / 2.0))
-        left = (left_term1 * left_term2 * left_term3)
+        left = np.zeros(self.nk.shape[0])
+        for k in range(self.nk.shape[0]):
+            left[k] = self._weight_cond_pi(w, k, weight_vec)
         # print "left: ", left
         right = (self.nk + self.alpha)
         # print "slef.nk: ", self.nk
@@ -97,7 +112,7 @@ class LdaSampler(object):
         # not checked !!!
         for k in xrange(self.n_gaussians):
             lik += (self.nk[k] / 2.0) * (-1) * np.log(2 * np.pi)
-            lik += np.log(self.a + (self.nk[k] / 2.0))
+            lik += gammaln(self.a + (self.nk[k] / 2.0))
             lik -= (self.a + (self.nk[k] / 2.0)) * np.log(self.nbk[k])
 
         lik += log_multi(self.nk+self.alpha)
@@ -115,8 +130,8 @@ class LdaSampler(object):
         for it in xrange(maxiter):
             print "iteration: ", it
             for w in range(weight_vec.shape[0]):
-                # if w % 2000 == 0:
-                #     print "w: ", w
+                if w % 2000 == 0:
+                    print "w: ", w
                 self.nk[self.gaussians[w]] -= 1
                 self.nbk[self.gaussians[w]] -= (weight_vec[w] * weight_vec[w] * 0.5)
                 # print "minus self.nk: ", self.nk
@@ -130,7 +145,7 @@ class LdaSampler(object):
                 self.nk[pi] += 1
                 self.nbk[pi] += (weight_vec[w] * weight_vec[w] * 0.5)
                 self.gaussians[w] = pi # !!!
-                print "add self.nk: ", self.nk
+                # print "add self.nk: ", self.nk
                 # print "add self.nbk: ", self.nbk
                 # print "add self.gaussians: ", self.gaussians
 
@@ -145,20 +160,20 @@ class LdaSampler(object):
 
 
         theta_vec = (self.nk + self.alpha) / (weight_vec.shape[0] + self.nk.shape[0]*self.alpha)
-        # lambda_vec = np.zeros(self.nk.shape[0])
-        # for k in range (lambda_vec.shape[0]):
-        #    lambda_vec[k] = (self.a + 0.5 * self.nk[k]) / self.nbk[k]
-        lambda_vec = (self.a + 0.5 * self.nk) / self.nbk
+        lambda_vec = np.zeros(self.nk.shape[0])
+        for k in range (lambda_vec.shape[0]):
+            lambda_vec[k] = (self.a + 0.5 * self.nk[k]) / self.nbk[k]
+        # lambda_vec = (self.a + 0.5 * self.nk) / self.nbk
 
         return theta_vec, lambda_vec
 
 if __name__ == "__main__":
     np.random.seed(10)
     n_gaussians = int(sys.argv[1])
-    weight_vec = np.random.rand(15) #15
+    weight_vec = np.random.rand(50) #15
     print "weight_vec: ", weight_vec
     print "weight_vec.shape[0]: ", weight_vec.shape[0] #one-dimension array
-    sampler = LdaSampler(n_gaussians, alpha = 0.5, a = 2, b = 5) #number of gaussians
+    sampler = LdaSampler(n_gaussians, alpha = 1, a = 2, b = 5) #number of gaussians
     theta_vec, lambda_vec = sampler.run(weight_vec)
     print "theta_vec: ", theta_vec
     print "sum(theta_vec): ", sum(theta_vec)
