@@ -79,7 +79,7 @@ def gaussian_mixture_descent_avg(batch_X, batch_y, w, theta_vec, lambda_vec, C):
         grad_denominator = grad_denominator + (theta_vec[i] / (2 * np.pi)) * np.power(lambda_vec[i], 0.5) * np.exp(-0.5 * lambda_vec[i] * w_array * w_array)
     for i in range(theta_vec.shape[0]):
         grad_numerator = grad_numerator + (theta_vec[i] / (2 * np.pi)) * np.power(lambda_vec[i], 0.5) * np.exp(-0.5 * lambda_vec[i] * w_array * w_array) * (-lambda_vec[i]) * w_array
-    grad = grad_numerator / grad_denominator
+    grad = (-1) * grad_numerator / grad_denominator # -log(p(w))
     f1 = np.exp(((-batch_y).multiply(w.dot(batch_X.T))).toarray())
     y_res = (C * ((-batch_y).toarray()*(f1 / (1.0 + f1))))
     y_res = np.asarray(y_res).reshape(f1.shape[1])
@@ -349,7 +349,6 @@ def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1
 
         batch_X, batch_y = X_train[index : (index + batch_size)], y_train[index : (index + batch_size)]
         ############LDA_sampler#################
-        # print "w.toarray().shape: ", w.toarray().shape
         theta_vec, lambda_vec = sampler.run(pre_w, np.reshape(w.toarray(), (w.toarray().shape[1])), k)
         ############LDA_sampler#################
         w_update = alpha * gaussian_mixture_descent_avg(batch_X, batch_y, w, theta_vec, lambda_vec, C)
