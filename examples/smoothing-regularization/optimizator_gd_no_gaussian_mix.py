@@ -17,7 +17,6 @@ from scipy import sparse
 from scipy.sparse import csr_matrix
 from scipy.sparse import linalg
 from testdata import testaccuracy
-from LDA_Gibbs import LdaSampler
 def huber_grad_descent_avg(batch_X, batch_y, w, v, param, C, is_l1):
     # sparse: if sparse.issparse(batch_X): batch_X = batch_X.toarray()
     # print "in huber gd avg"
@@ -63,30 +62,6 @@ def huber_grad_descent_avg(batch_X, batch_y, w, v, param, C, is_l1):
     # print "isspmatrix_csr(grad + ressum)", sparse.isspmatrix_csr(grad + ressum)
     # print "grad + sparse.csr_matrix(ressum) norm: ", linalg.norm(grad + sparse.csr_matrix(ressum))
     return grad + sparse.csr_matrix(ressum)
-
-def gaussian_mixture_descent_avg(batch_X, batch_y, w, theta_vec, lambda_vec, C):
-    #if sparse.issparse(batch_X): batch_X = batch_X.toarray()
-    # print "in lasso gd avg"
-    batch_y = batch_y.T
-    w = w.toarray() # in order for np.exp
-    # grad = param * w.sign()
-    # print "lasso w shape: ", w.shape
-    grad_denominator = np.zeros(theta_vec.shape(0))
-    grad_numerator = np.zeros(theta_vec.shape(0))
-    for i in range(theta_vec.shape(0)):
-        grad_denominator = grad_denominator + (theta_vec[i] / (2 * np.pi)) * np.power(lambda_vec[i], 0.5) * np.exp(-0.5 * lambda_vec[i] * w * w)
-    for i in range(theta_vec.shape(0)):
-        grad_numerator = grad_numerator + (theta_vec[i] / (2 * np.pi)) * np.power(lambda_vec[i], 0.5) * np.exp(-0.5 * lambda_vec[i] * w * w) * (-lambda_vec[i]) * w
-    grad = grad_numerator / grad_denominator
-    f1 = np.exp(((-batch_y).multiply(w.dot(batch_X.T))).toarray())
-    y_res = (C * ((-batch_y).toarray()*(f1 / (1.0 + f1))))
-    y_res = np.asarray(y_res).reshape(f1.shape[1])
-    res = batch_X.T.dot(sparse.csr_matrix(sparse.diags(y_res, 0)))
-    res = res.T
-    ressum = res.sum(axis=0) #this will turn back to dense
-    ressum = ressum.astype(np.float)
-    ressum /=  float(batch_X.shape[0])
-    return sparse.csr_matrix(grad + ressum)
 
 def lasso_grad_descent_avg(batch_X, batch_y, w, param, l1_ratio_or_mu, C):
     #if sparse.issparse(batch_X): batch_X = batch_X.toarray()
@@ -302,78 +277,4 @@ def non_huber_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_
         if k >= max_iter:
             break
     print "non_huber opt avg final k: ", k
-    return k, w.toarray(), best_accuracy, best_accuracy_step
-
-def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_or_mu, C, max_iter, eps, alpha, decay, batch_size, clf_name):
-    k = 0
-    w = np.zeros(X_train.shape[1])
-    w = sparse.csr_matrix(w)
-    y_train = sparse.csr_matrix(y_train)
-    y_train = y_train.T
-    y_test = sparse.csr_matrix(y_test)
-    y_test = y_test.T
-    X_train = sparse.csr_matrix(X_train)
-    X_test = sparse.csr_matrix(X_test)
-    # print "w shape: ", w.shape
-    # f1 = open('outputfile', 'w+')
-    print "max_iter: ", max_iter
-    accuracy = 0.0
-    best_accuracy = 0.0
-    best_accuracy_step = 0
-    batch_iter = 0
-    np.random.seed(10)
-    idx = np.random.permutation(X_train.shape[0])
-    print "data idx: ", idx
-    X_train = X_train[idx]
-    y_train = y_train[idx]
-    pre_w = np.copy(w.toarray()) #dense
-    print "pre_w.shape: ", pre_w.shape
-    pre_w = np.reshape(pre_w, pre_w.shape[1])
-    sampler = LdaSampler(n_gaussians=10, alpha = 1, a = 2, b = 5) #number of gaussians
-    while True:
-        # sparse matrix works, random.shuffle
-        # shuffle: next time shuffle index will be forgetten (static variable: smoothing_grad_descent.idx)
-        # print "X.shape: ", X.shape
-        # print "max idx: ", max(idx)
-        index = (batch_size * batch_iter) % X_train.shape[0]
-
-        if (index + batch_size) >= X_train.shape[0]: #new epoch
-            index = 0
-            batch_iter = 0 #new epoch
-            np.random.seed(k)
-            idx = np.random.permutation(X_train.shape[0])
-            X_train = X_train[idx]
-            y_train = y_train[idx]
-
-        batch_X, batch_y = X_train[index : (index + batch_size)], y_train[index : (index + batch_size)]
-        ############LDA_sampler#################
-        # print "w.toarray().shape: ", w.toarray().shape
-        theta_vec, lambda_vec = sampler.run(pre_w, np.reshape(w.toarray(), (w.toarray().shape[1])), k)
-        ############LDA_sampler#################
-        w_update = alpha * mix_gaussian_descent_avg(batch_X, batch_y, w, theta_vec, lambda_vec, C)
-        # print "w_update norm: ", linalg.norm(w_update)
-        pre_w = np.copy(w.toarray()) #dense
-        print "pre_w.shape: ", pre_w.shape
-        pre_w = np.reshape(pre_w, pre_w.shape[1])
-        w -= w_update
-        alpha -= alpha * decay
-        k += 1
-
-        if k % 20 == 0:
-            print "non_huber_optimizator k: ", k
-        if k % 60 == 0:
-            print "test at step: ", k
-            accuracy = testaccuracy(w, w, X_test, y_test, 'non-huber')
-            print "accuracy this step: ", accuracy
-            if accuracy > best_accuracy:
-                best_accuracy = accuracy
-                best_accuracy_step = k
-            print "best_accuracy: ", best_accuracy
-            print "best_accuracy_step: ", best_accuracy_step
-
-        batch_iter = batch_iter + 1
-        # if k >= max_iter or linalg.norm(w_update) < eps:
-        if k >= max_iter:
-            break
-    print "gaussian opt avg final k: ", k
     return k, w.toarray(), best_accuracy, best_accuracy_step

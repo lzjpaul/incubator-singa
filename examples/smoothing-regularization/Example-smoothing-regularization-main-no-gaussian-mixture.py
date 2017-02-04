@@ -18,7 +18,6 @@ from lasso_clf import Lasso_Classifier
 from ridge_clf import Ridge_Classifier
 from elasticnet_clf import Elasticnet_Classifier
 from smoothing_regularization import Smoothing_Regularization
-from gaussian_mixture_regularization import Gaussian_Mixture_Regularization
 
 import pandas
 import numpy as np
@@ -195,17 +194,6 @@ if __name__ == '__main__':
             print "estimator__alpha: ", estimator__alpha
             smoothing = Smoothing_Regularization(C = estimator__C, lambd = estimator__lambd, batch_size = estimator__batch_size, alpha = estimator__alpha)
             smoothing.fit(X[train_index], y[train_index], X[test_index], y[test_index])
-        elif clf_name == 'gaussianmixture':
-            estimator__C = param_smoothing['estimator__C'][random.randint(0,len(param_smoothing['estimator__C'])-1)]
-            estimator__lambd = param_smoothing['estimator__lambd'][random.randint(0,len(param_smoothing['estimator__lambd'])-1)]
-            estimator__batch_size = param_smoothing['estimator__batch_size'][random.randint(0,len(param_smoothing['estimator__batch_size'])-1)]
-            estimator__alpha = param_smoothing['estimator__alpha'][random.randint(0,len(param_smoothing['estimator__alpha'])-1)]
-            print "C: ", estimator__C
-            print "estimator__lambd: ", estimator__lambd
-            print "estimator__batch_size: ", estimator__batch_size
-            print "estimator__alpha: ", estimator__alpha
-            gaussian_mixture = Gaussian_Mixture_Regularization(C = estimator__C, lambd = estimator__lambd, batch_size = estimator__batch_size, alpha = estimator__alpha)
-            gaussian_mixture.fit(X[train_index], y[train_index], X[test_index], y[test_index])
         elif clf_name == 'huber':
             estimator__C = param_huber['estimator__C'][random.randint(0,len(param_huber['estimator__C'])-1)]
             estimator__lambd = param_huber['estimator__lambd'][random.randint(0,len(param_huber['estimator__lambd'])-1)]
