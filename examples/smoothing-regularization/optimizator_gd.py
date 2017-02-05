@@ -306,7 +306,7 @@ def non_huber_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_
     print "non_huber opt avg final k: ", k
     return k, w.toarray(), best_accuracy, best_accuracy_step
 
-def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_or_mu, C, max_iter, eps, alpha, decay, batch_size, clf_name, batchgibbs):
+def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, C, max_iter, eps, alpha, n_gaussian, theta_alpha, a, b, decay, batch_size, clf_name, batchgibbs):
     k = 0
     w = np.zeros(X_train.shape[1])
     w = sparse.csr_matrix(w)
@@ -319,6 +319,8 @@ def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1
     # print "w shape: ", w.shape
     # f1 = open('outputfile', 'w+')
     print "max_iter: ", max_iter
+    print "lerning rate alpha: ", alpha
+    print "C: ", C
     accuracy = 0.0
     best_accuracy = 0.0
     best_accuracy_step = 0
@@ -331,7 +333,11 @@ def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1
     # pre_w = np.copy(w.toarray()) #dense
     # print "pre_w.shape: ", pre_w.shape
     # pre_w = np.reshape(pre_w, pre_w.shape[1])
-    sampler = LdaSampler(n_gaussians=10, alpha = 1, a = 2, b = 5) #number of gaussians
+    print "in optimizator_avg n_gaussian: ", n_gaussian
+    print "in optimizator_avg theta_alpha: ", theta_alpha
+    print "in optimizator_avg a: ", a
+    print "in optimizator_avg b: ", b
+    sampler = LdaSampler(n_gaussians=n_gaussian, alpha = (1.0 / n_gaussian), a = a, b = b) #number of gaussians
     while True:
         # sparse matrix works, random.shuffle
         # shuffle: next time shuffle index will be forgetten (static variable: smoothing_grad_descent.idx)
@@ -375,6 +381,7 @@ def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1
         batch_iter = batch_iter + 1
         # if k >= max_iter or linalg.norm(w_update) < eps:
         if k >= max_iter:
+        # if k >= 20:
             break
     print "gaussian opt avg final k: ", k
     return k, w.toarray(), best_accuracy, best_accuracy_step
