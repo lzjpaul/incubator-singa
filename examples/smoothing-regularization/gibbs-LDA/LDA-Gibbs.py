@@ -73,6 +73,9 @@ class LdaSampler(object):
         # for k in range(self.nk.shape[0]):
         #    left[k] = self._weight_cond_pi(w, k, weight_vec)
         left_term1 = np.power((1 - (0.5 * weight_vec[w] * weight_vec[w] / (self.nbk + 0.5 * weight_vec[w] * weight_vec[w]))), (self.a + self.nk / 2.0))
+        if np.sum(left_term1) == float('Inf'):
+            print "term1 overflow"
+            exit(1)
         left_term2 = 1.0 / np.power((self.nbk + 0.5 * weight_vec[w] * weight_vec[w]), 0.5)
         left_term3 = np.exp(gammaln(0.5 + self.a + self.nk / 2.0) - gammaln(self.a + self.nk / 2.0))
         left = (left_term1 * left_term2 * left_term3)

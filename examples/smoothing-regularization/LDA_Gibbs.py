@@ -55,6 +55,8 @@ class LdaSampler(object):
         for k in range(self.nbk.shape[0]):
             self.nbk[k] = self.b
         self.gaussians = {} # which gaussian this weight dimension refers to
+        self.pre_weight_vec = np.zeros(weight_vec.shape[0])
+        self.gibbsbatchiter = 0
 
         for w in range(weight_vec.shape[0]):
             pi = np.random.randint(self.n_gaussians)
@@ -62,6 +64,7 @@ class LdaSampler(object):
             self.nk[pi] += 1
             self.nbk[pi] += (weight_vec[w] * weight_vec[w] * 0.5)
             self.gaussians[w] = pi
+            self.pre_weight_vec[w] = weight_vec[w]
         # print "self.nk: ", self.nk
         # print "self.nbk: ", self.nbk
         # print "self.gaussians: ", self.gaussians
@@ -109,24 +112,41 @@ class LdaSampler(object):
 #
 #        return lik
 
-    def run(self, pre_weight_vec, weight_vec, num_iter, maxiter=1, eps=0.0001):
+    def run(self, weight_vec, num_iter, batchgibbs, maxiter=1, eps=0.0001):
         """
         Run the Gibbs sampler.
         """
-        print "num_iter: ", num_iter
+        # print "num_iter: ", num_iter
         if num_iter == 0:
             print "num_iter: ", num_iter
             print "initialization"
             self._initialize(weight_vec)
 
         # joint_liklihood = 0
+        if batchgibbs == 0:
+            w_range_begin = 0
+            w_range_end = weight_vec.shape[0]
+        else:
+            w_range_begin = ((batchgibbs * self.gibbsbatchiter) % weight_vec.shape[0])
+            if (w_range_begin + batchgibbs) < weight_vec.shape[0]:
+                w_range_end = (w_range_begin + batchgibbs)
+                self.gibbsbatchiter = self.gibbsbatchiter + 1
+            else:
+                w_range_end = weight_vec.shape[0]
+                self.gibbsbatchiter = 0 # new epoc of features
+
+
+        if batchgibbs != 0:
+            print "w_range_begin: ", w_range_begin
+            print "w_range_end: ", w_range_end
+            print "self.gibbsbatchiter: ", self.gibbsbatchiter
         for it in xrange(maxiter):
             # print "iteration: ", it
-            for w in range(weight_vec.shape[0]):
-                if w % 2000 == 0 and w != 0:
-                     print "w: ", w
+            for w in range(w_range_begin, w_range_end):
+                # if w % 50000 == 0 and w != 0:
+                #     print "w: ", w
                 self.nk[self.gaussians[w]] -= 1
-                self.nbk[self.gaussians[w]] -= (pre_weight_vec[w] * pre_weight_vec[w] * 0.5)
+                self.nbk[self.gaussians[w]] -= (self.pre_weight_vec[w] * self.pre_weight_vec[w] * 0.5)
                 # print "minus self.nk: ", self.nk
                 # print "minus self.nbk: ", self.nbk
                 # print "minus self.gaussians: ", self.gaussians
@@ -138,6 +158,7 @@ class LdaSampler(object):
                 self.nk[pi] += 1
                 self.nbk[pi] += (weight_vec[w] * weight_vec[w] * 0.5)
                 self.gaussians[w] = pi # !!!
+                self.pre_weight_vec[w] = weight_vec[w]
                 # print "add self.nk: ", self.nk
                 # print "add self.nbk: ", self.nbk
                 # print "add self.gaussians: ", self.gaussians

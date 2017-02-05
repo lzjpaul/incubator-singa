@@ -28,7 +28,7 @@ class Gaussian_Mixture_Regularization(BaseEstimator, LogisticLinearClassifierMix
         # print "init self.batch_size: ", self.batch_size
         # print "init self.gradaverage: ", self.gradaverage
 
-    def fit(self, X_train, y_train, X_test, y_test):
+    def fit(self, X_train, y_train, X_test, y_test, batchgibbs):
         print "fit begin y: ", y_train[0:100]
         self.classes_, y_train = np.unique(y_train, return_inverse=True)
         self.classes_, y_test = np.unique(y_test, return_inverse=True)
@@ -65,7 +65,7 @@ class Gaussian_Mixture_Regularization(BaseEstimator, LogisticLinearClassifierMix
         print "self.alpha: ", self.alpha
         print "self.C: ", self.C
         self.n_iter_, self.w_, self.best_accuracy_, self.best_accuracy_step_ = optimizator_gd.gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, self.lambd, 0., self.C,
-                                                     (y_train.shape[0] * 10 / self.batch_size), self.eps, self.alpha, self.decay, self.batch_size, 'gaussianmixture')
+                                                     (y_train.shape[0] * 10 / self.batch_size), self.eps, self.alpha, self.decay, self.batch_size, 'gaussianmixture', batchgibbs)
         self.coef_ = self.w_.reshape((1, X_train.shape[1]))
         self.intercept_ = 0.0
         if self.fit_intercept:

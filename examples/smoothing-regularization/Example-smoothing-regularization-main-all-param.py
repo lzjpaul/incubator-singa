@@ -19,6 +19,7 @@ from lasso_clf import Lasso_Classifier
 from ridge_clf import Ridge_Classifier
 from elasticnet_clf import Elasticnet_Classifier
 from smoothing_regularization import Smoothing_Regularization
+from gaussian_mixture_regularization import Gaussian_Mixture_Regularization
 
 import pandas
 import numpy as np
@@ -59,6 +60,7 @@ if __name__ == '__main__':
     parser.add_argument('-svmlight', type=int, help='svmlight or not')
     parser.add_argument('-sparsify', type=int, help='sparsify or not, not svm')
     parser.add_argument('-scale', type=int, help='scale or not')
+    parser.add_argument('-batchgibbs', type=int, help='batchgibbs or not: 0 all, not 0: batch')
     # parser.add_argument('-epoch', type=int, help='maximum epoch')
     # parser.add_argument('-gradaverage', type=int, help='gradient average or not')
 
@@ -265,6 +267,29 @@ if __name__ == '__main__':
             # estimator__lambd = param_smoothing['estimator__lambd'][random.randint(0,len(param_smoothing['estimator__lambd'])-1)]
             # estimator__batch_size = param_smoothing['estimator__batch_size'][random.randint(0,len(param_smoothing['estimator__batch_size'])-1)]
             # estimator__alpha = param_smoothing['estimator__alpha'][random.randint(0,len(param_smoothing['estimator__alpha'])-1)]
+        elif clf_name == 'gaussianmixture':
+            gaussianmixture_metric = np.zeros((len(param_smoothing) + 2)).reshape(1, (len(param_smoothing) + 2))
+            print "gaussianmixture_metric shape: ", gaussianmixture_metric.shape
+            for C_i, C_val in enumerate(param_smoothing['estimator__C']):
+                for lambd_i, lambd_val in enumerate(param_smoothing['estimator__lambd']):
+                    for batch_size_i, batch_size_val in enumerate(param_smoothing['estimator__batch_size']):
+                        for alpha_i, alpha_val in enumerate(param_smoothing['estimator__alpha']):
+                            print "C: ", C_val
+                            print "estimator__lambd: ", lambd_val
+                            print "estimator__batch_size: ", batch_size_val
+                            print "estimator__alpha: ", alpha_val
+                            gaussian_mixture = Gaussian_Mixture_Regularization(C = C_val, lambd = lambd_val, batch_size = batch_size_val, alpha = alpha_val)
+                            best_accuracy, best_accuracy_step = gaussian_mixture.fit(X[train_index], y[train_index], X[test_index], y[test_index], args.batchgibbs)
+                            print "best_accuracy: ", best_accuracy
+                            print "best_accuracy_step: ", best_accuracy_step
+
+                            this_model_metric = np.array([C_val, lambd_val, batch_size_val, alpha_val, best_accuracy, best_accuracy_step])
+                            this_model_metric = this_model_metric.reshape(1, this_model_metric.shape[0])
+                            gaussianmixture_metric = np.concatenate((gaussianmixture_metric, this_model_metric), axis=0)
+                            print "gaussianmixture_metric shape: ", gaussianmixture_metric.shape
+                            print "gaussianmixture_metric: ", gaussianmixture_metric
+            for metric_i in range(len(gaussianmixture_metric[:,0])):
+                print gaussianmixture_metric[metric_i]
         elif clf_name == 'huber':
             huber_metric = np.zeros((len(param_huber) + 2)).reshape(1, (len(param_huber) + 2))
             print "huber_metric shape: ", huber_metric.shape
