@@ -337,7 +337,8 @@ def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, C, max_it
     print "in optimizator_avg theta_alpha: ", theta_alpha
     print "in optimizator_avg a: ", a
     print "in optimizator_avg b: ", b
-    sampler = LdaSampler(n_gaussians=n_gaussian, alpha = (1.0 / n_gaussian), a = a, b = b) #number of gaussians
+    # sampler = LdaSampler(n_gaussians=n_gaussian, alpha = (1.0 / n_gaussian), a = a, b = b) #number of gaussians
+    sampler = LdaSampler(n_gaussians=n_gaussian, alpha = theta_alpha, a = a, b = b) #number of gaussians
     while True:
         # sparse matrix works, random.shuffle
         # shuffle: next time shuffle index will be forgetten (static variable: smoothing_grad_descent.idx)
@@ -356,9 +357,11 @@ def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, C, max_it
         batch_X, batch_y = X_train[index : (index + batch_size)], y_train[index : (index + batch_size)]
         ############LDA_sampler#################
         theta_vec, lambda_vec = sampler.run(np.reshape(w.toarray(), (w.toarray().shape[1])), k, batchgibbs)
+        print "theta_vec: ", theta_vec
+        print "lambda_vec: ", lambda_vec
         ############LDA_sampler#################
         w_update = alpha * gaussian_mixture_descent_avg(batch_X, batch_y, w, theta_vec, lambda_vec, C)
-        # print "w_update norm: ", linalg.norm(w_update)
+        print "w_update norm: ", linalg.norm(w_update)
         # pre_w = np.copy(w.toarray()) #dense
         # print "pre_w.shape: ", pre_w.shape
         # pre_w = np.reshape(pre_w, pre_w.shape[1])

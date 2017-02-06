@@ -116,7 +116,7 @@ class LdaSampler(object):
         """
         Run the Gibbs sampler.
         """
-        # print "num_iter: ", num_iter
+        print "num_iter: ", num_iter
         if num_iter == 0:
             print "num_iter: ", num_iter
             print "initialization"
@@ -145,6 +145,7 @@ class LdaSampler(object):
             for w in range(w_range_begin, w_range_end):
                 # if w % 50000 == 0 and w != 0:
                 #     print "w: ", w
+                # print "w: ", w
                 self.nk[self.gaussians[w]] -= 1
                 self.nbk[self.gaussians[w]] -= (self.pre_weight_vec[w] * self.pre_weight_vec[w] * 0.5)
                 # print "minus self.nk: ", self.nk
@@ -159,6 +160,10 @@ class LdaSampler(object):
                 self.nbk[pi] += (weight_vec[w] * weight_vec[w] * 0.5)
                 self.gaussians[w] = pi # !!!
                 self.pre_weight_vec[w] = weight_vec[w]
+                # print "weight_vec[w]: ", weight_vec[w]
+                # print "pi: ", pi
+                # print "self.nbk[4]: ", self.nbk[4]
+                # print "self.nbk: ", self.nbk
                 # print "add self.nk: ", self.nk
                 # print "add self.nbk: ", self.nbk
                 # print "add self.gaussians: ", self.gaussians
@@ -177,7 +182,10 @@ class LdaSampler(object):
         # lambda_vec = np.zeros(self.nk.shape[0])
         # for k in range (lambda_vec.shape[0]):
         #    lambda_vec[k] = (self.a + 0.5 * self.nk[k]) / self.nbk[k]
+        print "LDA self.nbk: ", self.nbk
+        print "LDA self.nk: ", self.nk
         lambda_vec = (self.a + 0.5 * self.nk) / self.nbk
+        print "LDA lambda_vec: ", lambda_vec
 
         return theta_vec, lambda_vec
 

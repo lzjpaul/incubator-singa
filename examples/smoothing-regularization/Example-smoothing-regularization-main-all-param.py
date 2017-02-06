@@ -154,6 +154,8 @@ if __name__ == '__main__':
     result_df = pandas.DataFrame()
     for i, (train_index, test_index) in enumerate(StratifiedKFold(y, n_folds=n_folds)):
         print "i: ", i
+        print "train_index: ", train_index
+        print "test_index: ", test_index
         if i > 0:
             break
         clf_name = args.clf
