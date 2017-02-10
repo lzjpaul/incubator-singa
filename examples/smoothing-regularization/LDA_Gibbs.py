@@ -17,6 +17,7 @@ def sample_index(p):
     Sample from the Multinomial distribution and return the sample index.
     """
     # print "in sample index"
+    # print "sample_index p: ", p
     return np.random.multinomial(1,p).argmax()
 
 def log_multi(alpha, K=None): # not checked!!!

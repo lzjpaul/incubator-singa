@@ -81,12 +81,14 @@ def gaussian_mixture_descent_avg(batch_X, batch_y, w, theta_vec, lambda_vec, C):
     grad_denominator = np.zeros(w_array.shape[0])
     grad_numerator = np.zeros(w_array.shape[0])
     for i in range(theta_vec.shape[0]):
+        print "gaussian theta i: ", i
         grad_denominator = grad_denominator + theta_vec[i] * np.power((lambda_vec[i] / (2.0 * np.pi)), 0.5) * np.exp(-0.5 * lambda_vec[i] * w_array * w_array)
     for i in range(theta_vec.shape[0]):
         grad_numerator = grad_numerator + theta_vec[i] * np.power((lambda_vec[i]/ (2 * np.pi)), 0.5) * np.exp(-0.5 * lambda_vec[i] * w_array * w_array) * lambda_vec[i] * w_array
     grad = grad_numerator / grad_denominator # -log(p(w))
     grad[-1] = 0.0
-    print "grad: ", grad
+    print "grad[0:10]: ", grad[0:10]
+    print "(lambda_vec[0] * w_array)[0:10]: ", (lambda_vec[0] * w_array)[0:10]
     # grad = sparse.csr_matrix(grad)
     # print "grad shape: ", grad.shape
     f1 = np.exp(((-batch_y).multiply(w.dot(batch_X.T))).toarray())
@@ -123,11 +125,12 @@ def ridge_grad_descent_avg(batch_X, batch_y, w, param, l1_ratio_or_mu, C):
     # if sparse.issparse(batch_X): batch_X = batch_X.toarray()
     # print "in ridge gd avg"
     batch_y = batch_y.T
+    print "param * 2.0: ", param * 2.0
     grad = param * 2.0 * w
     grad = grad.toarray()
     # print "before grad: ", grad[0,-2]
     grad[0, -1] = 0.0
-    # print "after grad: ", grad
+    print "after grad: ", grad[0, 0:10]
     grad = sparse.csr_matrix(grad)
     # print "grad shape: ", grad.shape
     f1 = np.exp(((-batch_y).multiply(w.dot(batch_X.T))).toarray())
@@ -338,7 +341,7 @@ def non_huber_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_
     print "non_huber opt avg final k: ", k
     return k, w.toarray(), best_accuracy, best_accuracy_step
 
-def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, C, max_iter, eps, alpha, n_gaussian, theta_alpha, a, b, decay, batch_size, clf_name, batchgibbs):
+def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, C, max_iter, eps, alpha, n_gaussian, theta_alpha, a, b, decay, batch_size, clf_name, batchgibbs, initial_L2_lambd, initial_L2_alpha, initial_L2_step):
     k = 0
     w = np.zeros(X_train.shape[1])
     w = sparse.csr_matrix(w)
@@ -387,19 +390,36 @@ def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, C, max_it
             y_train = y_train[idx]
 
         batch_X, batch_y = X_train[index : (index + batch_size)], y_train[index : (index + batch_size)]
-        ############LDA_sampler#################
-        theta_vec, lambda_vec = sampler.run(np.reshape(w.toarray(), (w.toarray().shape[1])), k, batchgibbs)
-        print "theta_vec: ", theta_vec
-        print "lambda_vec: ", lambda_vec
-        ############LDA_sampler#################
-        w_update = alpha * gaussian_mixture_descent_avg(batch_X, batch_y, w, theta_vec, lambda_vec, C)
-        print "w_update norm: ", linalg.norm(w_update)
-        # pre_w = np.copy(w.toarray()) #dense
-        # print "pre_w.shape: ", pre_w.shape
-        # pre_w = np.reshape(pre_w, pre_w.shape[1])
-        w -= w_update
-        print "w: ", linalg.norm(w)
-        alpha -= alpha * decay
+
+        if k >= initial_L2_step:
+            ############LDA_sampler#################
+            print "before sampler w: ", linalg.norm(w)
+            theta_vec, lambda_vec = sampler.run(np.reshape(w.toarray()*np.sqrt(15000), (w.toarray().shape[1])), (k-initial_L2_step), batchgibbs)
+            print "theta_vec: ", theta_vec
+            # print "lambda_vec: ", lambda_vec
+            lambda_vec[0] = 0.2
+            print "lambda_vec enforce: ", lambda_vec
+            ############LDA_sampler#################
+            w_update = alpha * gaussian_mixture_descent_avg(batch_X, batch_y, w, theta_vec, lambda_vec, C)
+            print "w_update norm: ", linalg.norm(w_update)
+            w -= w_update
+            print "w: ", linalg.norm(w)
+            # print "w: ", w
+            alpha -= alpha * decay
+            print "lr alpha: ", alpha
+        else: #L2_norm
+            # w_update = initial_L2_alpha * ridge_grad_descent_avg(batch_X, batch_y, w, initial_L2_lambd, 0.1, C)
+            w_update = alpha * ridge_grad_descent_avg(batch_X, batch_y, w, initial_L2_lambd, 0.1, C)
+            print "w_update norm: ", linalg.norm(w_update)
+            w -= w_update
+            print "w: ", linalg.norm(w)
+            # print "w: ", w
+            # initial_L2_alpha -= initial_L2_alpha * decay
+            alpha -= alpha * decay
+            print "lr alpha: ", alpha
+        # w -= w_update
+        # print "w: ", linalg.norm(w)
+        # alpha -= alpha * decay
         k += 1
 
         if k % 20 == 0:
