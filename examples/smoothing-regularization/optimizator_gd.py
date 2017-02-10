@@ -28,9 +28,14 @@ def huber_grad_descent_avg(batch_X, batch_y, w, v, param, C, is_l1):
     # print "batch_y shape: ", batch_y.shape
     # print "(-batch_y * (w + v).dot(batch_X.T) shape: ", (-batch_y * (w + v).dot(batch_X.T)).shape
     grad = param * v.sign() if is_l1 else param * 2.0 * w
+    grad = grad.toarray()
+    grad[0, -1] = 0.0
+    grad = sparse.csr_matrix(grad)
+    # print "grad shape1: ", grad.shape
     # print "-batch_y shape: ",  (-batch_y).shape
     # print "(w + v) shape: ", (w + v).shape
     # print "((w + v).dot(batch_X.T)) shape: ", ((w + v).dot(batch_X.T)).shape
+    # print "finish"
     f1 = np.exp(((-batch_y).multiply((w + v).dot(batch_X.T))).toarray())
     # print "f1 shape: ", f1.shape
     # print "batch_X.T shape: ", batch_X.T.shape
@@ -80,6 +85,10 @@ def gaussian_mixture_descent_avg(batch_X, batch_y, w, theta_vec, lambda_vec, C):
     for i in range(theta_vec.shape[0]):
         grad_numerator = grad_numerator + theta_vec[i] * np.power((lambda_vec[i]/ (2 * np.pi)), 0.5) * np.exp(-0.5 * lambda_vec[i] * w_array * w_array) * lambda_vec[i] * w_array
     grad = grad_numerator / grad_denominator # -log(p(w))
+    grad[-1] = 0.0
+    print "grad: ", grad
+    # grad = sparse.csr_matrix(grad)
+    # print "grad shape: ", grad.shape
     f1 = np.exp(((-batch_y).multiply(w.dot(batch_X.T))).toarray())
     y_res = (C * ((-batch_y).toarray()*(f1 / (1.0 + f1))))
     y_res = np.asarray(y_res).reshape(f1.shape[1])
@@ -95,6 +104,10 @@ def lasso_grad_descent_avg(batch_X, batch_y, w, param, l1_ratio_or_mu, C):
     # print "in lasso gd avg"
     batch_y = batch_y.T
     grad = param * w.sign()
+    grad = grad.toarray()
+    grad[0, -1] = 0.0
+    grad = sparse.csr_matrix(grad)
+    # print "grad shape: ", grad.shape
     # print "lasso w shape: ", w.shape
     f1 = np.exp(((-batch_y).multiply(w.dot(batch_X.T))).toarray())
     y_res = (C * ((-batch_y).toarray()*(f1 / (1.0 + f1))))
@@ -111,6 +124,12 @@ def ridge_grad_descent_avg(batch_X, batch_y, w, param, l1_ratio_or_mu, C):
     # print "in ridge gd avg"
     batch_y = batch_y.T
     grad = param * 2.0 * w
+    grad = grad.toarray()
+    # print "before grad: ", grad[0,-2]
+    grad[0, -1] = 0.0
+    # print "after grad: ", grad
+    grad = sparse.csr_matrix(grad)
+    # print "grad shape: ", grad.shape
     f1 = np.exp(((-batch_y).multiply(w.dot(batch_X.T))).toarray())
     y_res = (C * ((-batch_y).toarray()*(f1 / (1.0 + f1))))
     y_res = np.asarray(y_res).reshape(f1.shape[1])
@@ -126,6 +145,10 @@ def elasticnet_grad_descent_avg(batch_X, batch_y, w, param, l1_ratio_or_mu, C):
     # print "in elastic gd avg"
     batch_y = batch_y.T
     grad = param * l1_ratio_or_mu * w.sign() + param * (1 - l1_ratio_or_mu) * w
+    grad = grad.toarray()
+    grad[0, -1] = 0.0
+    grad = sparse.csr_matrix(grad)
+    # print "grad shape: ", grad.shape
     f1 = np.exp(((-batch_y).multiply(w.dot(batch_X.T))).toarray())
     y_res = (C * ((-batch_y).toarray()*(f1 / (1.0 + f1))))
     y_res = np.asarray(y_res).reshape(f1.shape[1])
@@ -146,6 +169,10 @@ def smoothing_grad_descent_avg(batch_X, batch_y, w, param, l1_ratio_or_mu, C):
     w_array = w.toarray()
     w_array_exp = np.exp(w_array)
     grad =  param * (w_array_exp - 1) / (w_array_exp + 1) # log(1+e^(-w)) + log(1+e^(w))
+    # grad = grad.toarray()
+    grad[0, -1] = 0.0
+    # grad = sparse.csr_matrix(grad)
+    # print "grad shape: ", grad.shape
     # grad = param * w.sign()
     #print "not smoothing formula"
     # print "grad: ", grad
@@ -201,8 +228,10 @@ def huber_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_or_m
         vec = (w + v)
         # making optimization in w and v
         # w and v will be automatically changed to sparse array
+        # print "v-="
         v -= alpha * grad_descent_avg(batch_X, batch_y, w, v, l1_ratio_or_mu, C, True)
         # print "isspmatrix_csr(v): ", sparse.isspmatrix_csr(v)
+        # print "w-="
         w -= alpha * grad_descent_avg(batch_X, batch_y, w, v, lambd, C, False)
         # v_update = alpha * grad_descent_avg(batch_X, batch_y, w, v, l1_ratio_or_mu, C, True)
         # v -= v_update
@@ -247,7 +276,9 @@ def non_huber_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_
     X_test = sparse.csr_matrix(X_test)
     # print "w shape: ", w.shape
     # f1 = open('outputfile', 'w+')
-    print "max_iter: ", max_iter
+    print "optimizator_avg lambd: ", lambd
+    print "optimizator_avg alpha: ", alpha
+    print "optimizator_avg max_iter: ", max_iter
     accuracy = 0.0
     best_accuracy = 0.0
     best_accuracy_step = 0
@@ -282,8 +313,9 @@ def non_huber_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_
 
         batch_X, batch_y = X_train[index : (index + batch_size)], y_train[index : (index + batch_size)]
         w_update = alpha * grad_descent_avg(batch_X, batch_y, w, lambd, l1_ratio_or_mu, C)
-        # print "w_update norm: ", linalg.norm(w_update)
+        print "w_update norm: ", linalg.norm(w_update)
         w -= w_update
+        print "w norm: ", linalg.norm(w)
         alpha -= alpha * decay
         k += 1
 
@@ -366,6 +398,7 @@ def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, C, max_it
         # print "pre_w.shape: ", pre_w.shape
         # pre_w = np.reshape(pre_w, pre_w.shape[1])
         w -= w_update
+        print "w: ", linalg.norm(w)
         alpha -= alpha * decay
         k += 1
 
