@@ -161,6 +161,9 @@ class LdaSampler(object):
                 self.nbk[pi] += (weight_vec[w] * weight_vec[w] * 0.5)
                 self.gaussians[w] = pi # !!!
                 self.pre_weight_vec[w] = weight_vec[w]
+                #if pi == 0:
+                #    print "nk == 1 w: ", w
+                #    print "nk == 1 weight_vec[w]: ", weight_vec[w]
                 # print "weight_vec[w]: ", weight_vec[w]
                 # print "pi: ", pi
                 # print "self.nbk[4]: ", self.nbk[4]

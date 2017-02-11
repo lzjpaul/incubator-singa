@@ -1,3 +1,4 @@
+# _4: bias_sampled
 # (0) overall logic
 # (1) better coding method?
 # (2) correct? compared to dense

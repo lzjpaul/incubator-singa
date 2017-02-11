@@ -1,3 +1,4 @@
+# _5: no adaptive
 # (0) overall logic
 # (1) better coding method?
 # (2) correct? compared to dense

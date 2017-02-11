@@ -28,5 +28,6 @@ def testaccuracy(w, v, x_test, y_test, clf_name):
 
     print "test y_test shape: ", y_test.shape
     accuracy = accuracy_score(y_test, y_pred)
+    accuracy = roc_auc_score(y_test, scores)
     print "test score: ", accuracy
     return accuracy
