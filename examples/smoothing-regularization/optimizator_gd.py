@@ -78,14 +78,16 @@ def gaussian_mixture_descent_avg(batch_X, batch_y, w, theta_vec, lambda_vec, C):
     w_array = np.reshape(w_array, w_array.shape[1])
     # grad = param * w.sign()
     # print "lasso w shape: ", w.shape
-    grad_denominator = np.zeros(w_array.shape[0])
-    grad_numerator = np.zeros(w_array.shape[0])
+    grad_denominator = np.zeros(w_array.shape[0]-1)
+    grad_numerator = np.zeros(w_array.shape[0]-1)
+    print "bias: ", w_array[-1]
     for i in range(theta_vec.shape[0]):
         print "gaussian theta i: ", i
-        grad_denominator = grad_denominator + theta_vec[i] * np.power((lambda_vec[i] / (2.0 * np.pi)), 0.5) * np.exp(-0.5 * lambda_vec[i] * w_array * w_array)
+        grad_denominator = grad_denominator + theta_vec[i] * np.power((lambda_vec[i] / (2.0 * np.pi)), 0.5) * np.exp(-0.5 * lambda_vec[i] * w_array[:-1] * w_array[:-1])
     for i in range(theta_vec.shape[0]):
-        grad_numerator = grad_numerator + theta_vec[i] * np.power((lambda_vec[i]/ (2 * np.pi)), 0.5) * np.exp(-0.5 * lambda_vec[i] * w_array * w_array) * lambda_vec[i] * w_array
-    grad = grad_numerator / grad_denominator # -log(p(w))
+        grad_numerator = grad_numerator + theta_vec[i] * np.power((lambda_vec[i]/ (2 * np.pi)), 0.5) * np.exp(-0.5 * lambda_vec[i] * w_array[:-1] * w_array[:-1]) * lambda_vec[i] * w_array[:-1]
+    grad = np.zeros(w_array.shape[0])
+    grad[:-1] = grad_numerator / grad_denominator # -log(p(w))
     grad[-1] = 0.0
     print "grad[0:10]: ", grad[0:10]
     print "(lambda_vec[0] * w_array)[0:10]: ", (lambda_vec[0] * w_array)[0:10]
@@ -394,11 +396,11 @@ def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, C, max_it
         if k >= initial_L2_step:
             ############LDA_sampler#################
             print "before sampler w: ", linalg.norm(w)
-            theta_vec, lambda_vec = sampler.run(np.reshape(w.toarray()*np.sqrt(15000), (w.toarray().shape[1])), (k-initial_L2_step), batchgibbs)
+            theta_vec, lambda_vec = sampler.run(np.reshape((w.toarray()*np.sqrt(9375))[0,:-1], (w.toarray().shape[1]-1)), (k-initial_L2_step), batchgibbs)
             print "theta_vec: ", theta_vec
-            # print "lambda_vec: ", lambda_vec
-            lambda_vec[0] = 0.2
-            print "lambda_vec enforce: ", lambda_vec
+            print "lambda_vec: ", lambda_vec
+            # lambda_vec[0] = 0.2
+            # print "lambda_vec enforce: ", lambda_vec
             ############LDA_sampler#################
             w_update = alpha * gaussian_mixture_descent_avg(batch_X, batch_y, w, theta_vec, lambda_vec, C)
             print "w_update norm: ", linalg.norm(w_update)
