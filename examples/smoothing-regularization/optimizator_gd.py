@@ -402,6 +402,8 @@ def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, C, max_it
         batch_X, batch_y = X_train[index : (index + batch_size)], y_train[index : (index + batch_size)]
 
         if k >= initial_L2_step:
+            ######## not checked yet!!! because I do not know whether using testing data AUC correct or not###############
+            ######## spot this problem when I am doing LV slides ###############################
             w_weight_array = np.reshape((w.toarray())[0,:-1], (w.toarray().shape[1]-1)) #only weight
             ############### begin calculate p_pri_obs_sqr ##################################
             if (k-initial_L2_step) == 0:

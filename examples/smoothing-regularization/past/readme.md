@@ -5,4 +5,4 @@
 (5) 0210: try gaussian+L2: optimizator_gd.py + gaussian_mixture_regularization.py (keyword: initial_L2)
 (6) 0211: the learning rate alpha of (gaussian_mixture + L2) should be consisitent (L2_initail_alpha should not be used)
 (7) 0211: bias not in the gibbs sampling process
-(8) 0211: adaptively modify the prior_obs_ratio
+(8) 0211: adaptively modify the prior_obs_ratio (wronggggg!!!!!!!!!!!!!!!!can not use test data!!!!!!!!!!!1)
