@@ -1,3 +1,5 @@
+# _7: no adaptive + kmeans decide which gaussian to belong to
+# _5: no adaptive
 # (0) overall logic
 # (1) better coding method?
 # (2) correct? compared to dense
@@ -18,6 +20,8 @@ from scipy.sparse import csr_matrix
 from scipy.sparse import linalg
 from testdata import testaccuracy
 from LDA_Gibbs import LdaSampler
+from sklearn.cluster import KMeans
+import collections
 def huber_grad_descent_avg(batch_X, batch_y, w, v, param, C, is_l1):
     # sparse: if sparse.issparse(batch_X): batch_X = batch_X.toarray()
     # print "in huber gd avg"
@@ -89,8 +93,8 @@ def gaussian_mixture_descent_avg(batch_X, batch_y, w, theta_vec, lambda_vec, C):
     grad = np.zeros(w_array.shape[0])
     grad[:-1] = grad_numerator / grad_denominator # -log(p(w))
     grad[-1] = 0.0
-    # print "grad[0:10]: ", grad[0:10]
-    # print "(lambda_vec[0] * w_array)[0:10]: ", (lambda_vec[0] * w_array)[0:10]
+    print "grad[0:10]: ", grad[0:10]
+    print "(lambda_vec[0] * w_array)[0:10]: ", (lambda_vec[0] * w_array)[0:10]
     # grad = sparse.csr_matrix(grad)
     # print "grad shape: ", grad.shape
     f1 = np.exp(((-batch_y).multiply(w.dot(batch_X.T))).toarray())
@@ -378,12 +382,6 @@ def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, C, max_it
     print "in optimizator_avg b: ", b
     # sampler = LdaSampler(n_gaussians=n_gaussian, alpha = (1.0 / n_gaussian), a = a, b = b) #number of gaussians
     sampler = LdaSampler(n_gaussians=n_gaussian, alpha = theta_alpha, a = a, b = b) #number of gaussians
-    prior_consecutive_shrink_step = 0 # steps of prior consecutively shrink
-    prior_consecutive_shrink_step_thre = 5 # the largest number of steps that prior can shrink
-    check_prior_ratio_step = 10
-    prior_multiply_ratio = 100
-    prior_change_ratio = 0.1
-    prior_shrink_pre = False
     while True:
         # sparse matrix works, random.shuffle
         # shuffle: next time shuffle index will be forgetten (static variable: smoothing_grad_descent.idx)
@@ -402,50 +400,36 @@ def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, C, max_it
         batch_X, batch_y = X_train[index : (index + batch_size)], y_train[index : (index + batch_size)]
 
         if k >= initial_L2_step:
-            ######## not checked yet!!! because I do not know whether using testing data AUC correct or not###############
-            ######## spot this problem when I am doing LV slides ###############################
-            w_weight_array = np.reshape((w.toarray())[0,:-1], (w.toarray().shape[1]-1)) #only weight
-            ############### begin calculate p_pri_obs_sqr ##################################
-            if (k-initial_L2_step) == 0:
-                # print "w.shape[1]: ", w.shape[1]
-                p_pri_obs_sqr = (1 + (w.shape[1]-1)/2.0 - 2.0 * initial_L2_lambd) / (initial_L2_lambd * np.square(np.linalg.norm(w_weight_array)))
-
-                accuracy_pre = testaccuracy(w, w, X_test, y_test, 'non-huber')
-                p_pri_obs_sqr_pre = p_pri_obs_sqr
-                print "accuracy: ", accuracy_pre
-            elif ((k-initial_L2_step) % check_prior_ratio_step) == 0:
-                accuracy_cur = testaccuracy(w, w, X_test, y_test, 'non-huber')
-                if prior_consecutive_shrink_step > prior_consecutive_shrink_step_thre:
-                    prior_change_ratio = ((1 - prior_multiply_ratio*(accuracy_cur-accuracy_pre)) if (1 - prior_multiply_ratio*(accuracy_cur-accuracy_pre)) > 1. else (1 + prior_multiply_ratio*(accuracy_cur-accuracy_pre)))
-                    prior_consecutive_shrink_step = 0
-                    prior_shrink_pre = False
-                else:
-                    prior_change_ratio = (1 + prior_multiply_ratio*(accuracy_cur-accuracy_pre))
-                    if prior_change_ratio > 1.:
-                        prior_consecutive_shrink_step = 0
-                        prior_shrink_pre = False
-                    else: #shrink
-                        if prior_shrink_pre == True: #prev shrink
-                            prior_consecutive_shrink_step = prior_consecutive_shrink_step + 1
-                        else: # prev not shrink
-                            prior_consecutive_shrink_step = 1
-                        prior_shrink_pre = True
-                p_pri_obs_sqr = (1.0 - prior_change_ratio + 0.5 * p_pri_obs_sqr_pre * np.square(np.linalg.norm(w_weight_array)))/((prior_change_ratio / 2.0) * np.square(np.linalg.norm(w_weight_array)))
-
-                accuracy_pre = accuracy_cur
-                p_pri_obs_sqr_pre = p_pri_obs_sqr
-                print "prior_change_ratio: ", prior_change_ratio
-                print "accuracy: ", accuracy_cur
+            if k == initial_L2_step:
+                print "w_update_hist shape: ", w_update_hist.shape
+                w_weight_update_hist_var = np.var(w_update_hist, axis=0)[:-1] # the last is bias
+                print "w_weight_update_hist_var shape: ", w_weight_update_hist_var.shape
+                km = KMeans(n_clusters=n_gaussian)
+                km.fit(w_weight_update_hist_var.reshape(-1,1))
+                cluster_counts = collections.Counter(km.labels_)
+                print "cluster_counts: ", cluster_counts
+                print "cluster centers: ", km.cluster_centers_
+                sorted_cluster_centers_index = np.argsort(-km.cluster_centers_.reshape(1,-1))
+                sorted_cluster_centers_index = sorted_cluster_centers_index.reshape(sorted_cluster_centers_index.shape[1])
+                theta_vec = np.zeros(n_gaussian)
+                lambda_vec = np.zeros(n_gaussian)
+                for i in range(n_gaussian): #cluster center value from large to small
+                    theta_vec[i] = cluster_counts[sorted_cluster_centers_index[i]]
+                    theta_vec[i] = theta_vec[i] / float(w_weight_update_hist_var.shape[0])
+                lambda_vec[0] = 2
+                for i in range(1, n_gaussian):
+                    lambda_vec[i] = (lambda_vec[i-1] / 10.0)
 
 
-            ############### end calculate p_pri_obs_sqr ##################################
+
             ############LDA_sampler#################
             print "before sampler w: ", linalg.norm(w)
             # theta_vec, lambda_vec = sampler.run(np.reshape((w.toarray()*np.sqrt(9375))[0,:-1], (w.toarray().shape[1]-1)), (k-initial_L2_step), batchgibbs)
-            theta_vec, lambda_vec = sampler.run(w_weight_array * np.sqrt(p_pri_obs_sqr), (k-initial_L2_step), batchgibbs)
-            print "theta_vec: ", theta_vec
-            print "lambda_vec: ", lambda_vec
-            # lambda_vec[0] = 0.2
+            # print "theta_vec: ", theta_vec
+            # print "lambda_vec: ", lambda_vec
+            print "enforce theta_vec: ", theta_vec
+            print "enforce lambda_vec: ", lambda_vec
+            # lambda_vec[0] = 2
             # print "lambda_vec enforce: ", lambda_vec
             ############LDA_sampler#################
             w_update = alpha * gaussian_mixture_descent_avg(batch_X, batch_y, w, theta_vec, lambda_vec, C)
@@ -459,9 +443,23 @@ def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, C, max_it
             # w_update = initial_L2_alpha * ridge_grad_descent_avg(batch_X, batch_y, w, initial_L2_lambd, 0.1, C)
             w_update = alpha * ridge_grad_descent_avg(batch_X, batch_y, w, initial_L2_lambd, 0.1, C)
             print "w_update norm: ", linalg.norm(w_update)
+
             w -= w_update
             print "w: ", linalg.norm(w)
             # print "w: ", w
+
+           ####### kmeans: w_update history ########
+            if k == 0:
+                # w_update_hist = (w_update.toarray() / alpha).reshape(1, -1) #correct...?
+                w_update_hist = (w.toarray()).reshape(1, -1) #correct...?
+            else:
+                # w_update_hist = np.concatenate((w_update_hist, (w_update.toarray() / alpha).reshape(1,-1)), axis=0)
+                w_update_hist = np.concatenate((w_update_hist, w.toarray().reshape(1,-1)), axis=0)
+            ###### kmeans: w_update history #######
+
+
+
+
             # initial_L2_alpha -= initial_L2_alpha * decay
             alpha -= alpha * decay
             print "lr alpha: ", alpha
