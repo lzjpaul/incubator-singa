@@ -659,14 +659,19 @@ def gaussian_mixture_gd_em_optimizator_avg(X_train, y_train, X_test, y_test, C, 
         for i in range(theta_vec.shape[0]):
             # print "gaussian theta i: ", i
             res_denominator_inc = theta_vec[i] * np.power((lambda_vec[i] / (2.0 * np.pi)), 0.5) * np.exp(-0.5 * lambda_vec[i] * w_array[:-1] * w_array[:-1])
+            print "res_denominator_inc[0]: ", res_denominator_inc[0]
+            print "res_denominator_inc shape: ", res_denominator_inc.shape
             if i == 0:
                 res_matrix = np.reshape(res_denominator_inc, (-1, 1))
             else:
                 res_matrix = np.concatenate((res_matrix, np.reshape(res_denominator_inc, (-1, 1))), axis=1)
             res_denominator = res_denominator + res_denominator_inc
-            res_matrix = res_matrix / res_denominator.reshape((-1,1)).astype(float)
+            print "res_denominator[0]: ", res_denominator[0]
+            print "res_matrix[0]: ", res_matrix[0]
+        res_matrix = res_matrix / res_denominator.reshape((-1,1)).astype(float)
             # print "res_matrix shape: ", res_matrix.shape
         ##update responsibility##
+        print "np.sum(res_matrix, axis=0): ", np.sum(res_matrix, axis=1)
         w_update, theta_vec, lambda_vec = gaussian_mixture_gd_em_descent_avg(batch_X, batch_y, res_matrix, w, theta_vec, lambda_vec, a, b, theta_alpha, C)
         w_update = alpha * w_update
         print "w_update norm: ", linalg.norm(w_update)
