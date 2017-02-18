@@ -1,3 +1,5 @@
+# 2-18: adding gaussian-mixture-gd
+
 # 1-15:to line 203 elastic
 # logic bug: set regularization to 0 and see the scale for parameters
 # python Example-iris-smoothing.py /data1/zhaojing/regularization/uci-dataset/car_evaluation/car.categorical.data 1 1
@@ -20,6 +22,7 @@ from ridge_clf import Ridge_Classifier
 from elasticnet_clf import Elasticnet_Classifier
 from smoothing_regularization import Smoothing_Regularization
 from gaussian_mixture_regularization import Gaussian_Mixture_Regularization
+from gaussian_mixture_gd_regularization import Gaussian_Mixture_GD_Regularization
 
 import pandas
 import numpy as np
@@ -145,6 +148,17 @@ if __name__ == '__main__':
                        'estimator__a': [1, 2, 3],
                        'estimator__b': [1, 2, 3]
                       }
+
+    param_gaussianmixturegd = {'estimator__C': [1.],
+                       'estimator__batch_size': [args.batchsize],
+                       'estimator__alpha': [10000, 1000, 100, 10, 1, 0.1, 1e-2, 1e-3, 1e-4],
+                       # 'estimator__alpha': [1],
+                       'estimator__n_gaussian': [5, 10, 50],
+                       'estimator__theta_alpha': [1],
+                       'estimator__a': [1, 2, 3],
+                       'estimator__b': [1, 2, 3]
+                      }
+
 
 
     n_folds = 5
@@ -280,7 +294,7 @@ if __name__ == '__main__':
             # estimator__lambd = param_smoothing['estimator__lambd'][random.randint(0,len(param_smoothing['estimator__lambd'])-1)]
             # estimator__batch_size = param_smoothing['estimator__batch_size'][random.randint(0,len(param_smoothing['estimator__batch_size'])-1)]
             # estimator__alpha = param_smoothing['estimator__alpha'][random.randint(0,len(param_smoothing['estimator__alpha'])-1)]
-        elif clf_name == 'gaussianmixture':
+        elif clf_name == 'gaussianmixture_old': #gaussianmixture clf_name == 'gaussianmixture'
             gaussianmixture_metric = np.zeros((len(param_gaussianmixture) + 2)).reshape(1, (len(param_gaussianmixture) + 2))
             print "gaussianmixture_metric shape: ", gaussianmixture_metric.shape
             for C_i, C_val in enumerate(param_gaussianmixture['estimator__C']):
@@ -309,6 +323,35 @@ if __name__ == '__main__':
                                         print "gaussianmixture_metric: ", gaussianmixture_metric
             for metric_i in range(len(gaussianmixture_metric[:,0])):
                 print gaussianmixture_metric[metric_i]
+        elif clf_name == 'gaussianmixturegd': #gaussianmixture clf_name == 'gaussianmixture'
+            gaussianmixturegd_metric = np.zeros((len(param_gaussianmixturegd) + 2)).reshape(1, (len(param_gaussianmixturegd) + 2))
+            print "gaussianmixturegd_metric shape: ", gaussianmixturegd_metric.shape
+            for C_i, C_val in enumerate(param_gaussianmixturegd['estimator__C']):
+                for batch_size_i, batch_size_val in enumerate(param_gaussianmixturegd['estimator__batch_size']):
+                    for alpha_i, alpha_val in enumerate(param_gaussianmixturegd['estimator__alpha']):
+                        for n_gaussian_i, n_gaussian_val in enumerate(param_gaussianmixturegd['estimator__n_gaussian']):
+                            for theta_alpha_i, theta_alpha_val in enumerate(param_gaussianmixturegd['estimator__theta_alpha']):
+                                for a_i, a_val in enumerate(param_gaussianmixturegd['estimator__a']):
+                                    for b_i, b_val in enumerate(param_gaussianmixturegd['estimator__b']):
+                                        print "C: ", C_val
+                                        print "estimator__batch_size: ", batch_size_val
+                                        print "estimator__alpha: ", alpha_val
+                                        print "estimator__n_gaussian: ", n_gaussian_val
+                                        print "estimator__theta_alpha: ", theta_alpha_val
+                                        print "estimator__a: ", a_val
+                                        print "estimator__b: ", b_val
+                                        gaussian_mixture_gd = Gaussian_Mixture_GD_Regularization(C = C_val, batch_size = batch_size_val, alpha = alpha_val, n_gaussian = n_gaussian_val, theta_alpha = theta_alpha_val, a = a_val, b = b_val)
+                                        best_accuracy, best_accuracy_step = gaussian_mixture_gd.fit(X[train_index], y[train_index], X[test_index], y[test_index], args.batchgibbs)
+                                        print "best_accuracy: ", best_accuracy
+                                        print "best_accuracy_step: ", best_accuracy_step
+
+                                        this_model_metric = np.array([C_val, batch_size_val, alpha_val, n_gaussian_val, theta_alpha_val, a_val, b_val, best_accuracy, best_accuracy_step])
+                                        this_model_metric = this_model_metric.reshape(1, this_model_metric.shape[0])
+                                        gaussianmixturegd_metric = np.concatenate((gaussianmixturegd_metric, this_model_metric), axis=0)
+                                        print "gaussianmixturegd_metric shape: ", gaussianmixturegd_metric.shape
+                                        print "gaussianmixturegd_metric: ", gaussianmixturegd_metric
+            for metric_i in range(len(gaussianmixturegd_metric[:,0])):
+                print gaussianmixturegd_metric[metric_i]
         elif clf_name == 'huber':
             huber_metric = np.zeros((len(param_huber) + 2)).reshape(1, (len(param_huber) + 2))
             print "huber_metric shape: ", huber_metric.shape

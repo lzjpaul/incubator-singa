@@ -107,6 +107,112 @@ def gaussian_mixture_descent_avg(batch_X, batch_y, w, theta_vec, lambda_vec, C):
     ressum /=  float(batch_X.shape[0])
     return sparse.csr_matrix(grad + ressum)
 
+def gaussian_mixture_gd_em_descent_avg(batch_X, batch_y, res_matrix, w, theta_vec, lambda_vec, a, b, theta_alpha, C):
+    #if sparse.issparse(batch_X): batch_X = batch_X.toarray()
+    # print "in lasso gd avg"
+    batch_y = batch_y.T
+    w_array = w.toarray() # in order for np.exp
+    # print "w shape: ", w.shape
+    w_array = np.reshape(w_array, w_array.shape[1])
+    w_weight_array = w_array[:-1].reshape((-1, 1)) # no bias
+    # grad = param * w.sign()
+    # print "lasso w shape: ", w.shape
+    print "bias: ", w_array[-1]
+    lambda_w = np.dot(w_weight_array, lambda_vec.reshape((1, -1)))
+    print "lambda_w shape: ", lambda_w.shape
+    grad = np.zeros(w_array.shape[0])
+    grad[:-1] = np.sum((res_matrix * lambda_w), axis=1)# -log(p(w))
+    grad[-1] = 0.0
+    print "grad[0:10]: ", grad[0:10]
+    print "(lambda_vec[0] * w_array)[0:10]: ", (lambda_vec[0] * w_array)[0:10]
+    # grad = sparse.csr_matrix(grad)
+    # print "grad shape: ", grad.shape
+    f1 = np.exp(((-batch_y).multiply(w.dot(batch_X.T))).toarray())
+    y_res = (C * ((-batch_y).toarray()*(f1 / (1.0 + f1))))
+    y_res = np.asarray(y_res).reshape(f1.shape[1])
+    res = batch_X.T.dot(sparse.csr_matrix(sparse.diags(y_res, 0)))
+    res = res.T
+    ressum = res.sum(axis=0) #this will turn back to dense
+    ressum = ressum.astype(np.float)
+    ressum /=  float(batch_X.shape[0])
+
+    ###lambda_minimizer#########
+    lambda_numerator = 0.5 * res_matrix
+    lambda_numerator = np.sum(lambda_numerator, axis=0)
+    print "lambda_numerator shape: ", lambda_numerator.shape
+    lambda_numerator = lambda_numerator + a -1
+    # print "w_weight_array shape: ", w_weight_array.shape
+    # print "diag shape: ", np.diag(0.5 * w_weight_array.reshape(w_weight_array.shape[0]) * w_weight_array.reshape(w_weight_array.shape[0])).shape
+    # print "res_matrix.T shape: ", res_matrix.T.shape
+    lambda_denominator = sparse.csr_matrix(res_matrix.T).dot(sparse.diags(0.5 * w_weight_array.reshape(w_weight_array.shape[0]) * w_weight_array.reshape(w_weight_array.shape[0])))
+    lambda_denominator = (lambda_denominator.toarray().T)
+    lambda_denominator = np.sum(lambda_denominator, axis=0)
+    lambda_denominator = lambda_denominator + b
+    lambda_vec_minimizer = (lambda_numerator / lambda_denominator)
+    ###lambda_minimizer#########
+
+    ###theta_minimizer#########
+    theta_numerator = np.sum(res_matrix, axis=0) + theta_alpha - 1
+    theta_denominator = np.sum(res_matrix) + theta_vec.shape[0] * (theta_alpha - 1)
+    theta_vec_minimizer = (theta_numerator / theta_denominator)
+    ###theta_minimizer#########
+    return sparse.csr_matrix(grad + ressum), theta_vec_minimizer, lambda_vec_minimizer
+
+def gaussian_mixture_gd_descent_avg(batch_X, batch_y, res_matrix, w, theta_r_vec, theta_vec, lambda_t_vec, lambda_vec, a, b, theta_alpha, C):
+    #if sparse.issparse(batch_X): batch_X = batch_X.toarray()
+    # print "in lasso gd avg"
+    batch_y = batch_y.T
+    w_array = w.toarray() # in order for np.exp
+    # print "w shape: ", w.shape
+    w_array = np.reshape(w_array, w_array.shape[1])
+    w_weight_array = w_array[:-1].reshape((-1, 1)) # no bias
+    # grad = param * w.sign()
+    # print "lasso w shape: ", w.shape
+    print "bias: ", w_array[-1]
+    lambda_w = np.dot(w_weight_array, lambda_vec.reshape((1, -1)))
+    print "lambda_w shape: ", lambda_w.shape
+    grad = np.zeros(w_array.shape[0])
+    grad[:-1] = np.sum((res_matrix * lambda_w), axis=1)# -log(p(w))
+    grad[-1] = 0.0
+    print "grad[0:10]: ", grad[0:10]
+    print "(lambda_vec[0] * w_array)[0:10]: ", (lambda_vec[0] * w_array)[0:10]
+    # grad = sparse.csr_matrix(grad)
+    # print "grad shape: ", grad.shape
+    f1 = np.exp(((-batch_y).multiply(w.dot(batch_X.T))).toarray())
+    y_res = (C * ((-batch_y).toarray()*(f1 / (1.0 + f1))))
+    y_res = np.asarray(y_res).reshape(f1.shape[1])
+    res = batch_X.T.dot(sparse.csr_matrix(sparse.diags(y_res, 0)))
+    res = res.T
+    ressum = res.sum(axis=0) #this will turn back to dense
+    ressum = ressum.astype(np.float)
+    ressum /=  float(batch_X.shape[0])
+
+    ###lambda_t_update#########
+    term1 = (float(a-1) / lambda_vec) - b
+    term2 = np.sum((res_matrix / (2.0 * lambda_vec.reshape(1, -1))) - (np.dot(res_matrix.T, np.diag(0.5 * w_weight_array.reshape(w_weight_array.shape[0]) * w_weight_array.reshape(w_weight_array.shape[0])))).T, axis=0)
+    lambda_t_vec_update = (- term1 - term2) * lambda_vec #derivative of lambda to t
+    ###lambda_t_update#########
+
+    ###theta_r_update#########
+    theta_k_r_j = np.zeros((theta_vec.shape[0], theta_vec.shape[0])) ## derivative of theta_k to r_j
+    for k in range(theta_k_r_j[:,0].shape[0]):
+        for j in range(theta_k_r_j[0, :].shape[0]):
+            if k == j:
+                theta_k_r_j[k, j] = (theta_vec[k] - theta_vec[k] * theta_vec[k])
+            else:
+                theta_k_r_j[k, j] = (- theta_vec[k] * theta_vec[j])
+
+    theta_r_vec_update = np.zeros(theta_r_vec.shape[0])
+    term1 = (theta_alpha - 1) / theta_vec
+    term2 = np.sum(res_matrix / (theta_vec.reshape(1, -1)), axis=0)
+    theta_derivative = ( - term1 - term2)
+    for j in range(theta_r_vec_update.shape[0]): #r_j
+        theta_r_vec_update[j] = np.sum(theta_derivative * theta_k_r_j[:, j])
+
+
+    ###theta_r_update#########
+    return sparse.csr_matrix(grad + ressum), theta_r_vec_update, lambda_t_vec_update
+
 def lasso_grad_descent_avg(batch_X, batch_y, w, param, l1_ratio_or_mu, C):
     #if sparse.issparse(batch_X): batch_X = batch_X.toarray()
     # print "in lasso gd avg"
@@ -486,4 +592,216 @@ def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, C, max_it
         # if k >= 20:
             break
     print "gaussian opt avg final k: ", k
+    return k, w.toarray(), best_accuracy, best_accuracy_step
+
+# only one weight w, not w + v
+def gaussian_mixture_gd_em_optimizator_avg(X_train, y_train, X_test, y_test, C, max_iter, eps, alpha, n_gaussian, theta_alpha, a, b, decay, batch_size, clf_name):
+    k = 0
+    #w = np.zeros(X_train.shape[1])
+    # w = np.random.normal(0.0, 0.1, X_train.shape[1])
+    w = np.random.normal(0.0, 0.001, X_train.shape[1])
+    w = sparse.csr_matrix(w)
+    y_train = sparse.csr_matrix(y_train)
+    y_train = y_train.T
+    y_test = sparse.csr_matrix(y_test)
+    y_test = y_test.T
+    X_train = sparse.csr_matrix(X_train)
+    X_test = sparse.csr_matrix(X_test)
+    # print "w shape: ", w.shape
+    # f1 = open('outputfile', 'w+')
+    print "gaussian_mixture_gd_em_optimizator_avg max_iter: ", max_iter
+    print "lerning rate alpha: ", alpha
+    print "C: ", C
+    accuracy = 0.0
+    best_accuracy = 0.0
+    best_accuracy_step = 0
+    batch_iter = 0
+    np.random.seed(10)
+    idx = np.random.permutation(X_train.shape[0])
+    print "data idx: ", idx
+    X_train = X_train[idx]
+    y_train = y_train[idx]
+    print "in optimizator_avg n_gaussian: ", n_gaussian
+    print "in optimizator_avg theta_alpha: ", theta_alpha
+    print "in optimizator_avg a: ", a
+    print "in optimizator_avg b: ", b
+    # initialization !!
+    theta_vec = np.zeros(n_gaussian)
+    for i in range(n_gaussian):
+        theta_vec[i] = (1.0 / n_gaussian)
+    # lambda_vec = np.random.uniform(0.0, 0.1, n_gaussian)
+    lambda_vec = np.array([1/2., 1/4., 1/8.])
+    print "theta_vec: ", theta_vec
+    print "lambda_vec: ", lambda_vec
+    while True:
+        # sparse matrix works, random.shuffle
+        # shuffle: next time shuffle index will be forgetten (static variable: smoothing_grad_descent.idx)
+        # print "X.shape: ", X.shape
+        # print "max idx: ", max(idx)
+        index = (batch_size * batch_iter) % X_train.shape[0]
+
+        if (index + batch_size) >= X_train.shape[0]: #new epoch
+            index = 0
+            batch_iter = 0 #new epoch
+            np.random.seed(k)
+            idx = np.random.permutation(X_train.shape[0])
+            X_train = X_train[idx]
+            y_train = y_train[idx]
+
+        batch_X, batch_y = X_train[index : (index + batch_size)], y_train[index : (index + batch_size)]
+
+        ##update responsibility##
+        print "theta_vec: ", theta_vec
+        print "lambda_vec: ", lambda_vec
+        w_array = w.toarray() # in order for np.exp
+        w_array = np.reshape(w_array, w_array.shape[1])
+        res_denominator = np.zeros(w_array.shape[0]-1)
+        for i in range(theta_vec.shape[0]):
+            # print "gaussian theta i: ", i
+            res_denominator_inc = theta_vec[i] * np.power((lambda_vec[i] / (2.0 * np.pi)), 0.5) * np.exp(-0.5 * lambda_vec[i] * w_array[:-1] * w_array[:-1])
+            if i == 0:
+                res_matrix = np.reshape(res_denominator_inc, (-1, 1))
+            else:
+                res_matrix = np.concatenate((res_matrix, np.reshape(res_denominator_inc, (-1, 1))), axis=1)
+            res_denominator = res_denominator + res_denominator_inc
+            res_matrix = res_matrix / res_denominator.reshape((-1,1)).astype(float)
+            # print "res_matrix shape: ", res_matrix.shape
+        ##update responsibility##
+        w_update, theta_vec, lambda_vec = gaussian_mixture_gd_em_descent_avg(batch_X, batch_y, res_matrix, w, theta_vec, lambda_vec, a, b, theta_alpha, C)
+        w_update = alpha * w_update
+        print "w_update norm: ", linalg.norm(w_update)
+        w -= w_update
+        print "w norm: ", linalg.norm(w)
+        alpha -= alpha * decay
+        k += 1
+
+        if k % 20 == 0:
+            print "non_huber_optimizator k: ", k
+        if k % 60 == 0:
+            print "test at step: ", k
+            accuracy = testaccuracy(w, w, X_test, y_test, 'non-huber')
+            print "accuracy this step: ", accuracy
+            if accuracy > best_accuracy:
+                best_accuracy = accuracy
+                best_accuracy_step = k
+            print "best_accuracy: ", best_accuracy
+            print "best_accuracy_step: ", best_accuracy_step
+
+        batch_iter = batch_iter + 1
+        # if k >= max_iter or linalg.norm(w_update) < eps:
+        # print "gaussian_mixture_gd_em_optimizator_avg k: ", k
+        if k >= max_iter:
+            break
+    print "gaussian_mixture_gd_em_optimizator_avg final k: ", k
+    return k, w.toarray(), best_accuracy, best_accuracy_step
+
+# theta_r for exp{theta_r}, lambda_t for exp{lambda_t}
+# not checked yet!!!!!!!!!!!!!!!!
+# should notice the transform from theta_r to theta, lambda_t to lambda
+def gaussian_mixture_gd_optimizator_avg(X_train, y_train, X_test, y_test, C, max_iter, eps, alpha, n_gaussian, theta_alpha, a, b, decay, batch_size, clf_name):
+    k = 0
+    #w = np.zeros(X_train.shape[1])
+    w = np.random.normal(0.0, 0.1, X_train.shape[1])
+    w = sparse.csr_matrix(w)
+    y_train = sparse.csr_matrix(y_train)
+    y_train = y_train.T
+    y_test = sparse.csr_matrix(y_test)
+    y_test = y_test.T
+    X_train = sparse.csr_matrix(X_train)
+    X_test = sparse.csr_matrix(X_test)
+    # print "w shape: ", w.shape
+    # f1 = open('outputfile', 'w+')
+    print "gaussian_mixture_gd_optimizator_avg max_iter: ", max_iter
+    print "lerning rate alpha: ", alpha
+    print "C: ", C
+    accuracy = 0.0
+    best_accuracy = 0.0
+    best_accuracy_step = 0
+    batch_iter = 0
+    np.random.seed(10)
+    idx = np.random.permutation(X_train.shape[0])
+    print "data idx: ", idx
+    X_train = X_train[idx]
+    y_train = y_train[idx]
+    print "in optimizator_avg n_gaussian: ", n_gaussian
+    print "in optimizator_avg theta_alpha: ", theta_alpha
+    print "in optimizator_avg a: ", a
+    print "in optimizator_avg b: ", b
+    # initialization !!
+    theta_r_vec = np.zeros(n_gaussian)
+    theta_r_exp_vec = np.exp(theta_r_vec)
+    theta_vec = theta_r_exp_vec / np.sum(theta_r_exp_vec)
+    print "theta_vec initialization: ", theta_vec
+    lambda_t_vec = np.random.normal(0.0, 1, n_gaussian)
+    lambda_vec = np.exp(lambda_t_vec)
+    while True:
+        # sparse matrix works, random.shuffle
+        # shuffle: next time shuffle index will be forgetten (static variable: smoothing_grad_descent.idx)
+        # print "X.shape: ", X.shape
+        # print "max idx: ", max(idx)
+        index = (batch_size * batch_iter) % X_train.shape[0]
+
+        if (index + batch_size) >= X_train.shape[0]: #new epoch
+            index = 0
+            batch_iter = 0 #new epoch
+            np.random.seed(k)
+            idx = np.random.permutation(X_train.shape[0])
+            X_train = X_train[idx]
+            y_train = y_train[idx]
+
+        batch_X, batch_y = X_train[index : (index + batch_size)], y_train[index : (index + batch_size)]
+
+        ##update responsibility##
+        print "theta_vec: ", theta_vec
+        print "lambda_vec: ", lambda_vec
+        w_array = w.toarray() # in order for np.exp
+        w_array = np.reshape(w_array, w_array.shape[1])
+        res_denominator = np.zeros(w_array.shape[0]-1)
+        for i in range(theta_vec.shape[0]):
+            print "gaussian theta i: ", i
+            res_denominator_inc = theta_vec[i] * np.power((lambda_vec[i] / (2.0 * np.pi)), 0.5) * np.exp(-0.5 * lambda_vec[i] * w_array[:-1] * w_array[:-1])
+            if i == 0:
+                res_matrix = np.reshape(res_denominator_inc, (-1, 1))
+            else:
+                res_matrix = np.concatenate((res_matrix, np.reshape(res_denominator_inc, (-1, 1))), axis=1)
+            res_denominator = res_denominator + res_denominator_inc
+            res_matrix = res_matrix / res_denominator.reshape((-1,1)).astype(float)
+            print "res_matrix shape: ", res_matrix.shape
+        ##update responsibility##
+
+        w_update, theta_r_vec_update, lambda_t_vec_update = gaussian_mixture_gd_descent_avg(batch_X, batch_y, res_matrix, w, theta_r_vec, theta_vec, lambda_t_vec, lambda_vec, a, b, theta_alpha, C)
+        w_update = alpha * w_update
+        theta_r_vec_update = alpha * theta_r_vec_update
+        lambda_t_vec_update = alpha * lambda_t_vec_update
+        print "w_update norm: ", linalg.norm(w_update)
+        w -= w_update
+        theta_r_vec -= theta_r_vec_update
+        lambda_t_vec -= lambda_t_vec_update
+        print "w norm: ", linalg.norm(w)
+        #############################################
+        ## update theta_vec, theta_r_vec, lambda_vec, lambda_t_vec simultaneously!!!!!!!!
+        theta_r_exp_vec = np.exp(theta_r_vec)
+        theta_vec = theta_r_exp_vec / np.sum(theta_r_exp_vec)
+        lambda_vec = np.exp(lambda_t_vec)
+        #############################################
+        alpha -= alpha * decay
+        k += 1
+
+        if k % 20 == 0:
+            print "non_huber_optimizator k: ", k
+        if k % 60 == 0:
+            print "test at step: ", k
+            accuracy = testaccuracy(w, w, X_test, y_test, 'non-huber')
+            print "accuracy this step: ", accuracy
+            if accuracy > best_accuracy:
+                best_accuracy = accuracy
+                best_accuracy_step = k
+            print "best_accuracy: ", best_accuracy
+            print "best_accuracy_step: ", best_accuracy_step
+
+        batch_iter = batch_iter + 1
+        # if k >= max_iter or linalg.norm(w_update) < eps:
+        if k >= max_iter:
+            break
+    print "gaussian_mixture_gd_optimizator_avg final k: ", k
     return k, w.toarray(), best_accuracy, best_accuracy_step

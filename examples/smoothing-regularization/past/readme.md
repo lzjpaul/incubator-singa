@@ -6,3 +6,4 @@
 (6) 0211: the learning rate alpha of (gaussian_mixture + L2) should be consisitent (L2_initail_alpha should not be used)
 (7) 0211: bias not in the gibbs sampling process
 (8) 0211: adaptively modify the prior_obs_ratio (wronggggg!!!!!!!!!!!!!!!!can not use test data!!!!!!!!!!!1)
+(9) 0218: adding gmm using gradient descent
