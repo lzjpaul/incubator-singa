@@ -91,7 +91,7 @@ def gaussian_mixture_descent_avg(batch_X, batch_y, w, theta_vec, lambda_vec, C):
     for i in range(theta_vec.shape[0]):
         grad_numerator = grad_numerator + theta_vec[i] * np.power((lambda_vec[i]/ (2 * np.pi)), 0.5) * np.exp(-0.5 * lambda_vec[i] * w_array[:-1] * w_array[:-1]) * lambda_vec[i] * w_array[:-1]
     grad = np.zeros(w_array.shape[0])
-    grad[:-1] = grad_numerator / grad_denominator # -log(p(w))
+    grad[:-1] = grad_numerator / grad_denominator.astype(float) # -log(p(w))
     grad[-1] = 0.0
     print "grad[0:10]: ", grad[0:10]
     print "(lambda_vec[0] * w_array)[0:10]: ", (lambda_vec[0] * w_array)[0:10]
@@ -110,6 +110,8 @@ def gaussian_mixture_descent_avg(batch_X, batch_y, w, theta_vec, lambda_vec, C):
 def gaussian_mixture_gd_em_descent_avg(batch_X, batch_y, res_matrix, w, theta_vec, lambda_vec, a, b, theta_alpha, C):
     #if sparse.issparse(batch_X): batch_X = batch_X.toarray()
     # print "in lasso gd avg"
+    print "lambda_vec shape: ", lambda_vec.shape
+    print "theta_vec shape: ", theta_vec.shape
     batch_y = batch_y.T
     w_array = w.toarray() # in order for np.exp
     # print "w shape: ", w.shape
@@ -119,12 +121,12 @@ def gaussian_mixture_gd_em_descent_avg(batch_X, batch_y, res_matrix, w, theta_ve
     # print "lasso w shape: ", w.shape
     print "bias: ", w_array[-1]
     lambda_w = np.dot(w_weight_array, lambda_vec.reshape((1, -1)))
-    print "lambda_w shape: ", lambda_w.shape
+    # print "lambda_w shape: ", lambda_w.shape
     grad = np.zeros(w_array.shape[0])
     grad[:-1] = np.sum((res_matrix * lambda_w), axis=1)# -log(p(w))
     grad[-1] = 0.0
-    print "grad[0:10]: ", grad[0:10]
-    print "(lambda_vec[0] * w_array)[0:10]: ", (lambda_vec[0] * w_array)[0:10]
+    # print "grad[0:10]: ", grad[0:10]
+    # print "(lambda_vec[0] * w_array)[0:10]: ", (lambda_vec[0] * w_array)[0:10]
     # grad = sparse.csr_matrix(grad)
     # print "grad shape: ", grad.shape
     f1 = np.exp(((-batch_y).multiply(w.dot(batch_X.T))).toarray())
@@ -148,14 +150,17 @@ def gaussian_mixture_gd_em_descent_avg(batch_X, batch_y, res_matrix, w, theta_ve
     lambda_denominator = (lambda_denominator.toarray().T)
     lambda_denominator = np.sum(lambda_denominator, axis=0)
     lambda_denominator = lambda_denominator + b
-    lambda_vec_minimizer = (lambda_numerator / lambda_denominator)
+    lambda_vec_minimizer = (lambda_numerator / lambda_denominator.astype(float))
     ###lambda_minimizer#########
 
     ###theta_minimizer#########
     theta_numerator = np.sum(res_matrix, axis=0) + theta_alpha - 1
     theta_denominator = np.sum(res_matrix) + theta_vec.shape[0] * (theta_alpha - 1)
-    theta_vec_minimizer = (theta_numerator / theta_denominator)
+    theta_vec_minimizer = (theta_numerator / theta_denominator.astype(float))
     ###theta_minimizer#########
+    # print "in descent (grad + ressum)[:10]", (grad + ressum)[0, :10]
+    # print "in descent theta_vec_minimizer: ", theta_vec_minimizer
+    # print "in descent lambda_vec_minimizer: ", lambda_vec_minimizer
     return sparse.csr_matrix(grad + ressum), theta_vec_minimizer, lambda_vec_minimizer
 
 def gaussian_mixture_gd_descent_avg(batch_X, batch_y, res_matrix, w, theta_r_vec, theta_vec, lambda_t_vec, lambda_vec, a, b, theta_alpha, C):
@@ -203,8 +208,8 @@ def gaussian_mixture_gd_descent_avg(batch_X, batch_y, res_matrix, w, theta_r_vec
                 theta_k_r_j[k, j] = (- theta_vec[k] * theta_vec[j])
 
     theta_r_vec_update = np.zeros(theta_r_vec.shape[0])
-    term1 = (theta_alpha - 1) / theta_vec
-    term2 = np.sum(res_matrix / (theta_vec.reshape(1, -1)), axis=0)
+    term1 = (theta_alpha - 1) / theta_vec.astype(float)
+    term2 = np.sum(res_matrix.astype(float) / (theta_vec.reshape(1, -1)), axis=0)
     theta_derivative = ( - term1 - term2)
     for j in range(theta_r_vec_update.shape[0]): #r_j
         theta_r_vec_update[j] = np.sum(theta_derivative * theta_k_r_j[:, j])
@@ -284,6 +289,7 @@ def smoothing_grad_descent_avg(batch_X, batch_y, w, param, l1_ratio_or_mu, C):
     # print "in smoothing gd avg"
     batch_y = batch_y.T
     w_array = w.toarray()
+    print "smoothing w_array shape: ", w_array.shape
     w_array_exp = np.exp(w_array)
     grad =  param * (w_array_exp - 1) / (w_array_exp + 1) # log(1+e^(-w)) + log(1+e^(w))
     # grad = grad.toarray()
@@ -671,8 +677,9 @@ def gaussian_mixture_gd_em_optimizator_avg(X_train, y_train, X_test, y_test, C, 
         res_matrix = res_matrix / res_denominator.reshape((-1,1)).astype(float)
             # print "res_matrix shape: ", res_matrix.shape
         ##update responsibility##
-        print "np.sum(res_matrix, axis=0): ", np.sum(res_matrix, axis=1)
+        # print "np.sum(res_matrix, axis=0): ", np.sum(res_matrix, axis=1)
         w_update, theta_vec, lambda_vec = gaussian_mixture_gd_em_descent_avg(batch_X, batch_y, res_matrix, w, theta_vec, lambda_vec, a, b, theta_alpha, C)
+        # print "in avg lambda_vec_minimizer: ", lambda_vec
         w_update = alpha * w_update
         print "w_update norm: ", linalg.norm(w_update)
         w -= w_update
@@ -770,8 +777,8 @@ def gaussian_mixture_gd_optimizator_avg(X_train, y_train, X_test, y_test, C, max
             else:
                 res_matrix = np.concatenate((res_matrix, np.reshape(res_denominator_inc, (-1, 1))), axis=1)
             res_denominator = res_denominator + res_denominator_inc
-            res_matrix = res_matrix / res_denominator.reshape((-1,1)).astype(float)
-            print "res_matrix shape: ", res_matrix.shape
+        res_matrix = res_matrix / res_denominator.reshape((-1,1)).astype(float)
+        print "res_matrix shape: ", res_matrix.shape
         ##update responsibility##
 
         w_update, theta_r_vec_update, lambda_t_vec_update = gaussian_mixture_gd_descent_avg(batch_X, batch_y, res_matrix, w, theta_r_vec, theta_vec, lambda_t_vec, lambda_vec, a, b, theta_alpha, C)
