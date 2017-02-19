@@ -76,10 +76,10 @@ class Gaussian_Mixture_GD_Regularization(BaseEstimator, LogisticLinearClassifier
         print "self.b = b: ", self.b
         print "self.decay = decay: ", self.decay
         print "self.batch_size: ", self.batch_size
-        self.n_iter_, self.w_, self.best_accuracy_, self.best_accuracy_step_ = optimizator_gd.gaussian_mixture_gd_em_optimizator_avg(X_train, y_train, X_test, y_test, self.C,
-                                                     (y_train.shape[0] * 40 / self.batch_size), self.eps, self.alpha, self.n_gaussian, self.theta_alpha, self.a, self.b, self.decay, self.batch_size, 'gaussianmixturegdem')
-        # self.n_iter_, self.w_, self.best_accuracy_, self.best_accuracy_step_ = optimizator_gd.gaussian_mixture_gd_optimizator_avg(X_train, y_train, X_test, y_test, self.C,
-        #                                             (y_train.shape[0] * 40 / self.batch_size), self.eps, self.alpha, self.n_gaussian, self.theta_alpha, self.a, self.b, self.decay, self.batch_size, 'gaussianmixturegd')
+        # self.n_iter_, self.w_, self.best_accuracy_, self.best_accuracy_step_ = optimizator_gd.gaussian_mixture_gd_em_optimizator_avg(X_train, y_train, X_test, y_test, self.C,
+        #                                          (y_train.shape[0] * 40 / self.batch_size), self.eps, self.alpha, self.n_gaussian, self.theta_alpha, self.a, self.b, self.decay, self.batch_size, 'gaussianmixturegdem')
+        self.n_iter_, self.w_, self.best_accuracy_, self.best_accuracy_step_ = optimizator_gd.gaussian_mixture_gd_optimizator_avg(X_train, y_train, X_test, y_test, self.C,
+                                                  (y_train.shape[0] * 40 / self.batch_size), self.eps, self.alpha, self.n_gaussian, self.theta_alpha, self.a, self.b, self.decay, self.batch_size, 'gaussianmixturegd')
         self.coef_ = self.w_.reshape((1, X_train.shape[1]))
         self.intercept_ = 0.0
         if self.fit_intercept:
