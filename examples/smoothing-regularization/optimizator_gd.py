@@ -194,7 +194,9 @@ def gaussian_mixture_gd_descent_avg(batch_X, batch_y, res_matrix, w, theta_r_vec
 
     ###lambda_t_update#########
     term1 = (float(a-1) / lambda_vec) - b
-    term2 = np.sum((res_matrix / (2.0 * lambda_vec.reshape(1, -1))) - (np.dot(res_matrix.T, np.diag(0.5 * w_weight_array.reshape(w_weight_array.shape[0]) * w_weight_array.reshape(w_weight_array.shape[0])))).T, axis=0)
+    res_w = sparse.csr_matrix(res_matrix.T).dot(sparse.diags(0.5 * w_weight_array.reshape(w_weight_array.shape[0]) * w_weight_array.reshape(w_weight_array.shape[0])))
+    res_w = (res_w.toarray().T)
+    term2 = np.sum((res_matrix / (2.0 * lambda_vec.reshape(1, -1))) - res_w, axis=0)
     lambda_t_vec_update = (- term1 - term2) * lambda_vec #derivative of lambda to t
     ###lambda_t_update#########
 
@@ -779,6 +781,7 @@ def gaussian_mixture_gd_optimizator_avg(X_train, y_train, X_test, y_test, C, max
             res_denominator = res_denominator + res_denominator_inc
         res_matrix = res_matrix / res_denominator.reshape((-1,1)).astype(float)
         print "res_matrix shape: ", res_matrix.shape
+        print "np.sum(res_matrix, axis=1): ", np.sum(res_matrix, axis=1)
         ##update responsibility##
 
         w_update, theta_r_vec_update, lambda_t_vec_update = gaussian_mixture_gd_descent_avg(batch_X, batch_y, res_matrix, w, theta_r_vec, theta_vec, lambda_t_vec, lambda_vec, a, b, theta_alpha, C)
