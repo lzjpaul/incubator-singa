@@ -151,15 +151,15 @@ if __name__ == '__main__':
 
     param_gaussianmixturegd = {'estimator__C': [1.],
                        'estimator__batch_size': [args.batchsize],
-                       'estimator__alpha': [10000, 1000, 100, 10, 1, 0.1, 1e-2, 1e-3, 1e-4],
-                       'estimator__theta_r_lr_alpha': [1000, 100, 10, 1], # the lr of theta_r is smaller
-                       'estimator__lambda_t_lr_alpha': [1000, 100, 10, 1], # the lr of theta_r is smaller
+                       'estimator__alpha': [0.1, 1e-2, 1e-3],
+                       'estimator__theta_r_lr_alpha': [1e-5, 1e-4, 1e-3, 1e-2], # the lr of theta_r is smaller
+                       'estimator__lambda_t_lr_alpha': [1e-5, 1e-4, 1e-3, 1e-2], # the lr of theta_r is smaller
                        # 'estimator__alpha': [1],
-                       'estimator__n_gaussian': [2, 5, 10],
-                       'estimator__w_init': [0., 0.1, 1e-2, 1e-3, 1e-4], # variance of w initialization
-                       'estimator__theta_alpha': [1],
-                       'estimator__a': [1, 2, 3],
-                       'estimator__b': [1, 2, 3]
+                       'estimator__n_gaussian': [2, 3, 5],
+                       'estimator__w_init': [10., 1, 0.1, 1e-2], # variance of w initialization
+                       'estimator__theta_alpha': [1, 10, 100, 1000],
+                       'estimator__a': [1, 2],
+                       'estimator__b': [1, 2]
                       }
 
 

@@ -109,7 +109,7 @@ class Gaussian_Mixture_GD_Regularization(BaseEstimator, LogisticLinearClassifier
                 'theta_r_lr_alpha': self.theta_r_lr_alpha,
                 'lambda_t_lr_alpha': self.lambda_t_lr_alpha,
                 'n_gaussian': self.n_gaussian,
-                'w_init': self.w_init
+                'w_init': self.w_init,
                 'theta_alpha': self.theta_alpha,
                 'a': self.a,
                 'b': self.b,

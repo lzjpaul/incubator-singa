@@ -731,6 +731,7 @@ def gaussian_mixture_gd_optimizator_avg(X_train, y_train, X_test, y_test, C, max
     else:
         w = np.random.normal(0.0, w_init, X_train.shape[1])
     w = sparse.csr_matrix(w)
+    print "w norm: ", linalg.norm(w)
     y_train = sparse.csr_matrix(y_train)
     y_train = y_train.T
     y_test = sparse.csr_matrix(y_test)
