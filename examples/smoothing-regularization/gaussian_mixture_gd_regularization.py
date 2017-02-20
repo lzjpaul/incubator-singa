@@ -13,13 +13,16 @@ import optimizator_gd
 
 class Gaussian_Mixture_GD_Regularization(BaseEstimator, LogisticLinearClassifierMixin):
 
-    def __init__(self, C=1., max_iter=1000, eps=0.0001, alpha=0.01, n_gaussian=10, theta_alpha=1, a=1, b=1, decay=0.01, fit_intercept=True, batch_size=30):
+    def __init__(self, C=1., max_iter=1000, eps=0.0001, alpha=0.01, theta_r_lr_alpha=1000., lambda_t_lr_alpha=1000., n_gaussian=10, w_init=0.1, theta_alpha=1, a=1, b=1, decay=0.01, fit_intercept=True, batch_size=30):
         self.C = C
         # self.lambd = lambd
         self.max_iter = max_iter
         self.eps = eps
         self.alpha = alpha
+        self.theta_r_lr_alpha = theta_r_lr_alpha
+        self.lambda_t_lr_alpha = lambda_t_lr_alpha
         self.n_gaussian = n_gaussian
+        self.w_init = w_init
         self.theta_alpha = theta_alpha
         self.a = a
         self.b = b
@@ -67,10 +70,13 @@ class Gaussian_Mixture_GD_Regularization(BaseEstimator, LogisticLinearClassifier
             # print "using smoothing_optimizator_avg"
         # print "self.lambd: ", self.lambd
         print "self.alpha: ", self.alpha
+        print "self.theta_r_lr_alpha: ", self.theta_r_lr_alpha
+        print "self.lambda_t_lr_alpha: ", self.lambda_t_lr_alpha
         print "self.C: ", self.C
         print "self.max_iter: ", self.max_iter
         print "self.eps: ", self.eps
         print "self.n_gaussian: ", self.n_gaussian
+        print "self.w_init: ", self.w_init
         print "self.theta_alpha: ", self.theta_alpha
         print "self.a = a: ", self.a
         print "self.b = b: ", self.b
@@ -79,7 +85,7 @@ class Gaussian_Mixture_GD_Regularization(BaseEstimator, LogisticLinearClassifier
         # self.n_iter_, self.w_, self.best_accuracy_, self.best_accuracy_step_ = optimizator_gd.gaussian_mixture_gd_em_optimizator_avg(X_train, y_train, X_test, y_test, self.C,
         #                                          (y_train.shape[0] * 40 / self.batch_size), self.eps, self.alpha, self.n_gaussian, self.theta_alpha, self.a, self.b, self.decay, self.batch_size, 'gaussianmixturegdem')
         self.n_iter_, self.w_, self.best_accuracy_, self.best_accuracy_step_ = optimizator_gd.gaussian_mixture_gd_optimizator_avg(X_train, y_train, X_test, y_test, self.C,
-                                                  (y_train.shape[0] * 40 / self.batch_size), self.eps, self.alpha, self.n_gaussian, self.theta_alpha, self.a, self.b, self.decay, self.batch_size, 'gaussianmixturegd')
+                                                  (y_train.shape[0] * 40 / self.batch_size), self.eps, self.alpha, self.theta_r_lr_alpha, self.lambda_t_lr_alpha, self.n_gaussian, self.w_init, self.theta_alpha, self.a, self.b, self.decay, self.batch_size, 'gaussianmixturegd')
         self.coef_ = self.w_.reshape((1, X_train.shape[1]))
         self.intercept_ = 0.0
         if self.fit_intercept:
@@ -100,7 +106,10 @@ class Gaussian_Mixture_GD_Regularization(BaseEstimator, LogisticLinearClassifier
                 'max_iter': self.max_iter,
                 'eps': self.eps,
                 'alpha': self.alpha,
+                'theta_r_lr_alpha': self.theta_r_lr_alpha,
+                'lambda_t_lr_alpha': self.lambda_t_lr_alpha,
                 'n_gaussian': self.n_gaussian,
+                'w_init': self.w_init
                 'theta_alpha': self.theta_alpha,
                 'a': self.a,
                 'b': self.b,

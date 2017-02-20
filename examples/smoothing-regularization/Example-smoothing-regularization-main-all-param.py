@@ -152,8 +152,11 @@ if __name__ == '__main__':
     param_gaussianmixturegd = {'estimator__C': [1.],
                        'estimator__batch_size': [args.batchsize],
                        'estimator__alpha': [10000, 1000, 100, 10, 1, 0.1, 1e-2, 1e-3, 1e-4],
+                       'estimator__theta_r_lr_alpha': [1000, 100, 10, 1], # the lr of theta_r is smaller
+                       'estimator__lambda_t_lr_alpha': [1000, 100, 10, 1], # the lr of theta_r is smaller
                        # 'estimator__alpha': [1],
-                       'estimator__n_gaussian': [5, 10, 50],
+                       'estimator__n_gaussian': [2, 5, 10],
+                       'estimator__w_init': [0., 0.1, 1e-2, 1e-3, 1e-4], # variance of w initialization
                        'estimator__theta_alpha': [1],
                        'estimator__a': [1, 2, 3],
                        'estimator__b': [1, 2, 3]
@@ -329,27 +332,33 @@ if __name__ == '__main__':
             for C_i, C_val in enumerate(param_gaussianmixturegd['estimator__C']):
                 for batch_size_i, batch_size_val in enumerate(param_gaussianmixturegd['estimator__batch_size']):
                     for alpha_i, alpha_val in enumerate(param_gaussianmixturegd['estimator__alpha']):
-                        for n_gaussian_i, n_gaussian_val in enumerate(param_gaussianmixturegd['estimator__n_gaussian']):
-                            for theta_alpha_i, theta_alpha_val in enumerate(param_gaussianmixturegd['estimator__theta_alpha']):
-                                for a_i, a_val in enumerate(param_gaussianmixturegd['estimator__a']):
-                                    for b_i, b_val in enumerate(param_gaussianmixturegd['estimator__b']):
-                                        print "C: ", C_val
-                                        print "estimator__batch_size: ", batch_size_val
-                                        print "estimator__alpha: ", alpha_val
-                                        print "estimator__n_gaussian: ", n_gaussian_val
-                                        print "estimator__theta_alpha: ", theta_alpha_val
-                                        print "estimator__a: ", a_val
-                                        print "estimator__b: ", b_val
-                                        gaussian_mixture_gd = Gaussian_Mixture_GD_Regularization(C = C_val, batch_size = batch_size_val, alpha = alpha_val, n_gaussian = n_gaussian_val, theta_alpha = theta_alpha_val, a = a_val, b = b_val)
-                                        best_accuracy, best_accuracy_step = gaussian_mixture_gd.fit(X[train_index], y[train_index], X[test_index], y[test_index], args.batchgibbs)
-                                        print "best_accuracy: ", best_accuracy
-                                        print "best_accuracy_step: ", best_accuracy_step
+                        for theta_r_lr_alpha_i, theta_r_lr_alpha_val in enumerate(param_gaussianmixturegd['estimator__theta_r_lr_alpha']):
+                            for lambda_t_lr_alpha_i, lambda_t_lr_alpha_val in enumerate(param_gaussianmixturegd['estimator__lambda_t_lr_alpha']):
+                                for n_gaussian_i, n_gaussian_val in enumerate(param_gaussianmixturegd['estimator__n_gaussian']):
+                                    for w_init_i, w_init_val in enumerate(param_gaussianmixturegd['estimator__w_init']):
+                                        for theta_alpha_i, theta_alpha_val in enumerate(param_gaussianmixturegd['estimator__theta_alpha']):
+                                            for a_i, a_val in enumerate(param_gaussianmixturegd['estimator__a']):
+                                                for b_i, b_val in enumerate(param_gaussianmixturegd['estimator__b']):
+                                                    print "C: ", C_val
+                                                    print "estimator__batch_size: ", batch_size_val
+                                                    print "estimator__alpha: ", alpha_val
+                                                    print "estimator__theta_r_lr_alpha: ", theta_r_lr_alpha_val
+                                                    print "estimator__lambda_t_lr_alpha: ", lambda_t_lr_alpha_val
+                                                    print "estimator__n_gaussian: ", n_gaussian_val
+                                                    print "estimator__w_init: ", w_init_val
+                                                    print "estimator__theta_alpha: ", theta_alpha_val
+                                                    print "estimator__a: ", a_val
+                                                    print "estimator__b: ", b_val
+                                                    gaussian_mixture_gd = Gaussian_Mixture_GD_Regularization(C = C_val, batch_size = batch_size_val, alpha = alpha_val, theta_r_lr_alpha = theta_r_lr_alpha_val, lambda_t_lr_alpha = lambda_t_lr_alpha_val, n_gaussian = n_gaussian_val, w_init = w_init_val, theta_alpha = theta_alpha_val, a = a_val, b = b_val)
+                                                    best_accuracy, best_accuracy_step = gaussian_mixture_gd.fit(X[train_index], y[train_index], X[test_index], y[test_index], args.batchgibbs)
+                                                    print "best_accuracy: ", best_accuracy
+                                                    print "best_accuracy_step: ", best_accuracy_step
 
-                                        this_model_metric = np.array([C_val, batch_size_val, alpha_val, n_gaussian_val, theta_alpha_val, a_val, b_val, best_accuracy, best_accuracy_step])
-                                        this_model_metric = this_model_metric.reshape(1, this_model_metric.shape[0])
-                                        gaussianmixturegd_metric = np.concatenate((gaussianmixturegd_metric, this_model_metric), axis=0)
-                                        print "gaussianmixturegd_metric shape: ", gaussianmixturegd_metric.shape
-                                        print "gaussianmixturegd_metric: ", gaussianmixturegd_metric
+                                                    this_model_metric = np.array([C_val, batch_size_val, alpha_val, theta_r_lr_alpha_val, lambda_t_lr_alpha_val, n_gaussian_val, w_init_val, theta_alpha_val, a_val, b_val, best_accuracy, best_accuracy_step])
+                                                    this_model_metric = this_model_metric.reshape(1, this_model_metric.shape[0])
+                                                    gaussianmixturegd_metric = np.concatenate((gaussianmixturegd_metric, this_model_metric), axis=0)
+                                                    print "gaussianmixturegd_metric shape: ", gaussianmixturegd_metric.shape
+                                                    print "gaussianmixturegd_metric: ", gaussianmixturegd_metric
             for metric_i in range(len(gaussianmixturegd_metric[:,0])):
                 print gaussianmixturegd_metric[metric_i]
         elif clf_name == 'huber':
