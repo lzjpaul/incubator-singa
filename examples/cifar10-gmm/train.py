@@ -36,6 +36,7 @@ import alexnet
 import vgg
 import resnet
 
+import random
 
 def load_dataset(filepath):
     print 'Loading data file %s' % filepath
@@ -112,7 +113,7 @@ def caffe_lr(epoch):
     else:
         return 0.0001
 
-def gaussian_mixture_gd_descent_avg(res_matrix, w, theta_r_vec, theta_vec, lambda_t_vec, lambda_vec, a, b, theta_alpha, C):
+def gaussian_mixture_gd_descent_avg(res_matrix, w, theta_r_vec, theta_vec, lambda_t_vec, lambda_vec, a, b, theta_alpha):
     #if sparse.issparse(batch_X): batch_X = batch_X.toarray()
     # print "in lasso gd avg"
     w_array = np.copy(w) # in order for np.exp
@@ -166,7 +167,7 @@ def gaussian_mixture_gd_descent_avg(res_matrix, w, theta_r_vec, theta_vec, lambd
     ###theta_r_update#########
     return grad, theta_r_vec_update, lambda_t_vec_update
 
-def train(data, net, max_epoch, get_lr, weight_decay, n_gaussian=3, theta_alpha=300, a=1, b=1, C=1.0, batch_size=100, 
+def train(data, net, max_epoch, get_lr, weight_decay, theta_r_lr, lambda_t_lr, n_gaussian=3, theta_alpha=300, a=1, b=1, batch_size=100, 
           use_cpu=False):
     print 'Start intialization............'
     if use_cpu:
@@ -177,7 +178,14 @@ def train(data, net, max_epoch, get_lr, weight_decay, n_gaussian=3, theta_alpha=
         print 'Using GPU'
         dev = device.create_cuda_gpu()
         cpudev = device.get_default_device()
-
+    
+    print "estimator__theta_r_lr_alpha: ", theta_r_lr
+    print "estimator__lambda_t_lr_alpha: ", lambda_t_lr
+    print "estimator__n_gaussian: ", n_gaussian
+    print "estimator__theta_alpha: ", theta_alpha
+    print "estimator__a: ", a_val
+    print "estimator__b: ", b_val
+    
     net.to_device(dev)
     opt = optimizer.SGD(momentum=0.9, weight_decay=0.0)
     for (p, specs) in zip(net.param_names(), net.param_specs()):
@@ -206,7 +214,8 @@ def train(data, net, max_epoch, get_lr, weight_decay, n_gaussian=3, theta_alpha=
     # lambda_t_vec = np.array([np.log(1/2.)])
     # lambda_vec = np.exp(lambda_t_vec)
     lambda_vec = np.exp(lambda_t_vec)
-
+    best_accuracy = 0.0
+    best_accuracy_step = 0
     for epoch in range(max_epoch):
         np.random.seed(epoch)
         np.random.shuffle(idx)
@@ -252,7 +261,7 @@ def train(data, net, max_epoch, get_lr, weight_decay, n_gaussian=3, theta_alpha=
             ##print "np.sum(res_matrix, axis=1): ", np.sum(res_matrix, axis=1)
             ##### calculate responsibility #####
 
-            w_update, theta_r_vec_update, lambda_t_vec_update = gaussian_mixture_gd_descent_avg(res_matrix, w_array, theta_r_vec, theta_vec, lambda_t_vec, lambda_vec, a, b, theta_alpha, C)
+            w_update, theta_r_vec_update, lambda_t_vec_update = gaussian_mixture_gd_descent_avg(res_matrix, w_array, theta_r_vec, theta_vec, lambda_t_vec, lambda_vec, a, b, theta_alpha)
             weight_dim_list_index = 0
             weight_index = 0
             ##print "weight_dim_list_index: ", weight_dim_list_index
@@ -302,15 +311,18 @@ def train(data, net, max_epoch, get_lr, weight_decay, n_gaussian=3, theta_alpha=
             t_lambda_t_vec.to_device(dev)
             t_theta_r_vec_update.to_device(dev)
             t_lambda_t_vec_update.to_device(dev)
-           
-            opt.apply_with_lr(epoch, get_lr(epoch)/1000., t_theta_r_vec_update, t_theta_r_vec, 't_theta_r_vec', b)
-            opt.apply_with_lr(epoch, get_lr(epoch)/100000., t_lambda_t_vec_update, t_lambda_t_vec, 't_lambda_t_vec', b)
+          
+            # print "get_lr(epoch)/theta_r_lr: ", get_lr(epoch)/theta_r_lr
+            # print "get_lr(epoch)/lambda_t_lr", get_lr(epoch)/lambda_t_lr 
+            opt.apply_with_lr(epoch, get_lr(epoch)/theta_r_lr, t_theta_r_vec_update, t_theta_r_vec, 't_theta_r_vec', b)
+            opt.apply_with_lr(epoch, get_lr(epoch)/lambda_t_lr, t_lambda_t_vec_update, t_lambda_t_vec, 't_lambda_t_vec', b)
             t_theta_r_vec.to_device(cpudev)
             t_lambda_t_vec.to_device(cpudev)
             theta_r_vec = tensor.to_numpy(t_theta_r_vec)
             lambda_t_vec = tensor.to_numpy(t_lambda_t_vec)
             #############################################
             ## update theta_vec, theta_r_vec, lambda_vec, lambda_t_vec simultaneously!!!!!!!!
+            # print "theta_r_vec: ", theta_r_vec
             theta_r_exp_vec = np.exp(theta_r_vec)
             theta_vec = theta_r_exp_vec / np.sum(theta_r_exp_vec)
             # lambda_vec = np.exp(lambda_t_vec)
@@ -337,7 +349,11 @@ def train(data, net, max_epoch, get_lr, weight_decay, n_gaussian=3, theta_alpha=
 
         print 'test loss = %f, test accuracy = %f' \
             % (loss / num_test_batch, acc / num_test_batch)
+        if (acc / num_test_batch) > best_accuracy:
+            best_accuracy = (acc / num_test_batch)
+            best_accuracy_step = epoch * num_train_batch + b
     net.save('model', 20)  # save model params into checkpoint file
+    return best_accuracy, best_accuracy_step
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train dcnn for cifar10')
@@ -361,10 +377,69 @@ if __name__ == '__main__':
         #train((train_x, train_y, test_x, test_y), net, 18, caffe_lr, 0.004,
         #      use_cpu=args.use_cpu)
     elif args.model == 'alexnet':
+        param_gaussianmixturegd = {
+                       'estimator__theta_r_lr_alpha': [1e+5], # the lr of theta_r is smaller
+                       'estimator__lambda_t_lr_alpha': [1e+5], # the lr of theta_r is smaller
+                       'estimator__n_gaussian': [3, 5],
+                       'estimator__theta_alpha': [1, 10, 50, 100],
+                       'estimator__a': [1, 5, 10],
+                       'estimator__b': [1, 5, 10]
+                      }
         train_x, test_x = normalize_for_alexnet(train_x, test_x)
-        net = alexnet.create_net(args.use_cpu)
-        train((train_x, train_y, test_x, test_y), net, 2, alexnet_lr, 0.004,
-              use_cpu=args.use_cpu)
+        gaussianmixturegd_metric = np.zeros((len(param_gaussianmixturegd) + 2)).reshape(1, (len(param_gaussianmixturegd) + 2))
+        print "gaussianmixturegd_metric shape: ", gaussianmixturegd_metric.shape
+        #for theta_r_lr_alpha_i, theta_r_lr_alpha_val in enumerate(param_gaussianmixturegd['estimator__theta_r_lr_alpha']):
+        #    for lambda_t_lr_alpha_i, lambda_t_lr_alpha_val in enumerate(param_gaussianmixturegd['estimator__lambda_t_lr_alpha']):
+        #        for n_gaussian_i, n_gaussian_val in enumerate(param_gaussianmixturegd['estimator__n_gaussian']):
+        #            for theta_alpha_i, theta_alpha_val in enumerate(param_gaussianmixturegd['estimator__theta_alpha']):
+        #                for a_i, a_val in enumerate(param_gaussianmixturegd['estimator__a']):
+        #                    for b_i, b_val in enumerate(param_gaussianmixturegd['estimator__b']):
+        #                        print "new model"
+        #                        print "estimator__theta_r_lr_alpha: ", theta_r_lr_alpha_val
+        #                        print "estimator__lambda_t_lr_alpha: ", lambda_t_lr_alpha_val
+        #                        print "estimator__n_gaussian: ", n_gaussian_val
+        #                        print "estimator__theta_alpha: ", theta_alpha_val
+        #                        print "estimator__a: ", a_val
+        #                        print "estimator__b: ", b_val
+        #                        net = alexnet.create_net(args.use_cpu)
+        #                        best_accuracy, best_accuracy_step=train((train_x, train_y, test_x, test_y), net, 250, alexnet_lr, 0.004,
+        #                           theta_r_lr=theta_r_lr_alpha_val, lambda_t_lr=lambda_t_lr_alpha_val, 
+        #                           n_gaussian=n_gaussian_val, theta_alpha=theta_alpha_val, a=a_val, b=b_val, use_cpu=args.use_cpu)
+        #                        print "final best_accuracy: ", best_accuracy
+        #                        print "final best_accuracy_step: ", best_accuracy_step
+        #                        this_model_metric = np.array([theta_r_lr_alpha_val, lambda_t_lr_alpha_val, n_gaussian_val, theta_alpha_val, a_val, b_val, best_accuracy, best_accuracy_step])
+        #                        this_model_metric = this_model_metric.reshape(1, this_model_metric.shape[0])
+        #                        gaussianmixturegd_metric = np.concatenate((gaussianmixturegd_metric, this_model_metric), axis=0)
+        #                        print "gaussianmixturegd_metric shape: ", gaussianmixturegd_metric.shape
+        #                        print "gaussianmixturegd_metric: ", gaussianmixturegd_metric
+        for i in range(3):
+            theta_r_lr_alpha_val = random.choice(param_gaussianmixturegd['estimator__theta_r_lr_alpha'])
+            lambda_t_lr_alpha_val = random.choice(param_gaussianmixturegd['estimator__lambda_t_lr_alpha'])
+            n_gaussian_val = random.choice(param_gaussianmixturegd['estimator__n_gaussian'])
+            theta_alpha_val = random.choice(param_gaussianmixturegd['estimator__theta_alpha'])
+            a_val = random.choice(param_gaussianmixturegd['estimator__a'])
+            b_val = random.choice(param_gaussianmixturegd['estimator__b']) 
+            print "new model"
+            print "estimator__theta_r_lr_alpha: ", theta_r_lr_alpha_val
+            print "estimator__lambda_t_lr_alpha: ", lambda_t_lr_alpha_val
+            print "estimator__n_gaussian: ", n_gaussian_val
+            print "estimator__theta_alpha: ", theta_alpha_val
+            print "estimator__a: ", a_val
+            print "estimator__b: ", b_val
+            net = alexnet.create_net(args.use_cpu)
+            best_accuracy, best_accuracy_step=train((train_x, train_y, test_x, test_y), net, 3, alexnet_lr, 0.004,
+                theta_r_lr=theta_r_lr_alpha_val, lambda_t_lr=lambda_t_lr_alpha_val, 
+                n_gaussian=n_gaussian_val, theta_alpha=theta_alpha_val, a=a_val, b=b_val, use_cpu=args.use_cpu)
+            print "final best_accuracy: ", best_accuracy
+            print "final best_accuracy_step: ", best_accuracy_step
+            this_model_metric = np.array([theta_r_lr_alpha_val, lambda_t_lr_alpha_val, n_gaussian_val, theta_alpha_val, a_val, b_val, best_accuracy, best_accuracy_step])
+            this_model_metric = this_model_metric.reshape(1, this_model_metric.shape[0])
+            gaussianmixturegd_metric = np.concatenate((gaussianmixturegd_metric, this_model_metric), axis=0)
+            print "gaussianmixturegd_metric shape: ", gaussianmixturegd_metric.shape
+            print "gaussianmixturegd_metric: ", gaussianmixturegd_metric
+        for metric_i in range(len(gaussianmixturegd_metric[:,0])):
+            print gaussianmixturegd_metric[metric_i]
+        print "best accuracy: ", np.max(gaussianmixturegd_metric[:,-2])
     elif args.model == 'vgg':
         train_x, test_x = normalize_for_vgg(train_x, test_x)
         net = vgg.create_net(args.use_cpu)
