@@ -116,14 +116,14 @@ def gaussian_mixture_gd_descent_avg(res_matrix, w, theta_r_vec, theta_vec, lambd
     #if sparse.issparse(batch_X): batch_X = batch_X.toarray()
     # print "in lasso gd avg"
     w_array = np.copy(w) # in order for np.exp
-    print "w_array shape: ", w_array.shape
+    # print "w_array shape: ", w_array.shape
     # print "w shape: ", w.shape
     # w_array = np.reshape(w_array, w_array.shape[1])
     w_weight_array = w_array.reshape((-1, 1)) # no bias
     # grad = param * w.sign()
     # print "lasso w shape: ", w.shape
     lambda_w = np.dot(w_weight_array, lambda_vec.reshape((1, -1)))
-    print "lambda_w shape: ", lambda_w.shape
+    # print "lambda_w shape: ", lambda_w.shape
     grad = np.sum((res_matrix * lambda_w), axis=1)# -log(p(w))
     # print "grad[0:10]: ", grad[0:10]
     # print "(lambda_vec[0] * w_array)[0:10]: ", (lambda_vec[0] * w_array)[0:10]
@@ -135,7 +135,7 @@ def gaussian_mixture_gd_descent_avg(res_matrix, w, theta_r_vec, theta_vec, lambd
     res_w = sparse.csr_matrix(res_matrix.T).dot(sparse.diags(0.5 * w_weight_array.reshape(w_weight_array.shape[0]) * w_weight_array.reshape(w_weight_array.shape[0])))
     res_w = (res_w.toarray().T)
     term2 = np.sum((res_matrix / (2.0 * lambda_vec.reshape(1, -1))) - res_w, axis=0)
-    print "gd lambda_t term2: ", term2[:100]
+    ##print "gd lambda_t term2: ", term2[:100]
     lambda_t_vec_update = (- term1 - term2) * lambda_vec # lambda = exp(lambda_t)derivative of lambda to t
     # lambda_t_vec_update = (- term1 - term2) * (-lambda_vec) # should change mapping as well!!! lambda^(-1) = exp(lambda_t)derivative of lambda to t
     ###lambda_t_update#########
@@ -151,16 +151,16 @@ def gaussian_mixture_gd_descent_avg(res_matrix, w, theta_r_vec, theta_vec, lambd
 
     theta_r_vec_update = np.zeros(theta_r_vec.shape[0])
     term1 = (theta_alpha - 1) / theta_vec.astype(float)
-    print "theta_vec.astype(float): ", theta_vec.astype(float)
+    ## print "theta_vec.astype(float): ", theta_vec.astype(float)
     term2 = np.sum(res_matrix.astype(float) / (theta_vec.reshape(1, -1)), axis=0)
     theta_derivative = ( - term1 - term2)
     for j in range(theta_r_vec_update.shape[0]): #r_j
         theta_r_vec_update[j] = np.sum(theta_derivative * theta_k_r_j[:, j])
-    print "-term1: ", -term1
-    print "-term2: ", -term2
-    print "theta_derivative: ", theta_derivative
-    print "theta_k_r_j: ", theta_k_r_j
-    print "theta_r_vec_update: ", theta_r_vec_update
+    ##print "-term1: ", -term1
+    ##print "-term2: ", -term2
+    ##print "theta_derivative: ", theta_derivative
+    ##print "theta_k_r_j: ", theta_k_r_j
+    ##print "theta_r_vec_update: ", theta_r_vec_update
 
 
     ###theta_r_update#########
@@ -223,8 +223,8 @@ def train(data, net, max_epoch, get_lr, weight_decay, n_gaussian=3, theta_alpha=
             ##### calculate responsibility and weight dimension list#####
             weight_dim_list = []
             for (s, p, g) in zip(net.param_names(), net.param_values(), grads):
-                print "param name: ", s
-                print "param shape: ", tensor.to_numpy(p).shape
+                ##print "param name: ", s
+                ##print "param shape: ", tensor.to_numpy(p).shape
                 if 'weight' in str(s):
                     p.to_device(cpudev)
                     dims = tensor.to_numpy(p).shape
@@ -234,10 +234,10 @@ def train(data, net, max_epoch, get_lr, weight_decay, n_gaussian=3, theta_alpha=
                     else:
                         w_array = np.concatenate((w_array, tensor.to_numpy(p).reshape((1, -1))), axis=1)
                     p.to_device(dev)
-            print "w_array shape: ", w_array.shape
-            print "weight_dim_list: ", weight_dim_list
-            print "theta_vec: ", theta_vec
-            print "lambda_vec: ", lambda_vec
+            ##print "w_array shape: ", w_array.shape
+            ##print "weight_dim_list: ", weight_dim_list
+            ##print "theta_vec: ", theta_vec
+            ##print "lambda_vec: ", lambda_vec
             w_array = np.reshape(w_array, w_array.shape[1])
             res_denominator = np.zeros(w_array.shape[0])
             for i in range(theta_vec.shape[0]):
@@ -249,32 +249,47 @@ def train(data, net, max_epoch, get_lr, weight_decay, n_gaussian=3, theta_alpha=
                     res_matrix = np.concatenate((res_matrix, np.reshape(res_denominator_inc, (-1, 1))), axis=1)
                 res_denominator = res_denominator + res_denominator_inc
             res_matrix = res_matrix / res_denominator.reshape((-1,1)).astype(float)
-            print "np.sum(res_matrix, axis=1): ", np.sum(res_matrix, axis=1)
+            ##print "np.sum(res_matrix, axis=1): ", np.sum(res_matrix, axis=1)
             ##### calculate responsibility #####
 
             w_update, theta_r_vec_update, lambda_t_vec_update = gaussian_mixture_gd_descent_avg(res_matrix, w_array, theta_r_vec, theta_vec, lambda_t_vec, lambda_vec, a, b, theta_alpha, C)
             weight_dim_list_index = 0
             weight_index = 0
-            print "weight_dim_list_index: ", weight_dim_list_index
-            print "weight_index: ", weight_index
+            ##print "weight_dim_list_index: ", weight_dim_list_index
+            ##print "weight_index: ", weight_index
             for (s, p, g) in zip(net.param_names(), net.param_values(), grads):
-                print "param name: ", s
+                ##print "param name: ", s
                 if 'weight' in str(s):
-                    print "in weight update"
+                    ##print "in weight update"
                     param_dim_0 = weight_dim_list[weight_dim_list_index][0]
                     param_dim_1 = weight_dim_list[weight_dim_list_index][1]
-                    print "param_dim_0: ", param_dim_0
-                    print "param_dim_1: ", param_dim_1
+                    ##print "param_dim_0: ", param_dim_0
+                    ##print "param_dim_1: ", param_dim_1
                     param_regularization_grad = tensor.from_numpy(w_update[weight_index:(weight_index+param_dim_0 * param_dim_1)].reshape(weight_dim_list[weight_dim_list_index]))
+                    ###check shape and norm###
+                    ##g.to_device(cpudev)
+                    ##print "g shape: ", tensor.to_numpy(g).shape
+                    ##print "g norm before adding: ", np.linalg.norm(tensor.to_numpy(g))
+                    ##g.to_device(dev)
+                    ###check shape and norm###
+                    
                     param_regularization_grad.to_device(dev)
                     g = g + param_regularization_grad
+                    
+                    ###check shape and norm###
+                    ##g.to_device(cpudev)
+                    ##print "g shape: ", tensor.to_numpy(g).shape
+                    ##print "g norm after adding: ", np.linalg.norm(tensor.to_numpy(g))
+                    ##g.to_device(dev)
+                    ###check shape and norm###
+                    
                     opt.apply_with_lr(epoch, get_lr(epoch), g, p, str(s), b)
                     weight_dim_list_index = weight_dim_list_index + 1
                     weight_index = weight_index + param_dim_0 * param_dim_1
-                    print "weight_dim_list_index: ", weight_dim_list_index
-                    print "weight_index: ", weight_index
+                    ##print "weight_dim_list_index: ", weight_dim_list_index
+                    ##print "weight_index: ", weight_index
                 else:
-                    print "in bias update"
+                    ##print "in bias update"
                     opt.apply_with_lr(epoch, get_lr(epoch), g, p, str(s), b) # bias update
             
             # update progress bar
@@ -287,23 +302,21 @@ def train(data, net, max_epoch, get_lr, weight_decay, n_gaussian=3, theta_alpha=
             t_lambda_t_vec.to_device(dev)
             t_theta_r_vec_update.to_device(dev)
             t_lambda_t_vec_update.to_device(dev)
-            
+           
             opt.apply_with_lr(epoch, get_lr(epoch)/1000., t_theta_r_vec_update, t_theta_r_vec, 't_theta_r_vec', b)
-            opt.apply_with_lr(epoch, get_lr(epoch)/1000., t_lambda_t_vec_update, t_lambda_t_vec, 't_lambda_t_vec', b)
-            
+            opt.apply_with_lr(epoch, get_lr(epoch)/100000., t_lambda_t_vec_update, t_lambda_t_vec, 't_lambda_t_vec', b)
             t_theta_r_vec.to_device(cpudev)
             t_lambda_t_vec.to_device(cpudev)
             theta_r_vec = tensor.to_numpy(t_theta_r_vec)
             lambda_t_vec = tensor.to_numpy(t_lambda_t_vec)
-            
             #############################################
             ## update theta_vec, theta_r_vec, lambda_vec, lambda_t_vec simultaneously!!!!!!!!
             theta_r_exp_vec = np.exp(theta_r_vec)
             theta_vec = theta_r_exp_vec / np.sum(theta_r_exp_vec)
             # lambda_vec = np.exp(lambda_t_vec)
             lambda_vec = np.exp(lambda_t_vec)
-            print "theta_vec: ", theta_vec
-            print "lambda_vec: ", lambda_vec
+            ##print "theta_vec: ", theta_vec
+            ##print "lambda_vec: ", lambda_vec
             #############################################
 
             utils.update_progress(b * 1.0 / num_train_batch,
