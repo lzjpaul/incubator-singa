@@ -200,7 +200,9 @@ def train(data, net, max_epoch, get_lr, weight_decay, n_gaussian=3, theta_alpha=
     theta_vec = theta_r_exp_vec / np.sum(theta_r_exp_vec)
     print "theta_vec initialization: ", theta_vec
     # lambda_t_vec = np.random.normal(0.0, 1, n_gaussian)
-    lambda_t_vec = np.array([np.log(1/2.), np.log(1/4.), np.log(1/8.)])
+    lambda_t_vec = np.zeros(n_gaussian)
+    for i in range(n_gaussian):
+        lambda_t_vec[i] = (i+1) * np.log(1/2.)
     # lambda_t_vec = np.array([np.log(1/2.)])
     # lambda_vec = np.exp(lambda_t_vec)
     lambda_vec = np.exp(lambda_t_vec)
@@ -221,6 +223,8 @@ def train(data, net, max_epoch, get_lr, weight_decay, n_gaussian=3, theta_alpha=
             ##### calculate responsibility and weight dimension list#####
             weight_dim_list = []
             for (s, p, g) in zip(net.param_names(), net.param_values(), grads):
+                print "param name: ", s
+                print "param shape: ", tensor.to_numpy(p).shape
                 if 'weight' in str(s):
                     p.to_device(cpudev)
                     dims = tensor.to_numpy(p).shape
@@ -230,6 +234,7 @@ def train(data, net, max_epoch, get_lr, weight_decay, n_gaussian=3, theta_alpha=
                     else:
                         w_array = np.concatenate((w_array, tensor.to_numpy(p).reshape((1, -1))), axis=1)
                     p.to_device(dev)
+            print "w_array shape: ", w_array.shape
             print "weight_dim_list: ", weight_dim_list
             print "theta_vec: ", theta_vec
             print "lambda_vec: ", lambda_vec
