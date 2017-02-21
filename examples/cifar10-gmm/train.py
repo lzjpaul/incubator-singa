@@ -164,7 +164,7 @@ def gaussian_mixture_gd_descent_avg(res_matrix, w, theta_r_vec, theta_vec, lambd
 
 
     ###theta_r_update#########
-    return sparse.csr_matrix(grad), theta_r_vec_update, lambda_t_vec_update
+    return grad, theta_r_vec_update, lambda_t_vec_update
 
 def train(data, net, max_epoch, get_lr, weight_decay, n_gaussian=3, theta_alpha=300, a=1, b=1, C=1.0, batch_size=100, 
           use_cpu=False):
@@ -255,17 +255,26 @@ def train(data, net, max_epoch, get_lr, weight_decay, n_gaussian=3, theta_alpha=
             w_update, theta_r_vec_update, lambda_t_vec_update = gaussian_mixture_gd_descent_avg(res_matrix, w_array, theta_r_vec, theta_vec, lambda_t_vec, lambda_vec, a, b, theta_alpha, C)
             weight_dim_list_index = 0
             weight_index = 0
+            print "weight_dim_list_index: ", weight_dim_list_index
+            print "weight_index: ", weight_index
             for (s, p, g) in zip(net.param_names(), net.param_values(), grads):
+                print "param name: ", s
                 if 'weight' in str(s):
+                    print "in weight update"
                     param_dim_0 = weight_dim_list[weight_dim_list_index][0]
                     param_dim_1 = weight_dim_list[weight_dim_list_index][1]
-                    param_regularization_grad = tensor.from_numpy(w_array[weight_index:(weight_index+param_dim_0 * param_dim_1)].reshape(weight_dim_list[weight_dim_list_index]))
+                    print "param_dim_0: ", param_dim_0
+                    print "param_dim_1: ", param_dim_1
+                    param_regularization_grad = tensor.from_numpy(w_update[weight_index:(weight_index+param_dim_0 * param_dim_1)].reshape(weight_dim_list[weight_dim_list_index]))
                     param_regularization_grad.to_device(dev)
                     g = g + param_regularization_grad
                     opt.apply_with_lr(epoch, get_lr(epoch), g, p, str(s), b)
                     weight_dim_list_index = weight_dim_list_index + 1
                     weight_index = weight_index + param_dim_0 * param_dim_1
+                    print "weight_dim_list_index: ", weight_dim_list_index
+                    print "weight_index: ", weight_index
                 else:
+                    print "in bias update"
                     opt.apply_with_lr(epoch, get_lr(epoch), g, p, str(s), b) # bias update
             
             # update progress bar
