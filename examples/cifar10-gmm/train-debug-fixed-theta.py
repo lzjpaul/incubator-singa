@@ -18,6 +18,9 @@
 It includes 5 binary dataset, each contains 10000 images. 1 row (1 image)
 includes 1 label & 3072 pixels.  3072 pixels are 3 channels of a 32x32 image
 """
+# note: 
+# (1)lambda_initialization: from 1/250 -> 1/1000
+# (2) fixed theta and lambda
 
 import cPickle
 import numpy as np
@@ -113,7 +116,7 @@ def caffe_lr(epoch):
     else:
         return 0.0001
 
-def gaussian_mixture_gd_descent_avg(res_matrix, w, theta_r_vec, theta_vec, lambda_t_vec, lambda_vec, a, b, theta_alpha):
+def gaussian_mixture_gd_descent_avg(res_matrix, w, theta_r_vec, theta_vec, lambda_t_vec, lambda_vec, a_val, b_val, theta_alpha):
     #if sparse.issparse(batch_X): batch_X = batch_X.toarray()
     # print "in lasso gd avg"
     w_array = np.copy(w) # in order for np.exp
@@ -132,7 +135,7 @@ def gaussian_mixture_gd_descent_avg(res_matrix, w, theta_r_vec, theta_vec, lambd
     # print "grad shape: ", grad.shape
 
     ###lambda_t_update#########
-    term1 = (float(a-1) / lambda_vec) - b
+    term1 = (float(a_val-1) / lambda_vec) - b_val
     res_w = sparse.csr_matrix(res_matrix.T).dot(sparse.diags(0.5 * w_weight_array.reshape(w_weight_array.shape[0]) * w_weight_array.reshape(w_weight_array.shape[0])))
     res_w = (res_w.toarray().T)
     term2 = np.sum((res_matrix / (2.0 * lambda_vec.reshape(1, -1))) - res_w, axis=0)
@@ -157,8 +160,8 @@ def gaussian_mixture_gd_descent_avg(res_matrix, w, theta_r_vec, theta_vec, lambd
     theta_derivative = ( - term1 - term2)
     for j in range(theta_r_vec_update.shape[0]): #r_j
         theta_r_vec_update[j] = np.sum(theta_derivative * theta_k_r_j[:, j])
-    ##print "-term1: ", -term1
-    ##print "-term2: ", -term2
+    # print "-term1: ", -term1
+    # print "-term2: ", -term2
     ##print "theta_derivative: ", theta_derivative
     ##print "theta_k_r_j: ", theta_k_r_j
     ##print "theta_r_vec_update: ", theta_r_vec_update
@@ -167,7 +170,7 @@ def gaussian_mixture_gd_descent_avg(res_matrix, w, theta_r_vec, theta_vec, lambd
     ###theta_r_update#########
     return grad, theta_r_vec_update, lambda_t_vec_update
 
-def train(data, net, max_epoch, get_lr, weight_decay, theta_r_lr, lambda_t_lr, n_gaussian=3, theta_alpha=300, a=1, b=1, batch_size=100, 
+def train(data, net, max_epoch, get_lr, weight_decay, theta_r_lr, lambda_t_lr, n_gaussian=3, theta_alpha=300, a_val=1, b_val=1, batch_size=100, 
           use_cpu=False):
     print 'Start intialization............'
     if use_cpu:
@@ -200,8 +203,8 @@ def train(data, net, max_epoch, get_lr, weight_decay, theta_r_lr, lambda_t_lr, n
     
     print "in train n_gaussian: ", n_gaussian
     print "in train theta_alpha: ", theta_alpha
-    print "in train a: ", a
-    print "in train b: ", b
+    print "in train a_val: ", a_val
+    print "in train b_val: ", b_val
     # initialization !!
     theta_r_vec = np.zeros(n_gaussian)
     theta_r_exp_vec = np.exp(theta_r_vec)
@@ -209,8 +212,12 @@ def train(data, net, max_epoch, get_lr, weight_decay, theta_r_lr, lambda_t_lr, n
     print "theta_vec initialization: ", theta_vec
     # lambda_t_vec = np.random.normal(0.0, 1, n_gaussian)
     lambda_t_vec = np.zeros(n_gaussian)
-    for i in range(n_gaussian):
-        lambda_t_vec[i] = (i+1) * np.log(1/2.)
+    ###for i in range(n_gaussian):
+        # lambda_t_vec[i] = (i+1) * np.log(1/2.)
+    ###    lambda_t_vec[i] = (i+1) * np.log(1/16.)
+    lambda_t_vec[0] = np.log(1/250.)
+    lambda_t_vec[1] = np.log(1/500.)
+    lambda_t_vec[2] = np.log(1/1000.)
     # lambda_t_vec = np.array([np.log(1/2.)])
     # lambda_vec = np.exp(lambda_t_vec)
     lambda_vec = np.exp(lambda_t_vec)
@@ -246,11 +253,13 @@ def train(data, net, max_epoch, get_lr, weight_decay, theta_r_lr, lambda_t_lr, n
                     p.to_device(dev)
             ##print "w_array shape: ", w_array.shape
             ##print "weight_dim_list: ", weight_dim_list
-            print "theta_vec: ", theta_vec
-            print "lambda_vec: ", lambda_vec
+            if b % 50 == 0:
+                print "theta_vec: ", theta_vec
+                print "lambda_vec: ", lambda_vec
             w_array = np.reshape(w_array, w_array.shape[1])
             res_denominator = np.zeros(w_array.shape[0])
-            print "w_array norm: ", np.linalg.norm(w_array)
+            if b % 50 == 0:
+                print "w_array norm: ", np.linalg.norm(w_array)
             for i in range(theta_vec.shape[0]):
                 # print "gaussian theta i: ", i
                 res_denominator_inc = theta_vec[i] * np.power((lambda_vec[i] / (2.0 * np.pi)), 0.5) * np.exp(-0.5 * lambda_vec[i] * w_array * w_array)
@@ -262,8 +271,10 @@ def train(data, net, max_epoch, get_lr, weight_decay, theta_r_lr, lambda_t_lr, n
             res_matrix = res_matrix / res_denominator.reshape((-1,1)).astype(float)
             ##print "np.sum(res_matrix, axis=1): ", np.sum(res_matrix, axis=1)
             ##### calculate responsibility #####
+            theta_vec = np.array([1/3., 1/3., 1/3.])
+            lambda_vec = np.array([0.04, 0.004, 0.0004])
 
-            w_update, theta_r_vec_update, lambda_t_vec_update = gaussian_mixture_gd_descent_avg(res_matrix, w_array, theta_r_vec, theta_vec, lambda_t_vec, lambda_vec, a, b, theta_alpha)
+            w_update, theta_r_vec_update, lambda_t_vec_update = gaussian_mixture_gd_descent_avg(res_matrix, w_array, theta_r_vec, theta_vec, lambda_t_vec, lambda_vec, a_val, b_val, theta_alpha)
             weight_dim_list_index = 0
             weight_index = 0
             ##print "weight_dim_list_index: ", weight_dim_list_index
@@ -380,10 +391,11 @@ if __name__ == '__main__':
         #      use_cpu=args.use_cpu)
     elif args.model == 'alexnet':
         param_gaussianmixturegd = {
-                       'estimator__theta_r_lr_alpha': [1e+5], # the lr of theta_r is smaller
-                       'estimator__lambda_t_lr_alpha': [1e+5], # the lr of theta_r is smaller
+                       'estimator__theta_r_lr_alpha': [1e+3, 1e+4, 1e+5, 1e+6], # the lr of theta_r is smaller
+                       'estimator__lambda_t_lr_alpha': [1e+6, 1e+7, 1e+8, 1e+9], # the lr of theta_r is smaller
                        'estimator__n_gaussian': [3],
-                       'estimator__theta_alpha': [1, 10, 50, 100],
+                       # 'estimator__theta_alpha': [1, 50, 100],
+                       'estimator__theta_alpha': [100, 1000, 5000, 10000],
                        'estimator__a': [1, 5, 10],
                        'estimator__b': [1, 5, 10]
                       }
@@ -431,7 +443,7 @@ if __name__ == '__main__':
             net = alexnet.create_net(args.use_cpu)
             best_accuracy, best_accuracy_step=train((train_x, train_y, test_x, test_y), net, 200, alexnet_lr, 0.004,
                 theta_r_lr=theta_r_lr_alpha_val, lambda_t_lr=lambda_t_lr_alpha_val, 
-                n_gaussian=n_gaussian_val, theta_alpha=theta_alpha_val, a=a_val, b=b_val, use_cpu=args.use_cpu)
+                n_gaussian=n_gaussian_val, theta_alpha=theta_alpha_val, a_val=a_val, b_val=b_val, use_cpu=args.use_cpu)
             print "final best_accuracy: ", best_accuracy
             print "final best_accuracy_step: ", best_accuracy_step
             this_model_metric = np.array([theta_r_lr_alpha_val, lambda_t_lr_alpha_val, n_gaussian_val, theta_alpha_val, a_val, b_val, best_accuracy, best_accuracy_step])

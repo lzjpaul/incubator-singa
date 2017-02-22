@@ -18,7 +18,8 @@
 It includes 5 binary dataset, each contains 10000 images. 1 row (1 image)
 includes 1 label & 3072 pixels.  3072 pixels are 3 channels of a 32x32 image
 """
-
+# lambda_t = log(1/250.)
+# lambda_t_lr_alpha
 import cPickle
 import numpy as np
 import os
@@ -210,7 +211,8 @@ def train(data, net, max_epoch, get_lr, weight_decay, theta_r_lr, lambda_t_lr, n
     # lambda_t_vec = np.random.normal(0.0, 1, n_gaussian)
     lambda_t_vec = np.zeros(n_gaussian)
     for i in range(n_gaussian):
-        lambda_t_vec[i] = (i+1) * np.log(1/2.)
+        # lambda_t_vec[i] = (i+1) * np.log(1/2.)
+        lambda_t_vec[i] = (i+1) * np.log(1/250.)
     # lambda_t_vec = np.array([np.log(1/2.)])
     # lambda_vec = np.exp(lambda_t_vec)
     lambda_vec = np.exp(lambda_t_vec)
@@ -246,11 +248,11 @@ def train(data, net, max_epoch, get_lr, weight_decay, theta_r_lr, lambda_t_lr, n
                     p.to_device(dev)
             ##print "w_array shape: ", w_array.shape
             ##print "weight_dim_list: ", weight_dim_list
-            print "theta_vec: ", theta_vec
-            print "lambda_vec: ", lambda_vec
+            ###print "theta_vec: ", theta_vec
+            ###print "lambda_vec: ", lambda_vec
             w_array = np.reshape(w_array, w_array.shape[1])
             res_denominator = np.zeros(w_array.shape[0])
-            print "w_array norm: ", np.linalg.norm(w_array)
+            ###print "w_array norm: ", np.linalg.norm(w_array)
             for i in range(theta_vec.shape[0]):
                 # print "gaussian theta i: ", i
                 res_denominator_inc = theta_vec[i] * np.power((lambda_vec[i] / (2.0 * np.pi)), 0.5) * np.exp(-0.5 * lambda_vec[i] * w_array * w_array)
@@ -381,11 +383,11 @@ if __name__ == '__main__':
     elif args.model == 'alexnet':
         param_gaussianmixturegd = {
                        'estimator__theta_r_lr_alpha': [1e+5], # the lr of theta_r is smaller
-                       'estimator__lambda_t_lr_alpha': [1e+5], # the lr of theta_r is smaller
-                       'estimator__n_gaussian': [3],
-                       'estimator__theta_alpha': [1, 10, 50, 100],
-                       'estimator__a': [1, 5, 10],
-                       'estimator__b': [1, 5, 10]
+                       'estimator__lambda_t_lr_alpha': [1e+7], # the lr of theta_r is smaller
+                       'estimator__n_gaussian': [1],
+                       'estimator__theta_alpha': [100],
+                       'estimator__a': [1],
+                       'estimator__b': [10]
                       }
         train_x, test_x = normalize_for_alexnet(train_x, test_x)
         gaussianmixturegd_metric = np.zeros((len(param_gaussianmixturegd) + 2)).reshape(1, (len(param_gaussianmixturegd) + 2))
