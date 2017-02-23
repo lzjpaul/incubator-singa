@@ -1,0 +1,1 @@
+python /home/zhaojing/smooth-regularization/gaussian-mixture/newest-singa/incubator-singa/examples/cifar10-gmm/train.py alexnet /home/zhaojing/smooth-regularization/gaussian-mixture/newest-singa/incubator-singa/examples/cifar10-gmm/cifar-10-batches-py | tee -a /data/zhaojing/regularization/log0224/02-24-6.log
