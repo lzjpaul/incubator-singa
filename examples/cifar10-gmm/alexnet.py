@@ -34,9 +34,10 @@ def create_net(use_cpu=False):
     net = ffnet.FeedForwardNet(loss.SoftmaxCrossEntropy(), metric.Accuracy())
     W0_specs = {'init': 'gaussian', 'mean': 0, 'std': 0.0001}
     W1_specs = {'init': 'gaussian', 'mean': 0, 'std': 0.01}
-    W2_specs = {'init': 'gaussian', 'mean': 0, 'std': 0.01, 'decay_mult': 250}
-
-    b_specs = {'init': 'constant', 'value': 0, 'lr_mult': 2, 'decay_mult': 0}
+    #W2_specs = {'init': 'gaussian', 'mean': 0, 'std': 0.01, 'decay_mult': 250}
+    W2_specs = {'init': 'gaussian', 'mean': 0, 'std': 0.01}
+    # b_specs = {'init': 'constant', 'value': 0, 'lr_mult': 2, 'decay_mult': 0}
+    b_specs = {'init': 'constant', 'value': 0, 'decay_mult': 0}
     net.add(layer.Conv2D('conv1', 32, 5, 1, W_specs=W0_specs.copy(), b_specs=b_specs.copy(), pad=2, input_sample_shape=(3,32,32,)))
     net.add(layer.MaxPooling2D('pool1', 3, 2, pad=1))
     net.add(layer.Activation('relu1'))
