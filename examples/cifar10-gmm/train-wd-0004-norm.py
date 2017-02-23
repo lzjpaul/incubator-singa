@@ -22,7 +22,7 @@ includes 1 label & 3072 pixels.  3072 pixels are 3 channels of a 32x32 image
 # (0) pay attention to: w_init, lambda_init
 # (1) a_val and b_val
 # (2) lambda_initialization: from using for loop
-
+# (3) opt.register ... lr is two timesssss!!!!
 import cPickle
 import numpy as np
 import os
@@ -269,10 +269,9 @@ def train(data, net, max_epoch, get_lr, weight_decay, theta_r_lr, lambda_t_lr, n
             for (s, p, g) in zip(net.param_names(), net.param_values(), grads):
                 print "s: ", s
                 ###check shape and norm###
-                g.to_device(cpudev)
-                print "g shape: ", tensor.to_numpy(g).shape
-                print "g norm before adding: ", np.linalg.norm(tensor.to_numpy(g))
-                g.to_device(dev)
+                print "g l2 before adding: ", g.l2()
+                print "g tensor shape: ", g.shape
+                print "p tensor l2: ", p.l2()
                 ###check shape and norm###
                 if 'weight' in str(s):
                     ##print "in weight update"
@@ -289,7 +288,9 @@ def train(data, net, max_epoch, get_lr, weight_decay, theta_r_lr, lambda_t_lr, n
                     ###check shape and norm###
                     
                     param_regularization_grad.to_device(dev)
+                    print "param_regularization_grad l2: ", param_regularization_grad.l2()
                     g = g + param_regularization_grad
+                    print "g after adding param_regularization_grad l2: ", g.l2()
                     
                     ###check shape and norm###
                     ##g.to_device(cpudev)
@@ -301,12 +302,14 @@ def train(data, net, max_epoch, get_lr, weight_decay, theta_r_lr, lambda_t_lr, n
                     opt.apply_with_lr(epoch, get_lr(epoch), g, p, str(s), b)
                     weight_dim_list_index = weight_dim_list_index + 1
                     weight_index = weight_index + param_dim_0 * param_dim_1
+                    print "p l2 norm after adding: ", p.l2()
                     ##print "weight_dim_list_index: ", weight_dim_list_index
                     ##print "weight_index: ", weight_index
                 else:
                     ##print "in bias update"
                     opt.apply_with_lr(epoch, get_lr(epoch), g, p, str(s), b) # bias update
-            
+                    print "bias p after adding param_regularization_grad l2: ", p.l2()
+                print "\n"
             # update progress bar
             t_theta_r_vec = tensor.from_numpy(theta_r_vec)
             t_lambda_t_vec = tensor.from_numpy(lambda_t_vec)
