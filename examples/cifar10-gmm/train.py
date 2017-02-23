@@ -21,7 +21,8 @@ includes 1 label & 3072 pixels.  3072 pixels are 3 channels of a 32x32 image
 # note: 
 # (0) pay attention to: w_init, lambda_init
 # (1) a_val and b_val
-# (2) lambda_initialization: from using for loop
+# (2) lambda_initialization: from using for loop, log scale of 10.
+# (3) nan
 
 import cPickle
 import numpy as np
@@ -130,7 +131,7 @@ def gaussian_mixture_gd_descent_avg(res_matrix, w, theta_r_vec, theta_vec, lambd
 
     ###lambda_t_update#########
     term1 = (float(a_val-1) / lambda_vec) - b_val
-    print "term1: ", term1
+    # print "term1: ", term1
     res_w = sparse.csr_matrix(res_matrix.T).dot(sparse.diags(0.5 * w_weight_array.reshape(w_weight_array.shape[0]) * w_weight_array.reshape(w_weight_array.shape[0])))
     res_w = (res_w.toarray().T)
     term2 = np.sum((res_matrix / (2.0 * lambda_vec.reshape(1, -1))) - res_w, axis=0)
@@ -155,8 +156,8 @@ def gaussian_mixture_gd_descent_avg(res_matrix, w, theta_r_vec, theta_vec, lambd
     theta_derivative = ( - term1 - term2)
     for j in range(theta_r_vec_update.shape[0]): #r_j
         theta_r_vec_update[j] = np.sum(theta_derivative * theta_k_r_j[:, j])
-    print "-term1: ", -term1
-    print "-term2: ", -term2
+    # print "-term1: ", -term1
+    # print "-term2: ", -term2
     ##print "theta_derivative: ", theta_derivative
     ##print "theta_k_r_j: ", theta_k_r_j
     ##print "theta_r_vec_update: ", theta_r_vec_update
@@ -206,7 +207,8 @@ def train(data, net, max_epoch, get_lr, weight_decay, theta_r_lr, lambda_t_lr, n
     # lambda_t_vec = np.random.normal(0.0, 1, n_gaussian)
     lambda_t_vec = np.zeros(n_gaussian)
     for i in range(n_gaussian):
-        lambda_t_vec[i] = (i+1) * np.log(1/250.)
+        #lambda_t_vec[i] = (i+1) * np.log(1/250.)
+        lambda_t_vec[i] = np.log(pow(10.0, -(i+2)))
     lambda_vec = np.exp(lambda_t_vec)
     print "lambda_vec: ", lambda_vec
     best_accuracy = 0.0
@@ -238,13 +240,15 @@ def train(data, net, max_epoch, get_lr, weight_decay, theta_r_lr, lambda_t_lr, n
                     else:
                         w_array = np.concatenate((w_array, tensor.to_numpy(p).reshape((1, -1))), axis=1)
                     p.to_device(dev)
-            ##print "w_array shape: ", w_array.shape
+            ## print "w_array shape: ", w_array.shape
             ##print "weight_dim_list: ", weight_dim_list
             if b % 50 == 0:
                 print "theta_vec: ", theta_vec
                 print "lambda_vec: ", lambda_vec
             w_array = np.reshape(w_array, w_array.shape[1])
             res_denominator = np.zeros(w_array.shape[0])
+            if np.isnan(np.linalg.norm(w_array)) or np.isinf(np.linalg.norm(w_array)):
+                return best_accuracy, -1
             if b % 50 == 0:
                 print "w_array norm: ", np.linalg.norm(w_array)
             for i in range(theta_vec.shape[0]):
@@ -375,10 +379,10 @@ if __name__ == '__main__':
         param_gaussianmixturegd = {
                        'estimator__theta_r_lr_alpha': [1e+3, 1e+4, 1e+5, 1e+6], # the lr of theta_r is smaller
                        'estimator__lambda_t_lr_alpha': [1e+6, 1e+7, 1e+8, 1e+9], # the lr of theta_r is smaller
-                       'estimator__n_gaussian': [3],
+                       'estimator__n_gaussian': [3, 4, 5],
                        'estimator__theta_alpha': [100, 1000, 5000, 10000],
-                       'estimator__a': [1, 5, 10],
-                       'estimator__b': [1, 5, 10]
+                       'estimator__a': [1, 10, 100, 1000, 10000], #lr for lambda_t is large, so no need to worry this
+                       'estimator__b': [1, 10, 100, 1000, 10000] # do not have too many sensess
                       }
         train_x, test_x = normalize_for_alexnet(train_x, test_x)
         gaussianmixturegd_metric = np.zeros((len(param_gaussianmixturegd) + 2)).reshape(1, (len(param_gaussianmixturegd) + 2))
@@ -407,7 +411,7 @@ if __name__ == '__main__':
         #                        gaussianmixturegd_metric = np.concatenate((gaussianmixturegd_metric, this_model_metric), axis=0)
         #                        print "gaussianmixturegd_metric shape: ", gaussianmixturegd_metric.shape
         #                        print "gaussianmixturegd_metric: ", gaussianmixturegd_metric
-        for i in range(1000):
+        for i in range(150):
             theta_r_lr_alpha_val = random.choice(param_gaussianmixturegd['estimator__theta_r_lr_alpha'])
             lambda_t_lr_alpha_val = random.choice(param_gaussianmixturegd['estimator__lambda_t_lr_alpha'])
             n_gaussian_val = random.choice(param_gaussianmixturegd['estimator__n_gaussian'])
@@ -422,7 +426,7 @@ if __name__ == '__main__':
             print "estimator__a: ", a_val
             print "estimator__b: ", b_val
             net = alexnet.create_net(args.use_cpu)
-            best_accuracy, best_accuracy_step=train((train_x, train_y, test_x, test_y), net, 200, alexnet_lr, 0.004,
+            best_accuracy, best_accuracy_step=train((train_x, train_y, test_x, test_y), net, 220, alexnet_lr, 0.004,
                 theta_r_lr=theta_r_lr_alpha_val, lambda_t_lr=lambda_t_lr_alpha_val, 
                 n_gaussian=n_gaussian_val, theta_alpha=theta_alpha_val, a_val=a_val, b_val=b_val, use_cpu=args.use_cpu)
             print "final best_accuracy: ", best_accuracy
