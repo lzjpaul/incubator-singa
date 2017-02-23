@@ -174,9 +174,9 @@ def gaussian_mixture_gd_descent_avg(batch_X, batch_y, res_matrix, w, theta_r_vec
     w_weight_array = w_array[:-1].reshape((-1, 1)) # no bias
     # grad = param * w.sign()
     # print "lasso w shape: ", w.shape
-    print "bias: ", w_array[-1]
+    # print "bias: ", w_array[-1]
     lambda_w = np.dot(w_weight_array, lambda_vec.reshape((1, -1)))
-    print "lambda_w shape: ", lambda_w.shape
+    # print "lambda_w shape: ", lambda_w.shape
     grad = np.zeros(w_array.shape[0])
     grad[:-1] = np.sum((res_matrix * lambda_w), axis=1)# -log(p(w))
     grad[-1] = 0.0
@@ -194,11 +194,13 @@ def gaussian_mixture_gd_descent_avg(batch_X, batch_y, res_matrix, w, theta_r_vec
     ressum /=  float(batch_X.shape[0])
 
     ###lambda_t_update#########
+    print "float(a-1): ", float(a-1)
     term1 = (float(a-1) / lambda_vec) - b
+    print "term1: ", term1
     res_w = sparse.csr_matrix(res_matrix.T).dot(sparse.diags(0.5 * w_weight_array.reshape(w_weight_array.shape[0]) * w_weight_array.reshape(w_weight_array.shape[0])))
     res_w = (res_w.toarray().T)
     term2 = np.sum((res_matrix / (2.0 * lambda_vec.reshape(1, -1))) - res_w, axis=0)
-    print "gd lambda_t term2: ", term2[:100]
+    # print "gd lambda_t term2: ", term2[:100]
     lambda_t_vec_update = (- term1 - term2) * lambda_vec # lambda = exp(lambda_t)derivative of lambda to t
     # lambda_t_vec_update = (- term1 - term2) * (-lambda_vec) # should change mapping as well!!! lambda^(-1) = exp(lambda_t)derivative of lambda to t
     ###lambda_t_update#########
@@ -219,11 +221,11 @@ def gaussian_mixture_gd_descent_avg(batch_X, batch_y, res_matrix, w, theta_r_vec
     theta_derivative = ( - term1 - term2)
     for j in range(theta_r_vec_update.shape[0]): #r_j
         theta_r_vec_update[j] = np.sum(theta_derivative * theta_k_r_j[:, j])
-    print "-term1: ", -term1
-    print "-term2: ", -term2
-    print "theta_derivative: ", theta_derivative
-    print "theta_k_r_j: ", theta_k_r_j
-    print "theta_r_vec_update: ", theta_r_vec_update
+    # print "-term1: ", -term1
+    # print "-term2: ", -term2
+    # print "theta_derivative: ", theta_derivative
+    # print "theta_k_r_j: ", theta_k_r_j
+    # print "theta_r_vec_update: ", theta_r_vec_update
 
 
     ###theta_r_update#########
@@ -253,14 +255,14 @@ def ridge_grad_descent_avg(batch_X, batch_y, w, param, l1_ratio_or_mu, C):
     # if sparse.issparse(batch_X): batch_X = batch_X.toarray()
     # print "in ridge gd avg"
     batch_y = batch_y.T
-    print "param * 2.0: ", param * 2.0
+    # print "param * 2.0: ", param * 2.0
     grad = param * 2.0 * w
     grad = grad.toarray()
     # print "before grad: ", grad[0,-2]
     grad[0, -1] = 0.0
     # print "after grad: ", grad[0, 0:10]
-    print "grad var: ", np.var(grad)
-    print "grad mean: ", np.mean(grad)
+    # print "grad var: ", np.var(grad)
+    # print "grad mean: ", np.mean(grad)
     grad = sparse.csr_matrix(grad)
     # print "grad shape: ", grad.shape
     f1 = np.exp(((-batch_y).multiply(w.dot(batch_X.T))).toarray())
@@ -300,7 +302,7 @@ def smoothing_grad_descent_avg(batch_X, batch_y, w, param, l1_ratio_or_mu, C):
     # print "in smoothing gd avg"
     batch_y = batch_y.T
     w_array = w.toarray()
-    print "smoothing w_array shape: ", w_array.shape
+    # print "smoothing w_array shape: ", w_array.shape
     w_array_exp = np.exp(w_array)
     grad =  param * (w_array_exp - 1) / (w_array_exp + 1) # log(1+e^(-w)) + log(1+e^(w))
     # grad = grad.toarray()
@@ -392,8 +394,12 @@ def huber_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_or_m
 
         batch_iter = batch_iter + 1
         # if k >= max_iter or linalg.norm(((w+v) - vec)) < eps:
-        if k >= max_iter:
+        # if k >= max_iter:
+        #     break
+        if k >= max_iter or linalg.norm(((w+v) - vec)) < eps:
             break
+        if np.isnan(linalg.norm(w)) or np.isinf(linalg.norm(w)):
+            return k, w.toarray(), best_accuracy, -1
     print "huber opt avg final k: ", k
     return k, w.toarray(), v.toarray(), best_accuracy, best_accuracy_step
 
@@ -447,9 +453,9 @@ def non_huber_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_
 
         batch_X, batch_y = X_train[index : (index + batch_size)], y_train[index : (index + batch_size)]
         w_update = alpha * grad_descent_avg(batch_X, batch_y, w, lambd, l1_ratio_or_mu, C)
-        print "w_update norm: ", linalg.norm(w_update)
+        # print "w_update norm: ", linalg.norm(w_update)
         w -= w_update
-        print "w norm: ", linalg.norm(w)
+        # print "w norm: ", linalg.norm(w)
         alpha -= alpha * decay
         k += 1
 
@@ -467,8 +473,12 @@ def non_huber_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_
 
         batch_iter = batch_iter + 1
         # if k >= max_iter or linalg.norm(w_update) < eps:
-        if k >= max_iter:
+        # if k >= max_iter:
+        #    break
+        if k >= max_iter or linalg.norm(w_update) < eps:
             break
+        if np.isnan(linalg.norm(w)) or np.isinf(linalg.norm(w)):
+            return k, w.toarray(), best_accuracy, -1
     print "non_huber opt avg final k: ", k
     return k, w.toarray(), best_accuracy, best_accuracy_step
 
@@ -556,19 +566,19 @@ def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, C, max_it
             # print "lambda_vec enforce: ", lambda_vec
             ############LDA_sampler#################
             w_update = alpha * gaussian_mixture_descent_avg(batch_X, batch_y, w, theta_vec, lambda_vec, C)
-            print "w_update norm: ", linalg.norm(w_update)
+            # print "w_update norm: ", linalg.norm(w_update)
             w -= w_update
-            print "w: ", linalg.norm(w)
+            # print "w: ", linalg.norm(w)
             # print "w: ", w
             alpha -= alpha * decay
-            print "lr alpha: ", alpha
+            print "lr alpha minus two timessss: ", alpha
         else: #L2_norm
             # w_update = initial_L2_alpha * ridge_grad_descent_avg(batch_X, batch_y, w, initial_L2_lambd, 0.1, C)
             w_update = alpha * ridge_grad_descent_avg(batch_X, batch_y, w, initial_L2_lambd, 0.1, C)
-            print "w_update norm: ", linalg.norm(w_update)
+            # print "w_update norm: ", linalg.norm(w_update)
 
             w -= w_update
-            print "w: ", linalg.norm(w)
+            # print "w: ", linalg.norm(w)
             # print "w: ", w
 
            ####### kmeans: w_update history ########
@@ -605,9 +615,13 @@ def gaussian_mixture_optimizator_avg(X_train, y_train, X_test, y_test, C, max_it
 
         batch_iter = batch_iter + 1
         # if k >= max_iter or linalg.norm(w_update) < eps:
-        if k >= max_iter:
+        # if k >= max_iter:
         # if k >= 20:
+        #     break
+        if k >= max_iter or linalg.norm(w_update) < eps:
             break
+        if np.isnan(linalg.norm(w)) or np.isinf(linalg.norm(w)):
+            return k, w.toarray(), best_accuracy, -1
     print "gaussian opt avg final k: ", k
     return k, w.toarray(), best_accuracy, best_accuracy_step
 
@@ -714,8 +728,12 @@ def gaussian_mixture_gd_em_optimizator_avg(X_train, y_train, X_test, y_test, C, 
         batch_iter = batch_iter + 1
         # if k >= max_iter or linalg.norm(w_update) < eps:
         # print "gaussian_mixture_gd_em_optimizator_avg k: ", k
-        if k >= max_iter:
+        # if k >= max_iter:
+        #     break
+        if k >= max_iter or linalg.norm(w_update) < eps:
             break
+        if np.isnan(linalg.norm(w)) or np.isinf(linalg.norm(w)):
+            return k, w.toarray(), best_accuracy, -1
     print "gaussian_mixture_gd_em_optimizator_avg final k: ", k
     return k, w.toarray(), best_accuracy, best_accuracy_step
 
@@ -849,7 +867,10 @@ def gaussian_mixture_gd_optimizator_avg(X_train, y_train, X_test, y_test, C, max
 
         batch_iter = batch_iter + 1
         # if k >= max_iter or linalg.norm(w_update) < eps:
-        if k >= max_iter:
+        # if k >= max_iter:
+        if k >= max_iter or linalg.norm(w_update) < eps:
             break
+        if np.isnan(linalg.norm(w)) or np.isinf(linalg.norm(w)):
+            return k, w.toarray(), best_accuracy, -1
     print "gaussian_mixture_gd_optimizator_avg final k: ", k
     return k, w.toarray(), best_accuracy, best_accuracy_step
