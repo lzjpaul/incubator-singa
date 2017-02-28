@@ -7,3 +7,7 @@
 (7) 0211: bias not in the gibbs sampling process
 (8) 0211: adaptively modify the prior_obs_ratio (wronggggg!!!!!!!!!!!!!!!!can not use test data!!!!!!!!!!!1)
 (9) 0218: adding gmm using gradient descent
+(10) 0223: the stopping criteria adding eps < 0.0001
+(11) 0223: if w norm is nan, then quit
+(12) 0223: adding simulation data set Example-smoothing-regularization-main-all-param-simulation.py
+(13) 0223: "smoothing-regularization-fixed-gmm"  folder for fixed gmm model
