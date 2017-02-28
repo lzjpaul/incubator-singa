@@ -99,7 +99,7 @@ if __name__ == '__main__':
 
     param_gaussianmixturegd = {'estimator__C': [1.],
                        'estimator__batch_size': [args.batchsize],
-                       'estimator__alpha': [1e-4, 1e-6, 1e-8],
+                       'estimator__alpha': [1e-6],
                        'estimator__theta_r_lr_alpha': [1e-4, 1e-5, 1e-6], # the lr of theta_r is smaller
                        'estimator__lambda_t_lr_alpha': [1e-4, 1e-5, 1e-6], # the lr of theta_r is smaller
                        # 'estimator__alpha': [1],

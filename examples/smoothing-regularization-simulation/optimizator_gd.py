@@ -26,7 +26,6 @@ from sklearn.cluster import KMeans
 import collections
 
 def gaussian_mixture_gd_descent_avg(trainvalid_num, batch_X, batch_y, res_matrix, w, theta_r_vec, theta_vec, lambda_t_vec, lambda_vec, a, b, theta_alpha, C):
-    print "trainvalid_num: ", trainvalid_num
     # data preprocess
     batch_y = batch_y.T
     w_array = w.toarray() # in order for np.exp
@@ -49,11 +48,8 @@ def gaussian_mixture_gd_descent_avg(trainvalid_num, batch_X, batch_y, res_matrix
     ressum = ressum.astype(np.float)
     ressum /=  float(batch_X.shape[0])
     ressum *= trainvalid_num
-    print "ressum *= trainvalid_num"
     ###lambda_t_update#########
-    print "float(a-1): ", float(a-1)
     term1 = (float(a-1) / lambda_vec) - b
-    print "term1: ", term1
     res_w = sparse.csr_matrix(res_matrix.T).dot(sparse.diags(0.5 * w_weight_array.reshape(w_weight_array.shape[0]) * w_weight_array.reshape(w_weight_array.shape[0])))
     res_w = (res_w.toarray().T)
     term2 = np.sum((res_matrix / (2.0 * lambda_vec.reshape(1, -1))) - res_w, axis=0)
@@ -71,7 +67,6 @@ def gaussian_mixture_gd_descent_avg(trainvalid_num, batch_X, batch_y, res_matrix
 
     theta_r_vec_update = np.zeros(theta_r_vec.shape[0])
     term1 = (theta_alpha - 1) / theta_vec.astype(float)
-    print "theta_vec.astype(float): ", theta_vec.astype(float)
     term2 = np.sum(res_matrix.astype(float) / (theta_vec.reshape(1, -1)), axis=0)
     theta_derivative = ( - term1 - term2)
     for j in range(theta_r_vec_update.shape[0]): #r_j
@@ -82,7 +77,7 @@ def gaussian_mixture_gd_descent_avg(trainvalid_num, batch_X, batch_y, res_matrix
     return sparse.csr_matrix(grad + ressum), theta_r_vec_update, lambda_t_vec_update
 
 def ridge_grad_descent_avg(trainvalid_num, batch_X, batch_y, w, param, l1_ratio_or_mu, C):
-    print "trainvalid_num: ", trainvalid_num
+    # print "trainvalid_num: ", trainvalid_num
     # data preprocess
     batch_y = batch_y.T
     # ridge regularization
@@ -100,7 +95,7 @@ def ridge_grad_descent_avg(trainvalid_num, batch_X, batch_y, w, param, l1_ratio_
     ressum = ressum.astype(np.float)
     ressum /=  float(batch_X.shape[0])
     ressum *= trainvalid_num
-    print "ressum *= trainvalid_num"
+    # print "ressum *= trainvalid_num"
     return grad + sparse.csr_matrix(ressum)
 
 
@@ -113,7 +108,7 @@ def non_huber_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_
     ### split train and valid ###
     validation_perc = 0.3
     validationNum = int(validation_perc*X_train.shape[0])
-    print "y_train shape: ", y_train.shape
+    # print "y_train shape: ", y_train.shape
     X_valid, y_valid = X_train[:validationNum, ], y_train[:validationNum]
     X_train, y_train = X_train[validationNum:, ], y_train[validationNum:]
     ### split train and valid ###
@@ -162,6 +157,7 @@ def non_huber_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_
         batch_X, batch_y = X_train[index : (index + batch_size)], y_train[index : (index + batch_size)]
         w_update = alpha * grad_descent_avg((X_train.shape[0] + X_valid.shape[0]), batch_X, batch_y, w, lambd, l1_ratio_or_mu, C)
         w -= w_update
+        # print "w norm: ", linalg.norm(w)
         alpha -= alpha * decay
         k += 1
 
@@ -244,6 +240,7 @@ def gaussian_mixture_gd_optimizator_avg(X_train, y_train, X_test, y_test, C, max
     lambda_t_vec = np.zeros(n_gaussian)
     for i in range(n_gaussian):
         lambda_t_vec[i] = (i+1) * np.log(1/2.)
+    # lambda_t_vec = np.array([np.log(1000), np.log(100), np.log(50), np.log(10)])
     lambda_vec = np.exp(lambda_t_vec)
     while True:
         # sparse matrix works, random.shuffle
@@ -261,8 +258,12 @@ def gaussian_mixture_gd_optimizator_avg(X_train, y_train, X_test, y_test, C, max
         batch_X, batch_y = X_train[index : (index + batch_size)], y_train[index : (index + batch_size)]
 
         ##update responsibility##
-        print "theta_vec: ", theta_vec
-        print "lambda_vec: ", lambda_vec
+        #theta_vec = np.array([0.4, 0.3, 0.2, 0.1])
+        #lambda_vec = np.array([1000, 100, 50, 10])
+        if k % 60 == 0:
+        #    print "theta and lamnda fixed"
+            print "theta_vec: ", theta_vec
+            print "lambda_vec: ", lambda_vec
         w_array = w.toarray() # in order for np.exp
         w_array = np.reshape(w_array, w_array.shape[1])
         res_denominator = np.zeros(w_array.shape[0]-1)
@@ -289,9 +290,9 @@ def gaussian_mixture_gd_optimizator_avg(X_train, y_train, X_test, y_test, C, max
         theta_vec = theta_r_exp_vec / np.sum(theta_r_exp_vec)
         # lambda_vec = np.exp(lambda_t_vec)
         lambda_vec = np.exp(lambda_t_vec)
-        print "theta_vec: ", theta_vec
-        print "lambda_vec: ", lambda_vec
         #############################################
+
+        ##########update parameters################
         alpha -= alpha * decay
         theta_r_lr_alpha -= theta_r_lr_alpha * decay
         lambda_t_lr_alpha -= lambda_t_lr_alpha * decay

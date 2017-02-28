@@ -8,7 +8,6 @@ def testaccuracy(w, v, x_test, y_test, clf_name):
     # w = sparse.csr_matrix(w)
     # v = v.toarray().reshape((1, x_test.shape[1]))
     # v = sparse.csr_matrix(v)
-
     if clf_name == 'huber':
         # print "huber test add w and v"
         coef = np.add(w, v)
