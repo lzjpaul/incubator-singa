@@ -158,7 +158,7 @@ if __name__ == '__main__':
                                                     print "estimator__theta_alpha: ", theta_alpha_val
                                                     print "estimator__a: ", a_val
                                                     print "estimator__b: ", b_val
-                                                    gaussian_mixture_gd = Gaussian_Mixture_GD_Regularization(C = C_val, batch_size = batch_size_val, alpha = alpha_val, theta_r_lr_alpha = theta_r_lr_alpha_val, lambda_t_lr_alpha = lambda_t_lr_alpha_val, n_gaussian = n_gaussian_val, w_init = w_init_val, theta_alpha = theta_alpha_val, a = a_val, b = b_val)
+                                                    gaussian_mixture_gd = Gaussian_Mixture_GD_Regularization(C = C_val, batch_size = batch_size_val, alpha = alpha_val, theta_r_lr_alpha = theta_r_lr_alpha_val, lambda_t_lr_alpha = lambda_t_lr_alpha_val, n_gaussian = n_gaussian_val, w_init = w_init_val, theta_alpha = theta_alpha_val, a = a_val, b = b_val, decay = 0.01/8)
                                                     best_accuracy, best_accuracy_step = gaussian_mixture_gd.fit(X[train_index], y[train_index], X[test_index], y[test_index], 0)
                                                     print "final best_accuracy: ", best_accuracy
                                                     print "final best_accuracy_step: ", best_accuracy_step
@@ -183,7 +183,7 @@ if __name__ == '__main__':
                             print "estimator__lambd: ", lambd_val
                             print "estimator__batch_size: ", batch_size_val
                             print "estimator__alpha: ", alpha_val
-                            ridge = Ridge_Classifier(C = C_val, lambd = lambd_val, batch_size = batch_size_val, alpha = alpha_val)
+                            ridge = Ridge_Classifier(C = C_val, lambd = lambd_val, batch_size = batch_size_val, alpha = alpha_val, decay = 0.01/8)
                             best_accuracy, best_accuracy_step = ridge.fit(X[train_index], y[train_index], X[test_index], y[test_index])
                             print "final best_accuracy: ", best_accuracy
                             print "final best_accuracy_step: ", best_accuracy_step

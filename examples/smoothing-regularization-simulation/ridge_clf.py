@@ -61,7 +61,7 @@ class Ridge_Classifier(BaseEstimator, LogisticLinearClassifierMixin):
             # print "using smoothing_optimizator_avg"
             # print "self.batch_size: ", self.batch_size
         self.n_iter_, self.w_, self.best_accuracy_, self.best_accuracy_step_ = optimizator_gd.non_huber_optimizator_avg(X_train, y_train, X_test, y_test, self.lambd, 0., self.C,
-                                                    (y_train.shape[0] * 100 / self.batch_size), self.eps, self.alpha, self.decay, self.batch_size, 'ridge')
+                                                    (y_train.shape[0] * 128 / self.batch_size), self.eps, self.alpha, self.decay, self.batch_size, 'ridge')
         self.coef_ = self.w_.reshape((1, X_train.shape[1]))
         self.intercept_ = 0.0
         if self.fit_intercept:

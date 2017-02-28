@@ -175,11 +175,12 @@ def non_huber_optimizator_avg(X_train, y_train, X_test, y_test, lambd, l1_ratio_
             print "best_test_accuracy: ", best_test_accuracy
 
         batch_iter = batch_iter + 1
-        if k >= max_iter or linalg.norm(w_update/float(alpha)) < eps:
+        # if k >= max_iter or linalg.norm(w_update/float(alpha)) < eps:
+        if k >= max_iter:
             break
         if np.isnan(linalg.norm(w)) or np.isinf(linalg.norm(w)):
             return k, w.toarray(), best_test_accuracy, -1
-    print "non_huber opt avg final k: ", k
+    print "non_huber opt avg final k only iterations stop: ", k
     return k, w.toarray(), best_test_accuracy, best_valid_accuracy_step
 
 # theta_r for exp{theta_r}, lambda_t for exp{lambda_t}
@@ -310,9 +311,10 @@ def gaussian_mixture_gd_optimizator_avg(X_train, y_train, X_test, y_test, C, max
             print "best_valid_accuracy_step: ", best_valid_accuracy_step
             print "best_test_accuracy: ", best_test_accuracy
         batch_iter = batch_iter + 1
-        if k >= max_iter or linalg.norm(w_update/float(alpha)) < eps:
+        # if k >= max_iter or linalg.norm(w_update/float(alpha)) < eps:
+        if k >= max_iter:
             break
         if np.isnan(linalg.norm(w)) or np.isinf(linalg.norm(w)):
             return k, w.toarray(), best_test_accuracy, -1
-    print "gaussian_mixture_gd_optimizator_avg final k: ", k
+    print "gaussian_mixture_gd_optimizator_avg final k only iterations stop: ", k
     return k, w.toarray(), best_test_accuracy, best_valid_accuracy_step
