@@ -81,7 +81,10 @@ def ridge_grad_descent_avg(trainvalid_num, batch_X, batch_y, w, param, l1_ratio_
     # data preprocess
     batch_y = batch_y.T
     # ridge regularization
-    grad = param * 2.0 * w
+    # grad = param * 2.0 * w
+    # here, no 2.0
+    grad = param * w
+    print "L2 norm no 2.0"
     grad = grad.toarray()
     grad[0, -1] = 0.0 # bias
     grad = sparse.csr_matrix(grad)
