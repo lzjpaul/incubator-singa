@@ -16,9 +16,6 @@
 # under the License.
 # =============================================================================
 
-# all the data are read from csv not from URL
-# occlude test are added here
-
 import sys, os
 import traceback
 import time
@@ -70,25 +67,55 @@ def main():
         sys.stderr.write("  for help use --help \n\n")
 
 
-def get_train_data(train_sample_url, train_label_url):
-    '''load data'''
-    train_sample = np.genfromtxt(train_sample_url, delimiter=',')
-    train_label = np.genfromtxt(train_label_url, delimiter=',')
-    return train_sample, train_label
+def flat_data(records, idxs, visits_per_record, items_per_visit):
+    x = np.zeros((len(idxs), 1, visits_per_record, items_per_visit),
+                 dtype=np.float32)
+    y = np.zeros((len(idxs),), dtype=np.int32)
 
-def get_test_data(test_sample_url, test_label_url):
-    '''load data'''
-    test_sample = np.genfromtxt(test_sample_url, delimiter=',')
-    test_label = np.genfromtxt(test_label_url, delimiter=',')
-    return test_sample, test_label
+    for (k, v) in enumerate(idxs):
+        rec = records[v]
+        y[k] = int(rec[0])
+        idx = 1
+        for visit_id in range(rec[1]):
+            idx += 1
+            num_items = rec[idx]
+            for item_id in range(num_items):
+                idx += 1
+                x[k][0][visit_id][rec[idx]-1] = 1
+    return x, y
 
-def get_occlude_data(test_sample_url, test_label_url, width_idx, kernel_y, kernel_x, stride_y, stride_x):
-    '''load occlude data'''
-    occlude_data = np.genfromtxt(file_url, delimiter=',')
-    for j in range (kernel_y):
-        for i in range ((height_idx * stride_y + j) * width + width_idx * stride_x, ((height_idx * stride_y + j) * width + width_idx * stride_x + kernel_x)):
-            occlude_data[i] = float(0.0)
-    return occlude_data
+def download_file(url, dest):
+    '''
+    download one file to dest
+    '''
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+    if (url.startswith('http')):
+        file_name = url.split('/')[-1]
+        target = os.path.join(dest, file_name)
+        urllib.urlretrieve(url, target)
+    return
+
+def get_data(file_url, delimiter=','):
+    '''load data'''
+    records = []
+    max_dig_id = 0
+    max_visits = 0
+
+    if not os.path.exists('feature.csv'):
+        download_file(file_url,'.')
+
+    with open('feature.csv', 'r') as fd:
+        for rec in fd.readlines(): 
+            fields = [int(v) for v in rec.split(delimiter)]
+            if max_dig_id < max(fields):
+                max_dig_id = max(fields)
+            if max_visits < fields[1]:
+                max_visits = fields[1]
+            records.append(fields)
+    print len(records), max_visits, max_dig_id
+    return records, (1, max_visits, max_dig_id)
+
 
 def handle_cmd(agent):
     pause = False
@@ -131,29 +158,16 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
     opt = optimizer.SGD(momentum=0.8, weight_decay=0.01)
 
     agent.push(MsgType.kStatus, 'Downlaoding data...')
-    train_sample, train_label = get_train_data\
-    ('/data/zhaojing/regularization/LACE-CNN-1500/reverse-order/nuh_fa_readmission_case_demor_inpa_kb_ordered_output_onehot_12slots_reverse.csv', \
-    '/data/zhaojing/regularization/LACE-CNN-1500/nuh_fa_readmission_case_label.csv')  # PUT THE DATA on/to dbsystem
+    records, in_shape = get_data('http://comp.nus.edu.sg/~dbsystem/singa/assets/file/feature.csv')  # PUT THE DATA on/to dbsystem
     agent.push(MsgType.kStatus, 'Finish downloading data')
-    test_sample, test_label = get_test_data\
-    ('/data/zhaojing/regularization/LACE-CNN-1500/reverse-order/nuh_fa_readmission_case_demor_inpa_kb_ordered_output_onehot_12slots_reverse.csv', \
-    '/data/zhaojing/regularization/LACE-CNN-1500/nuh_fa_readmission_case_label.csv')  # PUT THE DATA on/to dbsystem
-    # !!! in_shape???
-    in_shape = np.array([1755, 12, 375])
     tx = tensor.Tensor((batch_size, in_shape[0], in_shape[1], in_shape[2]), dev)
     ty = tensor.Tensor((batch_size, ), dev, core_pb2.kInt)
-    num_train_batch = train_sample.shape(0) / batch_size
+    num_train_batch = len(records) / batch_size
 #    num_test_batch = test_x.shape[0] / (batch_size)
     idx = np.arange(len(records), dtype=np.int32)
 
     net = model.create_net(in_shape, use_cpu)
     net.to_device(dev)
-    hiehgt = 12
-    width = 375
-    kernel_y = 3
-    kernel_x = 80
-    stride_y = 1
-    stride_x = 20
 
     for epoch in range(max_epoch):
         if handle_cmd(agent):
@@ -162,52 +176,31 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
         np.random.shuffle(idx)
         print 'Epoch %d' % epoch
         
-        if epoch % test_epoch == 10:
-            loss, acc = 0.0, 0.0
-            x, y = test_sample[b * batch_size:(b + 1) * batch_size], test_label[b * batch_size:(b + 1) * batch_size]
+        '''
+        loss, acc = 0.0, 0.0
+        for b in range(num_test_batch):
+            x, y = flat_data(records[b * batch_size:(b + 1) * batch_size])
             tx.copy_from_numpy(x)
             ty.copy_from_numpy(y)
-            l, a, probs = net.evaluate(tx, ty)
+            l, a = net.evaluate(tx, ty)
             loss += l
             acc += a
-            print 'testing loss = %f, accuracy = %f' % (loss / num_test_batch,
-                                                        acc / num_test_batch)
-            # put test status info into a shared queue
-            info = dict(
-                phase='test',
-                step = epoch,
-                accuracy = acc / num_test_batch,
-                loss = loss / num_test_batch,
-                timestamp = time.time())
-            agent.push(MsgType.kInfoMetric, info)
-
-        if epoch % occlude_test_epoch == 100:
-            # occlude test data
-            height_dim = (height - kernel_y) / stride_y + 1; # 10
-            width_dim = (width - kernel_x) / stride_x + 1; # 60
-            true_label_prob_matrix = np.zeros([(height_dim * width_dim), 1])
-            for height_idx in range(height_dim):
-                for width_idx in range(width_dim):
-                    occlude_test_sample, occlude_test_label = get_occlude_data('/data/zhaojing/regularization/LACE-CNN-1500/reverse-order/nuh_fa_readmission_case_demor_inpa_kb_ordered_output_onehot_12slots_reverse.csv', \
-                    '/data/zhaojing/regularization/LACE-CNN-1500/nuh_fa_readmission_case_label.csv', \
-                    height_idx, width_idx, kernel_y, kernel_x, stride_y, stride_x)
-                    loss, acc = 0.0, 0.0
-                    x, y = occlude_test_records # !!! where are the labels?
-                    tx.copy_from_numpy(x)
-                    ty.copy_from_numpy(y)
-                    l, a, probs = net.evaluate(tx, ty)
-                    y_scores = softmax(tensor.to_numpy(probs))[:,1]
-                    for i in range(0, x.shape(0)): # !!! y_scores ~~ first is o then is 1 !!!
-                        if y_true[i] == 1:
-                            sum_true_label_prob = sum_true_label_prob + y_scores[i, 1]
-                        elif y_true[i] == 0:
-                            sum_true_label_prob = sum_true_label_prob + (1 - y_scores[i, 1])
-                    true_label_prob_matrix[height_idx * width_dim + width_idx, 0] = sum_true_label_prob / x.shape(0)
-
+        print 'testing loss = %f, accuracy = %f' % (loss / num_test_batch,
+                                                    acc / num_test_batch)
+        # put test status info into a shared queue
+        info = dict(
+            phase='test',
+            step = epoch,
+            accuracy = acc / num_test_batch,
+            loss = loss / num_test_batch,
+            timestamp = time.time())
+        agent.push(MsgType.kInfoMetric, info)
+        '''
 
         loss, acc = 0.0, 0.0
         for b in range(num_train_batch):
-            x, y = train_sample[b * batch_size:(b + 1) * batch_size], train_label[b * batch_size:(b + 1) * batch_size]
+            x, y = flat_data(records, idx[b * batch_size:(b + 1) * batch_size],
+                             in_shape[1], in_shape[2])
             tx.copy_from_numpy(x)
             ty.copy_from_numpy(y)
             grads, (l, a), probs = net.train(tx, ty)

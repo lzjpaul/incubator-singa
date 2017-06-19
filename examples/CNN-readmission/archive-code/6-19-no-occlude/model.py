@@ -28,7 +28,7 @@ def create_net(in_shape, use_cpu=False):
         layer.engine = 'singacpp'
 
     net = myffnet.ProbFeedForwardNet(loss.SoftmaxCrossEntropy(), metric.Accuracy())
-    net.add(layer.Conv2D('conv1', 100, kernel=(3, 80), stride=(1, 20), pad=(0, 0),
+    net.add(layer.Conv2D('conv1', 100, kernel=(3, 80), stride=(1, 20), pad=(0, 2),
                          input_sample_shape=in_shape))
     net.add(layer.Activation('relu1'))
     net.add(layer.MaxPooling2D('pool1', 2, 1, pad=0))
