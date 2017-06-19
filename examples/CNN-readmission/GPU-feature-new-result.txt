@@ -1,0 +1,28 @@
+root@1fa3434a2daf:/opt/readmission/readmission# python train_new.py 
+runing with gpu
+ * Running on http://0.0.0.0:9989/ (Press CTRL+C to quit)
+25710 19 1474
+relu1 (100, 17, 70)
+pool1 (100, 16, 69)
+flat (110400,)
+dense (2,)
+conv1_weight 0.08679869771
+conv1_bias 0.0
+dense_weight 0.00480406777933
+dense_bias 0.0
+Epoch 0 training loss = 0.358639, training accuracy = 0.888210 training accuracy = 0.9100000000000000000000000000000
+Epoch 1 training loss = 0.297769, training accuracy = 0.896537 training accuracy = 0.9300000000000000000000000000000
+Epoch 2 training loss = 0.294500, training accuracy = 0.897276 training accuracy = 0.8900000000000000000000000000000
+Epoch 3 training loss = 0.292404, training accuracy = 0.897704 training accuracy = 0.9000000000000000000000000000000
+Epoch 4 training loss = 0.291000, training accuracy = 0.897938 training accuracy = 0.8900000000000000000000000000000
+Epoch 5 training loss = 0.290293, training accuracy = 0.898755 training accuracy = 0.9500000000000000000000000000000
+Epoch 6 training loss = 0.289137, training accuracy = 0.898833 training accuracy = 0.8600000000000000000000000000000
+Epoch 7 training loss = 0.288640, training accuracy = 0.898833 training accuracy = 0.8900000000000000000000000000000
+Epoch 8 training loss = 0.287965, training accuracy = 0.899339 training accuracy = 0.9200000000000000000000000000000
+Epoch 9 training loss = 0.287722, training accuracy = 0.899455 training accuracy = 0.8900000000000000000000000000000
+Epoch 10 training loss = 0.287243, training accuracy = 0.899650 training accuracy = 0.9000000000000000000000000000000
+Epoch 11 training loss = 0.286455, training accuracy = 0.899767 training accuracy = 0.8900000000000000000000000000000
+Epoch 12 training loss = 0.286038, training accuracy = 0.900272 training accuracy = 0.8500000000000000000000000000000
+Epoch 13 training loss = 0.285513, training accuracy = 0.900506 training accuracy = 0.9100000000000000000000000000000
+Epoch 14 training loss = 0.285905, training accuracy = 0.900311 training accuracy = 0.8500000000000000000000000000000
+Epoch 15 ^CTraceback (most recent call last):g loss = 0.243266, training accuracy = 0.9200000000000000000000000000000
