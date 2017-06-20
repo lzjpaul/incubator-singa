@@ -19,6 +19,8 @@
 # all the data are read from csv not from URL
 # occlude test are added here
 
+# modify
+# 6-20: occlude: consider samples as well
 import sys, os
 import traceback
 import time
@@ -39,7 +41,7 @@ def main():
     '''Command line options'''
     try:
         # Setup argument parser
-        parser = ArgumentParser(description="Train Alexnet over CIFAR10")
+        parser = ArgumentParser(description="Train CNN Readmission Model")
 
         parser.add_argument('-p', '--port', default=9989, help='listening port')
         parser.add_argument('-C', '--use_cpu', action="store_true")
@@ -70,25 +72,24 @@ def main():
         sys.stderr.write("  for help use --help \n\n")
 
 
-def get_train_data(train_sample_url, train_label_url):
+def get_train_data(train_feature_url, train_label_url):
     '''load data'''
-    train_sample = np.genfromtxt(train_sample_url, delimiter=',')
+    train_feature = np.genfromtxt(train_feature_url, delimiter=',')
     train_label = np.genfromtxt(train_label_url, delimiter=',')
-    return train_sample, train_label
+    return train_feature, train_label
 
-def get_test_data(test_sample_url, test_label_url):
+def get_test_data(test_feature_url, test_label_url):
     '''load data'''
-    test_sample = np.genfromtxt(test_sample_url, delimiter=',')
+    test_feature = np.genfromtxt(test_feature_url, delimiter=',')
     test_label = np.genfromtxt(test_label_url, delimiter=',')
-    return test_sample, test_label
+    return test_feature, test_label
 
-def get_occlude_data(test_sample_url, test_label_url, width_idx, kernel_y, kernel_x, stride_y, stride_x):
+def get_occlude_data(occlude_feature, occlude_label, height_idx, width_idx, kernel_y, kernel_x, stride_y, stride_x):
     '''load occlude data'''
-    occlude_data = np.genfromtxt(file_url, delimiter=',')
-    for j in range (kernel_y):
-        for i in range ((height_idx * stride_y + j) * width + width_idx * stride_x, ((height_idx * stride_y + j) * width + width_idx * stride_x + kernel_x)):
-            occlude_data[i] = float(0.0)
-    return occlude_data
+    for n in range(occlude_feature.shape(0)): #sample
+        for j in range (kernel_y):
+            occlude_feature[n, ((height_idx * stride_y + j) * width + width_idx * stride_x) : ((height_idx * stride_y + j) * width + width_idx * stride_x + kernel_x)] = float(0.0)
+    return occlude_feature, occlude_label
 
 def handle_cmd(agent):
     pause = False
@@ -124,27 +125,30 @@ def get_lr(epoch):
 
 def softmax(x):
     """Compute softmax values for each sets of scores in x."""
-    return np.exp(x) / np.sum(np.exp(x), axis=1).reshape(-1, 1)
+    e_x = np.exp(x)
+    return e_x / np.sum(e_x, axis=1).reshape(-1, 1)
 
 def train(dev, agent, max_epoch, use_cpu, batch_size=100):
 
     opt = optimizer.SGD(momentum=0.8, weight_decay=0.01)
 
     agent.push(MsgType.kStatus, 'Downlaoding data...')
-    train_sample, train_label = get_train_data\
+    train_feature, train_label = get_train_data\
     ('/data/zhaojing/regularization/LACE-CNN-1500/reverse-order/nuh_fa_readmission_case_demor_inpa_kb_ordered_output_onehot_12slots_reverse.csv', \
     '/data/zhaojing/regularization/LACE-CNN-1500/nuh_fa_readmission_case_label.csv')  # PUT THE DATA on/to dbsystem
     agent.push(MsgType.kStatus, 'Finish downloading data')
-    test_sample, test_label = get_test_data\
+    test_feature, test_label = get_test_data\
     ('/data/zhaojing/regularization/LACE-CNN-1500/reverse-order/nuh_fa_readmission_case_demor_inpa_kb_ordered_output_onehot_12slots_reverse.csv', \
     '/data/zhaojing/regularization/LACE-CNN-1500/nuh_fa_readmission_case_label.csv')  # PUT THE DATA on/to dbsystem
     # !!! in_shape???
-    in_shape = np.array([1755, 12, 375])
-    tx = tensor.Tensor((batch_size, in_shape[0], in_shape[1], in_shape[2]), dev)
-    ty = tensor.Tensor((batch_size, ), dev, core_pb2.kInt)
-    num_train_batch = train_sample.shape(0) / batch_size
-#    num_test_batch = test_x.shape[0] / (batch_size)
-    idx = np.arange(len(records), dtype=np.int32)
+    in_shape = np.array([1, 12, 375])
+    trainx = tensor.Tensor((batch_size, in_shape[0], in_shape[1], in_shape[2]), dev)
+    trainy = tensor.Tensor((batch_size, ), dev, core_pb2.kInt)
+    testx = tensor.Tensor((test_feature.shape[0], in_shape[0], in_shape[1], in_shape[2]), dev)
+    testy = tensor.Tensor((test_feature.shape[0], ), dev, core_pb2.kInt)
+    num_train_batch = train_feature.shape[0] / batch_size
+    # num_test_batch = test_x.shape[0] / (batch_size)
+    idx = np.arange(train_feature.shape[0], dtype=np.int32)
 
     net = model.create_net(in_shape, use_cpu)
     net.to_device(dev)
@@ -154,60 +158,62 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
     kernel_x = 80
     stride_y = 1
     stride_x = 20
-
+    
+    test_epoch = 10
+    occlude_test_epoch = 100
     for epoch in range(max_epoch):
         if handle_cmd(agent):
             break
         np.random.seed(10)
         np.random.shuffle(idx)
+        train_feature, train_label = train_feature[idx], train_label[idx]
         print 'Epoch %d' % epoch
         
-        if epoch % test_epoch == 10:
+        if epoch % test_epoch == 0:
             loss, acc = 0.0, 0.0
-            x, y = test_sample[b * batch_size:(b + 1) * batch_size], test_label[b * batch_size:(b + 1) * batch_size]
-            tx.copy_from_numpy(x)
-            ty.copy_from_numpy(y)
-            l, a, probs = net.evaluate(tx, ty)
+            x, y = test_feature, test_label
+            testx.copy_from_numpy(x)
+            testy.copy_from_numpy(y)
+            l, a, probs = net.evaluate(testx, testy)
             loss += l
             acc += a
-            print 'testing loss = %f, accuracy = %f' % (loss / num_test_batch,
-                                                        acc / num_test_batch)
+            print 'testing loss = %f, accuracy = %f' % (loss, acc)
             # put test status info into a shared queue
             info = dict(
                 phase='test',
                 step = epoch,
-                accuracy = acc / num_test_batch,
-                loss = loss / num_test_batch,
+                accuracy = acc,
+                loss = loss,
                 timestamp = time.time())
             agent.push(MsgType.kInfoMetric, info)
 
-        if epoch % occlude_test_epoch == 100:
+        if epoch % occlude_test_epoch == 0:
             # occlude test data
             height_dim = (height - kernel_y) / stride_y + 1; # 10
             width_dim = (width - kernel_x) / stride_x + 1; # 60
             true_label_prob_matrix = np.zeros([(height_dim * width_dim), 1])
             for height_idx in range(height_dim):
                 for width_idx in range(width_dim):
-                    occlude_test_sample, occlude_test_label = get_occlude_data('/data/zhaojing/regularization/LACE-CNN-1500/reverse-order/nuh_fa_readmission_case_demor_inpa_kb_ordered_output_onehot_12slots_reverse.csv', \
-                    '/data/zhaojing/regularization/LACE-CNN-1500/nuh_fa_readmission_case_label.csv', \
+                    occlude_test_feature, occlude_test_label = get_occlude_data(np.copy(test_feature), np.copy(test_label), \
                     height_idx, width_idx, kernel_y, kernel_x, stride_y, stride_x)
                     loss, acc = 0.0, 0.0
-                    x, y = occlude_test_records # !!! where are the labels?
-                    tx.copy_from_numpy(x)
-                    ty.copy_from_numpy(y)
-                    l, a, probs = net.evaluate(tx, ty)
+                    x, y = occlude_test_feature, occlude_test_label # !!! where are the labels?
+                    testx.copy_from_numpy(x)
+                    testy.copy_from_numpy(y)
+                    l, a, probs = net.evaluate(testx, testy)
                     y_scores = softmax(tensor.to_numpy(probs))[:,1]
-                    for i in range(0, x.shape(0)): # !!! y_scores ~~ first is o then is 1 !!!
-                        if y_true[i] == 1:
-                            sum_true_label_prob = sum_true_label_prob + y_scores[i, 1]
-                        elif y_true[i] == 0:
-                            sum_true_label_prob = sum_true_label_prob + (1 - y_scores[i, 1])
+                    sum_true_label_prob = 0.0
+                    for i in range(0, x.shape(0)): # !!! y_scores ~~ the probability of 1 !!!
+                        if y[i] == 1:
+                            sum_true_label_prob = sum_true_label_prob + y_scores[i]
+                        elif y[i] == 0:
+                            sum_true_label_prob = sum_true_label_prob + (1 - y_scores[i])
                     true_label_prob_matrix[height_idx * width_dim + width_idx, 0] = sum_true_label_prob / x.shape(0)
 
 
         loss, acc = 0.0, 0.0
         for b in range(num_train_batch):
-            x, y = train_sample[b * batch_size:(b + 1) * batch_size], train_label[b * batch_size:(b + 1) * batch_size]
+            x, y = train_feature[b * batch_size:(b + 1) * batch_size], train_label[b * batch_size:(b + 1) * batch_size]
             tx.copy_from_numpy(x)
             ty.copy_from_numpy(y)
             grads, (l, a), probs = net.train(tx, ty)
@@ -227,8 +233,8 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
         info = 'training loss = %f, training accuracy = %f' \
             % (loss / num_train_batch, acc / num_train_batch)
         print info
-        print "probs shape: ", tensor.to_numpy(probs).shape
-        print "probs for readmitted: ", softmax(tensor.to_numpy(probs))[:,1]
+        # print "probs shape: ", tensor.to_numpy(probs).shape
+        # print "probs for readmitted: ", softmax(tensor.to_numpy(probs))[:,1]
 
         if epoch > 0 and epoch % 30 == 0:
             net.save('parameter_%d' % epoch)
