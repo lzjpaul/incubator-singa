@@ -191,6 +191,30 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
                 loss = loss,
                 timestamp = time.time())
             agent.push(MsgType.kInfoMetric, info)
+        
+
+        if epoch % occlude_test_epoch == 0:
+            # occlude test data
+            height_dim = (height - kernel_y) / stride_y + 1; # 10
+            width_dim = (width - kernel_x) / stride_x + 1; # 60
+            true_label_prob_matrix = np.zeros([(height_dim * width_dim), 1])
+            for height_idx in range(height_dim):
+                for width_idx in range(width_dim):
+                    occlude_test_feature, occlude_test_label = get_occlude_data(np.copy(test_feature), np.copy(test_label), \
+                    height, width, height_idx, width_idx, kernel_y, kernel_x, stride_y, stride_x)
+                    loss, acc = 0.0, 0.0
+                    x, y = occlude_test_feature, occlude_test_label # !!! where are the labels?
+                    testx.copy_from_numpy(x)
+                    testy.copy_from_numpy(y)
+                    l, a, probs = net.evaluate(testx, testy)
+                    y_scores = softmax(tensor.to_numpy(probs))[:,1]
+                    sum_true_label_prob = 0.0
+                    for i in range(0, x.shape[0]): # !!! y_scores ~~ the probability of 1 !!!
+                        if y[i] == 1:
+                            sum_true_label_prob = sum_true_label_prob + y_scores[i]
+                        elif y[i] == 0:
+                            sum_true_label_prob = sum_true_label_prob + (1 - y_scores[i])
+                    true_label_prob_matrix[height_idx * width_dim + width_idx, 0] = sum_true_label_prob / x.shape[0]
 
         loss, acc = 0.0, 0.0
         for b in range(num_train_batch):
@@ -216,34 +240,7 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
         print info
         # print "probs shape: ", tensor.to_numpy(probs).shape
         # print "probs for readmitted: ", softmax(tensor.to_numpy(probs))[:,1]
-        
-        if epoch == (max_epoch-1):
-            print "occclude test"
-            # occlude test data
-            height_dim = (height - kernel_y) / stride_y + 1; 
-            width_dim = (width - kernel_x) / stride_x + 1;
-            meta_data = np.array([height_dim, height, kernel_y, stride_y, width_dim, width, kernel_x, stride_x])
-            np.savetxt('meta_data.csv', meta_data, fmt = '%6f', delimiter=",") #modify here
-            true_label_prob_matrix = np.zeros([(height_dim * width_dim), 1])
-            for height_idx in range(height_dim):
-                for width_idx in range(width_dim):
-                    occlude_test_feature, occlude_test_label = get_occlude_data(np.copy(test_feature), np.copy(test_label), \
-                    height, width, height_idx, width_idx, kernel_y, kernel_x, stride_y, stride_x)
-                    loss, acc = 0.0, 0.0
-                    x, y = occlude_test_feature, occlude_test_label # !!! where are the labels?
-                    testx.copy_from_numpy(x)
-                    testy.copy_from_numpy(y)
-                    l, a, probs = net.evaluate(testx, testy)
-                    y_scores = softmax(tensor.to_numpy(probs))[:,1]
-                    sum_true_label_prob = 0.0
-                    for i in range(0, x.shape[0]): # !!! y_scores ~~ the probability of 1 !!!
-                        if y[i] == 1:
-                            sum_true_label_prob = sum_true_label_prob + y_scores[i]
-                        elif y[i] == 0:
-                            sum_true_label_prob = sum_true_label_prob + (1 - y_scores[i])
-                    true_label_prob_matrix[height_idx * width_dim + width_idx, 0] = sum_true_label_prob / x.shape[0]
-            np.savetxt('true_label_prob_matrix.csv', true_label_prob_matrix, fmt = '%6f', delimiter=",") #modify here
-        
+
         if epoch > 0 and epoch % 30 == 0:
             net.save('parameter_%d' % epoch)
     net.save('parameter_last')
