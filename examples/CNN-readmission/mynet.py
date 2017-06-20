@@ -35,6 +35,7 @@ class ProbFeedForwardNet(ffnet.FeedForwardNet):
             grads.extend(grad[::-1])
         return grads[::-1], (l.l1(), m), out
 
+    
     def evaluate(self, x, y):
         '''Evaluate the loss and metric of the given data.
 
@@ -46,7 +47,6 @@ class ProbFeedForwardNet(ffnet.FeedForwardNet):
             x: input data, a single input Tensor or a dict: layer name -> Tensor
             y: label data, a single input Tensor.
         '''
-
         out = self.forward(kEval, x)
         l = None
         m = None
@@ -57,3 +57,4 @@ class ProbFeedForwardNet(ffnet.FeedForwardNet):
         if self.metric is not None:
             m = self.metric.evaluate(out, y)
         return l, m, out
+
