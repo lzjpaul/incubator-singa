@@ -171,27 +171,6 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
         train_feature, train_label = train_feature[idx], train_label[idx]
         print 'Epoch %d' % epoch
         
-        if epoch % test_epoch == 0:
-            loss, acc = 0.0, 0.0
-            x, y = test_feature, test_label
-            print "finish loading testx, testy"
-            testx.copy_from_numpy(x)
-            testy.copy_from_numpy(y)
-            print "finish GPU copy data"
-            l, a, probs = net.evaluate(testx, testy)
-            print "after net evaluate"
-            loss += l
-            acc += a
-            print 'testing loss = %f, accuracy = %f' % (loss, acc)
-            # put test status info into a shared queue
-            info = dict(
-                phase='test',
-                step = epoch,
-                accuracy = acc,
-                loss = loss,
-                timestamp = time.time())
-            agent.push(MsgType.kInfoMetric, info)
-
         loss, acc = 0.0, 0.0
         for b in range(num_train_batch):
             x, y = train_feature[b * batch_size:(b + 1) * batch_size], train_label[b * batch_size:(b + 1) * batch_size]
@@ -216,6 +195,29 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
         print info
         # print "probs shape: ", tensor.to_numpy(probs).shape
         # print "probs for readmitted: ", softmax(tensor.to_numpy(probs))[:,1]
+        
+        if epoch % test_epoch == 0 or epoch == (max_epoch-1):
+            loss, acc = 0.0, 0.0
+            x, y = test_feature, test_label
+            print "finish loading testx, testy"
+            testx.copy_from_numpy(x)
+            testy.copy_from_numpy(y)
+            print "finish GPU copy data"
+            l, a, probs = net.evaluate(testx, testy)
+            print "after net evaluate"
+            loss += l
+            acc += a
+            print 'testing loss = %f, accuracy = %f' % (loss, acc)
+            # put test status info into a shared queue
+            info = dict(
+                phase='test',
+                step = epoch,
+                accuracy = acc,
+                loss = loss,
+                timestamp = time.time())
+            agent.push(MsgType.kInfoMetric, info)
+            if epoch == (max_epoch-1):
+                np.savetxt('readmitted_prob.csv', softmax(tensor.to_numpy(probs))[:,1], fmt = '%6f', delimiter=",")
         
         if epoch == (max_epoch-1):
             print "occclude test"
