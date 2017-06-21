@@ -38,6 +38,7 @@ def explain_occlude_area(test_feature, test_label, probmatrix, truelabelprobmatr
         print "label n: ", test_label[n]
         print "readmitted prob n: ", probmatrix[n]
         print "non zero index: ", np.nonzero(sample_index_matrix)
+        print "\n"
 
 def main():
     '''Command line options'''

@@ -174,6 +174,7 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
         loss, acc = 0.0, 0.0
         for b in range(num_train_batch):
             x, y = train_feature[b * batch_size:(b + 1) * batch_size], train_label[b * batch_size:(b + 1) * batch_size]
+            x = x.reshape((batch_size, in_shape[0], in_shape[1], in_shape[2]))
             trainx.copy_from_numpy(x)
             trainy.copy_from_numpy(y)
             grads, (l, a), probs = net.train(trainx, trainy)
@@ -193,12 +194,11 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
         info = 'training loss = %f, training accuracy = %f' \
             % (loss / num_train_batch, acc / num_train_batch)
         print info
-        # print "probs shape: ", tensor.to_numpy(probs).shape
-        # print "probs for readmitted: ", softmax(tensor.to_numpy(probs))[:,1]
         
         if epoch % test_epoch == 0 or epoch == (max_epoch-1):
             loss, acc = 0.0, 0.0
-            x, y = test_feature, test_label
+            x, y = np.copy(test_feature), np.copy(test_label)
+            x = x.reshape((x.shape[0], in_shape[0], in_shape[1], in_shape[2]))
             testx.copy_from_numpy(x)
             testy.copy_from_numpy(y)
             l, a, probs = net.evaluate(testx, testy)
@@ -231,6 +231,7 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
                     height, width, height_idx, width_idx, kernel_y, kernel_x, stride_y, stride_x)
                     loss, acc = 0.0, 0.0
                     x, y = occlude_test_feature, occlude_test_label # !!! where are the labels?
+                    x = x.reshpe((x.shape[0], in_shape[0], in_shape[1], in_shape[2]))
                     testx.copy_from_numpy(x)
                     testy.copy_from_numpy(y)
                     l, a, probs = net.evaluate(testx, testy)
