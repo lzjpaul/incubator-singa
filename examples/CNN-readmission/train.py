@@ -82,8 +82,6 @@ def get_test_data(test_feature_url, test_label_url):
     '''load data'''
     test_feature = np.genfromtxt(test_feature_url, dtype=np.float32, delimiter=',')
     test_label = np.genfromtxt(test_label_url, dtype=np.int32, delimiter=',')
-    print "test_feature sum: ", test_feature.sum()
-    print "test_label sum: ", test_label.sum()
     return test_feature, test_label
 
 def get_occlude_data(occlude_feature, occlude_label, height, width, height_idx, width_idx, kernel_y, kernel_x, stride_y, stride_x):
@@ -145,7 +143,6 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
     test_feature, test_label = get_test_data\
     ('/data/zhaojing/regularization/LACE-CNN-1500/reverse-order/nuh_fa_readmission_case_demor_inpa_kb_ordered_output_onehot_12slots_reverse.csv', \
     '/data/zhaojing/regularization/LACE-CNN-1500/nuh_fa_readmission_case_label.csv')  # PUT THE DATA on/to dbsystem
-    # !!! in_shape???
     in_shape = np.array([1, 12, 375])
     trainx = tensor.Tensor((batch_size, in_shape[0], in_shape[1], in_shape[2]), dev)
     trainy = tensor.Tensor((batch_size, ), dev, core_pb2.kInt)
