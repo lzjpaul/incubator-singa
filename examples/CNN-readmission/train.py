@@ -130,6 +130,9 @@ def softmax(x):
     e_x = np.exp(x)
     return e_x / np.sum(e_x, axis=1).reshape(-1, 1)
 
+def cal_accuracy(yPredict, yTrue):
+    return np.sum(((yPredict > 0.5) == yTrue).astype(int)) / float(yTrue.shape[0])
+
 def train(dev, agent, max_epoch, use_cpu, batch_size=100):
 
     opt = optimizer.SGD(momentum=0.8, weight_decay=0.01)
@@ -199,12 +202,9 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
         if epoch % test_epoch == 0 or epoch == (max_epoch-1):
             loss, acc = 0.0, 0.0
             x, y = test_feature, test_label
-            print "finish loading testx, testy"
             testx.copy_from_numpy(x)
             testy.copy_from_numpy(y)
-            print "finish GPU copy data"
             l, a, probs = net.evaluate(testx, testy)
-            print "after net evaluate"
             loss += l
             acc += a
             print 'testing loss = %f, accuracy = %f' % (loss, acc)
@@ -216,6 +216,7 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
                 loss = loss,
                 timestamp = time.time())
             agent.push(MsgType.kInfoMetric, info)
+            print 'self calculate test accuracy = %f' % cal_accuracy(softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1))
             if epoch == (max_epoch-1):
                 np.savetxt('readmitted_prob.csv', softmax(tensor.to_numpy(probs))[:,1], fmt = '%6f', delimiter=",")
         
