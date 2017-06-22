@@ -13,7 +13,10 @@ from rafiki.agent import Agent, MsgType
 
 import model
 
-def explain_occlude_area(test_feature, test_label, probmatrix, truelabelprobmatrix, meta_data, top_n):
+def explain_occlude_area(test_feature, test_label, probpath, truelabelprobpath, metadatapath, top_n):
+    probmatrix = np.genfromtxt(probpath, delimiter=',')
+    truelabelprobmatrix = np.genfromtxt(truelabelprobpath, delimiter=',')
+    meta_data = np.genfromtxt(metadatapath, delimiter=',')
     height_dim, height, kernel_y, stride_y, width_dim, width, kernel_x, stride_x = \
     int(meta_data[0]), int(meta_data[1]), int(meta_data[2]), int(meta_data[3]), int(meta_data[4]), int(meta_data[5]), int(meta_data[6]), int(meta_data[7])
     print "truelabelprobmatrix shape: ", truelabelprobmatrix.shape
@@ -65,7 +68,7 @@ def main():
     truelabelprobmatrix = np.genfromtxt(args.truelabelprobpath, delimiter=',')
     meta_data = np.genfromtxt(args.metadatapath, delimiter=',')
 
-    explain_occlude_area(test_feature, test_label, probmatrix, truelabelprobmatrix, meta_data, top_n = 3)
+    explain_occlude_area(test_feature, test_label, args.probpath, args.truelabelprobpath, args.metadatapath, top_n = 3)
 
 
 if __name__ == '__main__':

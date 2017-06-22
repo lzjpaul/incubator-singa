@@ -27,12 +27,15 @@ import time
 import urllib
 import numpy as np
 from argparse import ArgumentParser
-
+from sklearn.cross_validation import StratifiedKFold, cross_val_score
+from sklearn.metrics import accuracy_score, roc_auc_score
 
 from singa import tensor, device, optimizer
 from singa import utils
 from singa.proto import core_pb2
 from rafiki.agent import Agent, MsgType
+from data_loader import *
+from explain_occlude_area import *
 
 import model
 
@@ -70,19 +73,6 @@ def main():
         # p.terminate()
         traceback.print_exc()
         sys.stderr.write("  for help use --help \n\n")
-
-
-def get_train_data(train_feature_url, train_label_url):
-    '''load data'''
-    train_feature = np.genfromtxt(train_feature_url, dtype=np.float32, delimiter=',')
-    train_label = np.genfromtxt(train_label_url, dtype=np.int32, delimiter=',')
-    return train_feature, train_label
-
-def get_test_data(test_feature_url, test_label_url):
-    '''load data'''
-    test_feature = np.genfromtxt(test_feature_url, dtype=np.float32, delimiter=',')
-    test_label = np.genfromtxt(test_label_url, dtype=np.int32, delimiter=',')
-    return test_feature, test_label
 
 def get_occlude_data(occlude_feature, occlude_label, height, width, height_idx, width_idx, kernel_y, kernel_x, stride_y, stride_x):
     '''load occlude data'''
@@ -131,18 +121,23 @@ def softmax(x):
 def cal_accuracy(yPredict, yTrue):
     return np.sum(((yPredict > 0.5) == yTrue).astype(int)) / float(yTrue.shape[0])
 
+def auroc(yPredictProba, yTrue):
+    return roc_auc_score(yTrue, yPredictProba)
+
 def train(dev, agent, max_epoch, use_cpu, batch_size=100):
 
     opt = optimizer.SGD(momentum=0.8, weight_decay=0.01)
 
     agent.push(MsgType.kStatus, 'Downlaoding data...')
-    train_feature, train_label = get_train_data\
+    all_feature, all_label = get_data\
     ('/data/zhaojing/regularization/LACE-CNN-1500/reverse-order/nuh_fa_readmission_case_demor_inpa_kb_ordered_output_onehot_12slots_reverse.csv', \
     '/data/zhaojing/regularization/LACE-CNN-1500/nuh_fa_readmission_case_label.csv')  # PUT THE DATA on/to dbsystem
     agent.push(MsgType.kStatus, 'Finish downloading data')
-    test_feature, test_label = get_test_data\
-    ('/data/zhaojing/regularization/LACE-CNN-1500/reverse-order/nuh_fa_readmission_case_demor_inpa_kb_ordered_output_onehot_12slots_reverse.csv', \
-    '/data/zhaojing/regularization/LACE-CNN-1500/nuh_fa_readmission_case_label.csv')  # PUT THE DATA on/to dbsystem
+    n_folds = 5
+    for i, (train_index, test_index) in enumerate(StratifiedKFold(all_label.reshape(all_label.shape[0]), n_folds=n_folds)):
+        train_feature, train_label, test_feature, test_label = all_feature[train_index], all_label[train_index], all_feature[test_index], all_label[test_index]
+        if i > 0:
+            break
     in_shape = np.array([1, 12, 375])
     trainx = tensor.Tensor((batch_size, in_shape[0], in_shape[1], in_shape[2]), dev)
     trainy = tensor.Tensor((batch_size, ), dev, core_pb2.kInt)
@@ -213,6 +208,7 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
                 loss = loss,
                 timestamp = time.time())
             agent.push(MsgType.kInfoMetric, info)
+            print 'self calculate test auc = %f' % auroc(softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1))
             print 'self calculate test accuracy = %f' % cal_accuracy(softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1))
             if epoch == (max_epoch-1):
                 np.savetxt('readmitted_prob.csv', softmax(tensor.to_numpy(probs))[:,1], fmt = '%6f', delimiter=",")
@@ -248,6 +244,10 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
         if epoch > 0 and epoch % 30 == 0:
             net.save('parameter_%d' % epoch)
     net.save('parameter_last')
+    print "begin explain"
+    explain_occlude_area(np.copy(test_feature), np.copy(test_label), 'readmitted_prob.csv', 'true_label_prob_matrix.csv', 'meta_data.csv', top_n = 2)
+
+ 
 
 
 if __name__ == '__main__':
