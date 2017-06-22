@@ -125,9 +125,7 @@ def auroc(yPredictProba, yTrue):
     return roc_auc_score(yTrue, yPredictProba)
 
 def train(dev, agent, max_epoch, use_cpu, batch_size=100):
-
     opt = optimizer.SGD(momentum=0.8, weight_decay=0.01)
-
     agent.push(MsgType.kStatus, 'Downlaoding data...')
     all_feature, all_label = get_data\
     ('/data/zhaojing/regularization/LACE-CNN-1500/reverse-order/nuh_fa_readmission_case_demor_inpa_kb_ordered_output_onehot_12slots_reverse.csv', \
@@ -136,7 +134,7 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
     n_folds = 5
     for i, (train_index, test_index) in enumerate(StratifiedKFold(all_label.reshape(all_label.shape[0]), n_folds=n_folds)):
         train_feature, train_label, test_feature, test_label = all_feature[train_index], all_label[train_index], all_feature[test_index], all_label[test_index]
-        if i > 0:
+        if i == 0:
             break
     in_shape = np.array([1, 12, 375])
     trainx = tensor.Tensor((batch_size, in_shape[0], in_shape[1], in_shape[2]), dev)
@@ -239,6 +237,7 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
                         elif y[i] == 0:
                             sum_true_label_prob = sum_true_label_prob + (1 - y_scores[i])
                     true_label_prob_matrix[height_idx * width_dim + width_idx, 0] = sum_true_label_prob / x.shape[0]
+            print "occlude x shape: ", x.shape
             np.savetxt('true_label_prob_matrix.csv', true_label_prob_matrix, fmt = '%6f', delimiter=",") #modify here
         
         if epoch > 0 and epoch % 30 == 0:

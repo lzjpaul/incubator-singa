@@ -19,6 +19,7 @@ def explain_occlude_area(test_feature, test_label, probpath, truelabelprobpath, 
     meta_data = np.genfromtxt(metadatapath, delimiter=',')
     height_dim, height, kernel_y, stride_y, width_dim, width, kernel_x, stride_x = \
     int(meta_data[0]), int(meta_data[1]), int(meta_data[2]), int(meta_data[3]), int(meta_data[4]), int(meta_data[5]), int(meta_data[6]), int(meta_data[7])
+    print "meta_data: ", meta_data
     print "truelabelprobmatrix shape: ", truelabelprobmatrix.shape
     print "probmatrix shape: ", probmatrix.shape
     print "test_feature shape: ", test_feature.shape
