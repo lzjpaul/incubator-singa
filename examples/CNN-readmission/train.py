@@ -231,7 +231,7 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
                     height, width, height_idx, width_idx, kernel_y, kernel_x, stride_y, stride_x)
                     loss, acc = 0.0, 0.0
                     x, y = occlude_test_feature, occlude_test_label # !!! where are the labels?
-                    x = x.reshpe((x.shape[0], in_shape[0], in_shape[1], in_shape[2]))
+                    x = x.reshape((x.shape[0], in_shape[0], in_shape[1], in_shape[2]))
                     testx.copy_from_numpy(x)
                     testy.copy_from_numpy(y)
                     l, a, probs = net.evaluate(testx, testy)
