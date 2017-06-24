@@ -36,7 +36,7 @@ from singa.proto import core_pb2
 from rafiki.agent import Agent, MsgType
 from data_loader import *
 from explain_occlude_area import *
-
+from explain_occlude_area_format_out import *
 import model
 
 
@@ -135,6 +135,7 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
     for i, (train_index, test_index) in enumerate(StratifiedKFold(all_label.reshape(all_label.shape[0]), n_folds=n_folds)):
         train_feature, train_label, test_feature, test_label = all_feature[train_index], all_label[train_index], all_feature[test_index], all_label[test_index]
         if i == 0:
+            print "fold: ", i
             break
     in_shape = np.array([1, 12, 375])
     trainx = tensor.Tensor((batch_size, in_shape[0], in_shape[1], in_shape[2]), dev)
@@ -145,14 +146,16 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
     # num_test_batch = test_x.shape[0] / (batch_size)
     idx = np.arange(train_feature.shape[0], dtype=np.int32)
 
-    net = model.create_net(in_shape, use_cpu)
+    # height = 12
+    # width = 375
+    # kernel_y = 3
+    # kernel_x = 80
+    # stride_y = 1
+    # stride_x = 20
+    hyperpara = np.array([12, 375, 3, 20, 1, 5])
+    height, width, kernel_y, kernel_x, stride_y, stride_x = hyperpara[0], hyperpara[1], hyperpara[2], hyperpara[3], hyperpara[4], hyperpara[5]
+    net = model.create_net(in_shape, hyperpara, use_cpu)
     net.to_device(dev)
-    height = 12
-    width = 375
-    kernel_y = 3
-    kernel_x = 80
-    stride_y = 1
-    stride_x = 20
     
     test_epoch = 10
     occlude_test_epoch = 100
@@ -244,7 +247,10 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
             net.save('parameter_%d' % epoch)
     net.save('parameter_last')
     print "begin explain"
-    explain_occlude_area(np.copy(test_feature), np.copy(test_label), 'readmitted_prob.csv', 'true_label_prob_matrix.csv', 'meta_data.csv', top_n = 2)
+    explain_occlude_area(np.copy(test_feature), np.copy(test_label), 'readmitted_prob.csv', 'true_label_prob_matrix.csv', 'meta_data.csv', top_n = 20)
+    print "begin explain format out"
+    explain_occlude_area_format_out(np.copy(test_feature), np.copy(test_label), 'readmitted_prob.csv', 'true_label_prob_matrix.csv', 'meta_data.csv', top_n = 20)
+
 
  
 

@@ -25,6 +25,7 @@ def explain_occlude_area(test_feature, test_label, probpath, truelabelprobpath, 
     print "test_feature shape: ", test_feature.shape
     top_n_array = truelabelprobmatrix.argsort()[0:top_n]
     print "top_n_array: ", top_n_array
+    print "top_n_array % width_dim: ", (top_n_array % width_dim)
     index_matrix = np.zeros(height * width)
     print "index_matrix shape: ", index_matrix.shape
     print "top_n: ", top_n

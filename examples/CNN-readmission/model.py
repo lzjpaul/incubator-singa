@@ -23,12 +23,13 @@ from singa import initializer
 import mynet as myffnet
 
 
-def create_net(in_shape, use_cpu=False):
+def create_net(in_shape, hyperpara, use_cpu=False):
     if use_cpu:
         layer.engine = 'singacpp'
 
+    height, width, kernel_y, kernel_x, stride_y, stride_x = hyperpara[0], hyperpara[1], hyperpara[2], hyperpara[3], hyperpara[4], hyperpara[5]
     net = myffnet.ProbFeedForwardNet(loss.SoftmaxCrossEntropy(), metric.Accuracy())
-    net.add(layer.Conv2D('conv1', 100, kernel=(3, 80), stride=(1, 20), pad=(0, 0),
+    net.add(layer.Conv2D('conv1', 100, kernel=(kernel_y, kernel_x), stride=(stride_y, stride_x), pad=(0, 0),
                          input_sample_shape=in_shape))
     net.add(layer.Activation('relu1'))
     net.add(layer.MaxPooling2D('pool1', 2, 1, pad=0))
