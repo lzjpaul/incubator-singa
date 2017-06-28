@@ -28,6 +28,8 @@ def create_net(in_shape, hyperpara, use_cpu=False):
         layer.engine = 'singacpp'
 
     height, width, kernel_y, kernel_x, stride_y, stride_x = hyperpara[0], hyperpara[1], hyperpara[2], hyperpara[3], hyperpara[4], hyperpara[5]
+    print "kernel_x: ", kernel_x
+    print "stride_x: ", stride_x
     net = myffnet.ProbFeedForwardNet(loss.SoftmaxCrossEntropy(), metric.Accuracy())
     net.add(layer.Conv2D('conv1', 100, kernel=(kernel_y, kernel_x), stride=(stride_y, stride_x), pad=(0, 0),
                          input_sample_shape=in_shape))

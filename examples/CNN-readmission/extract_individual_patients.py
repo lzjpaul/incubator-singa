@@ -27,9 +27,11 @@ def main():
     for i, (train_index, test_index) in enumerate(StratifiedKFold(all_label.reshape(all_label.shape[0]), n_folds=n_folds)):
         train_feature, train_label, test_feature, test_label = all_feature[train_index], all_label[train_index], all_feature[test_index], all_label[test_index]
         test_idx = idx[test_index]
-        print test_idx
-        np.savetxt('nuh_fa_readmission_case_demor_inpa_fold_0_test_index.csv', test_idx.reshape((-1, 1)), fmt = '%d', delimiter=",") #modify here
         print all_label_origin[test_idx]
+        print "\n\nidx adding 1 because SID begins with 1 !!\n\n"
+        test_idx = (test_idx + 1)
+        print test_idx
+        np.savetxt('nuh_fa_readmission_case_demor_inpa_test_index.csv', test_idx.reshape((-1, 1)), fmt = '%d', delimiter=",") #modify here
         if i == 0:
             print "fold: ", i
             break
