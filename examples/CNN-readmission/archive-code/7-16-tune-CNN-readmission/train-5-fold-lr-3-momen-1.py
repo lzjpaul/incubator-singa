@@ -127,9 +127,9 @@ def auroc(yPredictProba, yTrue):
     return roc_auc_score(yTrue, yPredictProba)
 
 def train(dev, agent, max_epoch, use_cpu, batch_size=100):
-    lr_array = np.array([0.001, 0.0001, 0.01, 0.1])
+    lr_array = np.array([0.01])
     decay_array = np.array([0.01, 0.001, 0.0001])
-    momentum_array = np.array([0.8, 0.9])
+    momentum_array = np.array([0.8])
     kernel_y_param_array = np.array([2, 3])
     kernel_x_param_array = np.array([6, 10, 15, 20, 25, 30, 35, 40, 65, 80, 100])
     stride_y_param_array = 1
@@ -247,7 +247,7 @@ def train_with_parameter(dev, agent, max_epoch, use_cpu, batch_size, lr_param, d
         all_fold_test_auc.append(np.asarray(test_auc_list).max())
     print "all_fold_test_auc: ", all_fold_test_auc
     print "all_fold_test_auc mean: ", np.asarray(all_fold_test_auc).mean()
-    f = open('result', 'a')
+    f = open('result-5.txt', 'a')
     f.write("new model result: " + "\n")
     f.write("lr_param: " + str(lr_param) + "\n")
     f.write("decay_param: " + str(decay_param) + "\n")

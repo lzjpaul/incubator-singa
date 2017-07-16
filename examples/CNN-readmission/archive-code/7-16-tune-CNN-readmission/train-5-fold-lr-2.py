@@ -127,7 +127,7 @@ def auroc(yPredictProba, yTrue):
     return roc_auc_score(yTrue, yPredictProba)
 
 def train(dev, agent, max_epoch, use_cpu, batch_size=100):
-    lr_array = np.array([0.001, 0.0001, 0.01, 0.1])
+    lr_array = np.array([0.0001])
     decay_array = np.array([0.01, 0.001, 0.0001])
     momentum_array = np.array([0.8, 0.9])
     kernel_y_param_array = np.array([2, 3])
