@@ -5,3 +5,7 @@
 (3) dataset:
 feature_new
 feature_lastnotcount
+
+(4) 5-fold
+    -- (1) 5-fold
+    -- (2) hyper-params are now grid-search
