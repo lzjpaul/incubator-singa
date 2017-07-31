@@ -19,6 +19,13 @@ It includes 5 binary dataset, each contains 10000 images. 1 row (1 image)
 includes 1 label & 3072 pixels.  3072 pixels are 3 channels of a 32x32 image
 """
 
+""" Current problems:
+(1) calresponsibility for high-dimensional non-sparse vector is time-consuming
+(2) calResponsibility function not defined
+(3) original weight may recieve L2 norm regularization, then it will receive both L2 norm and GM regularization ???
+(4) would it go into apply_with_lr becuase I override apply_with_lr with different signatures ???
+"""
+
 import cPickle
 import numpy as np
 import os
@@ -32,6 +39,7 @@ from singa import tensor
 from singa.proto import core_pb2
 from caffe import caffe_net
 
+import gm_prior_optimizer
 import alexnet
 import vgg
 import resnet
@@ -119,12 +127,15 @@ def train(data, net, max_epoch, get_lr, weight_decay, batch_size=100,
     if use_cpu:
         print 'Using CPU'
         dev = device.get_default_device()
+        cpudev = dev
     else:
         print 'Using GPU'
         dev = device.create_cuda_gpu()
+        cpudev = device.get_default_device()
 
     net.to_device(dev)
-    opt = optimizer.SGD(momentum=0.9, weight_decay=weight_decay)
+    opt = gm_prior_optimizer.GMSGD(cpudev=cpudev, net=net, hyperpara=[1., 50000000., 1.], gm_num=4, pi=[1./4, 1./4, 1./4, 1./4], reg_lambda=[1., 1., 1., 1.], 
+                                   momentum=0.9, weight_decay=weight_decay)
     for (p, specs) in zip(net.param_names(), net.param_specs()):
         opt.register(p, specs)
 
@@ -146,10 +157,9 @@ def train(data, net, max_epoch, get_lr, weight_decay, batch_size=100,
             grads, (l, a) = net.train(tx, ty)
             loss += l
             acc += a
+            ##### would this weight go into apply_with_lr ???
             for (s, p, g) in zip(net.param_names(), net.param_values(), grads):
-                # print "param name: ", s
-                # print "param shape: ", tensor.to_numpy(p).shape
-                opt.apply_with_lr(epoch, get_lr(epoch), g, p, str(s), b)
+                opt.apply_with_lr(dev, cpudev, net, epoch, get_lr(epoch), g, p, str(s), b)            
             # update progress bar
             utils.update_progress(b * 1.0 / num_train_batch,
                                   'training loss = %f, accuracy = %f' % (l, a))
