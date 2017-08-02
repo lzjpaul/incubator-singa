@@ -21,7 +21,6 @@ includes 1 label & 3072 pixels.  3072 pixels are 3 channels of a 32x32 image
 
 """ Current problems:
 (1) calresponsibility for high-dimensional non-sparse vector is time-consuming
-(2) calResponsibility function not defined
 (3) original weight may recieve L2 norm regularization, then it will receive both L2 norm and GM regularization ???
 (4) would it go into apply_with_lr becuase I override apply_with_lr with different signatures ???
 (5) check logic because I deleted so many "prints"

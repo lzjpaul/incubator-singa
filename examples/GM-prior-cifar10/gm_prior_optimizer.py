@@ -25,9 +25,8 @@ class GMOptimizer(Optimizer):
         for (s, p) in zip(net.param_names(), net.param_values()):
             print "param name: ", s
             print "param shape: ", tensor.to_numpy(p).shape
-            if 'weight' in str(s):
+            if np.ndim(tensor.to_numpy(p)) == 2:
                 self.weight_name_list.append(s)
-                p.to_device(cpudev)
                 dims = tensor.to_numpy(p).shape[0] * tensor.to_numpy(p).shape[1]
                 self.weight_dim_list.append(dims)
         print "dims: ", dims
@@ -35,7 +34,7 @@ class GMOptimizer(Optimizer):
         print "self.weightdimSum: ", self.weightdimSum
 
     def apply_GM_regularizer_constraint(self, dev, cpudev, net, weight_name_list, weight_dim_list, weightdimSum, epoch, value, grad, name, step):
-        if 'weight' not in str(name):
+        if np.ndim(tensor.to_numpy(value)) != 2: 
             self.apply_regularizer_constraint(epoch, value, grad, name, step)
         else: # weight parameter
             grad = self.gmregularizer.apply(dev, cpudev, net, weight_name_list, weight_dim_list, weightdimSum, 
@@ -52,7 +51,7 @@ class GMRegularizer(Regularizer):
 
     def __init__(self, hyperpara=None, gm_num=None, pi=None, reg_lambda=None):
         self.a, self.b, self.alpha, self.gm_num = hyperpara[0], hyperpara[1], hyperpara[2], gm_num
-        print "self.a, self.b, self.alpha, self.gm_num, self.pi: ", self.a, self.b, self.alpha, self.gm_num
+        print "self.a, self.b, self.alpha, self.gm_num: ", self.a, self.b, self.alpha, self.gm_num
         self.pi, self.reg_lambda = np.reshape(np.array(pi), (1, gm_num)), np.reshape(np.array(reg_lambda), (1, gm_num))
         print "init self.reg_lambda: ", self.reg_lambda
         print "init self.pi: ", self.pi
@@ -83,8 +82,7 @@ class GMRegularizer(Regularizer):
         for (s, p) in zip(net.param_names(), net.param_values()):
             ##print "param name: ", s
             ##print "param shape: ", tensor.to_numpy(p).shape
-            if 'weight' in str(s):
-                p.to_device(cpudev)
+            if np.ndim(tensor.to_numpy(p)) == 2:
                 if self.w_array is None:
                     self.w_array = tensor.to_numpy(p).reshape((1, -1))
                 else:
