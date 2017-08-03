@@ -32,6 +32,8 @@ class GMOptimizer(Optimizer):
                 self.weight_dim_list.append(dims)
         self.weightdimSum = sum(self.weight_dim_list)
         print "self.weightdimSum: ", self.weightdimSum
+        print map(lambda x: x.encode('ascii'), self.weight_name_list) 
+        print "self.weight_dim_list: ", self.weight_dim_list
 
     def apply_GM_regularizer_constraint(self, dev, cpudev, net, weight_name_list, weight_dim_list, weightdimSum, epoch, value, grad, name, step):
         if np.ndim(tensor.to_numpy(value)) != 2: 
@@ -62,6 +64,8 @@ class GMRegularizer(Regularizer):
         responsibility = gaussian.pdf(self.w_array, loc=np.zeros(shape=(1, self.gm_num)), scale=1/np.sqrt(self.reg_lambda))*self.pi
         # responsibility normalized with summation(denominator)
         self.responsibility = responsibility/(np.sum(responsibility, axis=1).reshape(self.w_array.shape))
+        # print "self.responsibility[:5]: ", self.responsibility[:5]
+        # print "self.responsibility norm: ", np.linalg.norm(self.responsibility)
     
     def update_GM_Prior_EM(self, weightdimSum, epoch):
         # update pi
@@ -94,6 +98,8 @@ class GMRegularizer(Regularizer):
             self.extract_weight(cpudev, net) # usef for calculating responsibility and reg_grad_w
             self.calcResponsibility()
             self.reg_grad_w = np.sum(self.responsibility*self.reg_lambda, axis=1).reshape(self.w_array.shape) * self.w_array
+            # print "self.reg_grad_w shape: ", self.reg_grad_w.shape
+            # print "self.reg_grad_w norm: ",  np.linalg.norm(self.reg_grad_w)
             self.weight_dim_index = 0
         # calculate the grad for the specific weight
         this_weight_dim = weight_dim_list[weight_name_list.index(name)] 
@@ -128,11 +134,11 @@ class GMSGD(GMOptimizer):
         if grad.is_empty():
             return value
         ##### GM-prior: using gm_regularizer ##############
-        grad = self.apply_GM_regularizer_constraint(dev, cpudev, net, self.weight_name_list, self.weight_dim_list, self.weightdimSum, epoch, value, grad, name, step)
+        grad = self.apply_GM_regularizer_constraint(dev=dev, cpudev=cpudev, net=net, weight_name_list=self.weight_name_list, weight_dim_list=self.weight_dim_list, weightdimSum=self.weightdimSum, epoch=epoch, value=value, grad=grad, name=name, step=step)
         ##### GM-prior: using gm_regularizer ##############
-        print "name: ", name
-        print "value shape: ", tensor.to_numpy(value).shape
-        print "grad shape: ", tensor.to_numpy(grad).shape
+        # print "name: ", name
+        # print "value shape: ", tensor.to_numpy(value).shape
+        # print "grad shape: ", tensor.to_numpy(grad).shape
         if name is not None and name in self.learning_rate_multiplier:
             lr = lr * self.learning_rate_multiplier[name]
         self.opt.Apply(epoch, lr, name, grad.singa_tensor, value.singa_tensor)

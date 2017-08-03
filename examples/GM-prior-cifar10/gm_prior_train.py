@@ -21,8 +21,8 @@ includes 1 label & 3072 pixels.  3072 pixels are 3 channels of a 32x32 image
 
 """ Current problems:
 (1) calresponsibility for high-dimensional non-sparse vector is time-consuming
-(3) original weight may recieve L2 norm regularization, then it will receive both L2 norm and GM regularization ???
-(4) would it go into apply_with_lr becuase I override apply_with_lr with different signatures ???
+(3) (done!!) original weight may recieve L2 norm regularization, then it will receive both L2 norm and GM regularization ???
+(4) (done!!) would it go into apply_with_lr becuase I override apply_with_lr with different signatures ???
 (5) check logic because I deleted so many "prints"
 """
 
@@ -157,9 +157,8 @@ def train(data, net, max_epoch, get_lr, weight_decay, batch_size=100,
             grads, (l, a) = net.train(tx, ty)
             loss += l
             acc += a
-            ##### would this weight go into apply_with_lr ???
             for (s, p, g) in zip(net.param_names(), net.param_values(), grads):
-                opt.apply_with_lr(dev, cpudev, net, epoch, get_lr(epoch), g, p, str(s), b)            
+                opt.apply_with_lr(dev=dev, cpudev=cpudev, net=net, epoch=epoch, lr=get_lr(epoch), grad=g, value=p, name=str(s), step=b)            
             # update progress bar
             utils.update_progress(b * 1.0 / num_train_batch,
                                   'training loss = %f, accuracy = %f' % (l, a))
