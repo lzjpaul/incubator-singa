@@ -2,6 +2,7 @@
 # GM-prior adaptive regularizer.
 # =============================================================================
 from singa import optimizer
+from singa.optimizer import SGD
 from singa.optimizer import Regularizer
 from singa.optimizer import Optimizer
 import numpy as np
@@ -128,6 +129,8 @@ class GMSGD(GMOptimizer):
         conf.type = 'sgd'
         self.opt = singa.CreateOptimizer('SGD')
         self.opt.Setup(conf.SerializeToString())
+        # SGD.__init__(self, lr=lr, momentum=momentum, weight_decay=weight_decay,
+        #         regularizer=regularizer, constraint=constraint)
 
     # compared with apply_with_lr, this need one more argument: isweight
     def apply_with_lr(self, dev, cpudev, net, epoch, lr, grad, value, name, step=-1):
