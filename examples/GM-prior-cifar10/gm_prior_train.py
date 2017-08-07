@@ -158,7 +158,7 @@ def train(data, net, max_epoch, get_lr, weight_decay, batch_size=100,
             loss += l
             acc += a
             for (s, p, g) in zip(net.param_names(), net.param_values(), grads):
-                opt.apply_with_lr(dev=dev, cpudev=cpudev, net=net, epoch=epoch, lr=get_lr(epoch), grad=g, value=p, name=str(s), step=b)            
+                opt.apply_with_lr(dev=dev, cpudev=cpudev, trainnum=train_x.shape[0], net=net, epoch=epoch, lr=get_lr(epoch), grad=g, value=p, name=str(s), step=b)
             # update progress bar
             utils.update_progress(b * 1.0 / num_train_batch,
                                   'training loss = %f, accuracy = %f' % (l, a))
