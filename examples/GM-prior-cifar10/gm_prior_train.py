@@ -134,7 +134,7 @@ def train(data, net, max_epoch, get_lr, weight_decay, batch_size=100,
         cpudev = device.get_default_device()
 
     net.to_device(dev)
-    opt = gm_prior_optimizer.GMSGD(cpudev=cpudev, net=net, hyperpara=[1., 50000000., 1.], gm_num=4, pi=[1./4, 1./4, 1./4, 1./4], reg_lambda=[1., 1., 1., 1.], 
+    opt = gm_prior_optimizer.GMSGD(cpudev=cpudev, net=net, hyperpara=[2., 5000000., 300.], gm_num=4, pi=[1./4, 1./4, 1./4, 1./4], reg_lambda=[899., 900., 901., 1500.], 
                                    momentum=0.9, weight_decay=weight_decay)
     for (p, specs) in zip(net.param_names(), net.param_specs()):
         opt.register(p, specs)
