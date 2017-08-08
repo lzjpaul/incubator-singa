@@ -44,6 +44,9 @@ import alexnet
 import vgg
 import resnet
 
+import datetime
+import time
+
 
 def load_dataset(filepath):
     print 'Loading data file %s' % filepath
@@ -121,7 +124,7 @@ def caffe_lr(epoch):
         return 0.0001
 
 
-def train(data, net, max_epoch, get_lr, weight_decay, batch_size=100,
+def train(data, hyperpara, gm_num, pi, reg_lambda, net, max_epoch, get_lr, weight_decay, batch_size=100,
           use_cpu=False):
     print 'Start intialization............'
     if use_cpu:
@@ -134,7 +137,7 @@ def train(data, net, max_epoch, get_lr, weight_decay, batch_size=100,
         cpudev = device.get_default_device()
 
     net.to_device(dev)
-    opt = gm_prior_optimizer.GMSGD(cpudev=cpudev, net=net, hyperpara=[2., 5000000., 300.], gm_num=4, pi=[1./4, 1./4, 1./4, 1./4], reg_lambda=[899., 900., 901., 1500.], 
+    opt = gm_prior_optimizer.GMSGD(cpudev=cpudev, net=net, hyperpara=hyperpara, gm_num=gm_num, pi=pi, reg_lambda=reg_lambda, 
                                    momentum=0.9, weight_decay=weight_decay)
     for (p, specs) in zip(net.param_names(), net.param_specs()):
         opt.register(p, specs)
@@ -186,33 +189,127 @@ if __name__ == '__main__':
             default='alexnet')
     parser.add_argument('data', default='cifar-10-batches-py')
     parser.add_argument('--use_cpu', action='store_true')
+    parser.add_argument('-alexnetdim', type=int, help='alexnet dimension')
+    parser.add_argument('-vggdim', type=int, help='vgg dimension')
+    parser.add_argument('-resnetdim', type=int, help='resnet dimension')
+    parser.add_argument('-maxepoch', type=int, help='max_epoch')
+    parser.add_argument('-gmnum', type=int, help='gm_number')
     args = parser.parse_args()
     assert os.path.exists(args.data), \
         'Pls download the cifar10 dataset via "download_data.py py"'
     print 'Loading data ..................'
     train_x, train_y = load_train_data(args.data)
     test_x, test_y = load_test_data(args.data)
+    decay_array = np.array([0.01, 0.001, 0.0001]) #other parameters like bias may need weight_decay in the implementations
+    momentum_array = np.array([0.8, 0.9])
+    alexnetdim = args.alexnetdim
+    vggdim = args.vggdim
+    resnetdim = args.resnetdim
     if args.model == 'caffe':
         train_x, test_x = normalize_for_alexnet(train_x, test_x)
-        net = caffe_net.create_net(args.use_cpu)
-        # for cifar10_full_train_test.prototxt
-        train((train_x, train_y, test_x, test_y), net, 160, alexnet_lr, 0.004,
-              use_cpu=args.use_cpu)
-        # for cifar10_quick_train_test.prototxt
-        #train((train_x, train_y, test_x, test_y), net, 18, caffe_lr, 0.004,
-        #      use_cpu=args.use_cpu)
+        fea_num = alexnetdim
+        print "fea_num: ", fea_num
+        b, alpha = [(0.3 * fea_num), (0.5 * fea_num), (0.7 * fea_num), (0.9 * fea_num), (fea_num), (3 * fea_num), (5 * fea_num), (7 * fea_num), (9 * fea_num), (0.3 * fea_num * 1e-1), (0.5 * fea_num * 1e-1), (0.7 * fea_num * 1e-1), (0.9 * fea_num * 1e-1), (fea_num * 1e-1),\
+                   (fea_num * 0.3 * 1e-2), (0.5 * fea_num * 1e-2), (0.7 * fea_num * 1e-2), (0.9 * fea_num * 1e-2), (fea_num * 1e-2), (0.3 * fea_num * 1e-3), (0.5 * fea_num * 1e-3), (0.7 * fea_num * 1e-3), (0.9 * fea_num * 1e-3), (fea_num * 1e-3)],\
+                   [fea_num**(0.9), fea_num**(0.7), fea_num**(0.5), fea_num**(0.3)]
+        for alpha_val in alpha:
+            for b_val in b:
+                a = [(1. + b_val * 1e-1), (1. + b_val * 1e-2)]
+                for a_val in a:
+                    start = time.time()
+                    st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
+                    print st
+                    print "train_x shape: ", train_x.shape
+                    print "train_x norm: ", np.linalg.norm(train_x)
+                    max_epoch = args.maxepoch
+                    gm_num = args.gmnum
+                    pi, reg_lambda = [1.0/gm_num for _ in range(gm_num)], [_*10+1 for _ in  range(gm_num)]
+                    net = caffe_net.create_net(args.use_cpu)
+                    # for cifar10_full_train_test.prototxt
+                    train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda,
+                          net, 160, alexnet_lr, 0.004, use_cpu=args.use_cpu)
+                    # for cifar10_quick_train_test.prototxt
+                    #train((train_x, train_y, test_x, test_y), net, 18, caffe_lr, 0.004,
+                    #      use_cpu=args.use_cpu)
+                    done = time.time()
+                    do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
+                    print do
+                    elapsed = done - start
+                    print elapsed
     elif args.model == 'alexnet':
         train_x, test_x = normalize_for_alexnet(train_x, test_x)
-        net = alexnet.create_net(args.use_cpu)
-        train((train_x, train_y, test_x, test_y), net, 2, alexnet_lr, 0.004,
-              use_cpu=args.use_cpu)
+        fea_num = alexnetdim
+        print "fea_num: ", fea_num
+        b, alpha = [(0.3 * fea_num), (0.5 * fea_num), (0.7 * fea_num), (0.9 * fea_num), (fea_num), (3 * fea_num), (5 * fea_num), (7 * fea_num), (9 * fea_num), (0.3 * fea_num * 1e-1), (0.5 * fea_num * 1e-1), (0.7 * fea_num * 1e-1), (0.9 * fea_num * 1e-1), (fea_num * 1e-1),\
+                   (fea_num * 0.3 * 1e-2), (0.5 * fea_num * 1e-2), (0.7 * fea_num * 1e-2), (0.9 * fea_num * 1e-2), (fea_num * 1e-2), (0.3 * fea_num * 1e-3), (0.5 * fea_num * 1e-3), (0.7 * fea_num * 1e-3), (0.9 * fea_num * 1e-3), (fea_num * 1e-3)],\
+                   [fea_num**(0.9), fea_num**(0.7), fea_num**(0.5), fea_num**(0.3)]
+        for alpha_val in alpha:
+            for b_val in b:
+                a = [(1. + b_val * 1e-1), (1. + b_val * 1e-2)]
+                for a_val in a:
+                    start = time.time()
+                    st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
+                    print st
+                    print "train_x shape: ", train_x.shape
+                    print "train_x norm: ", np.linalg.norm(train_x)
+                    max_epoch = args.maxepoch
+                    gm_num = args.gmnum
+                    pi, reg_lambda = [1.0/gm_num for _ in range(gm_num)], [_*10+1 for _ in  range(gm_num)]
+                    net = alexnet.create_net(args.use_cpu)
+                    train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda,
+                          net, 1, alexnet_lr, 0.004, use_cpu=args.use_cpu)
+                    done = time.time()
+                    do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
+                    print do
+                    elapsed = done - start
+                    print elapsed
     elif args.model == 'vgg':
         train_x, test_x = normalize_for_vgg(train_x, test_x)
-        net = vgg.create_net(args.use_cpu)
-        train((train_x, train_y, test_x, test_y), net, 250, vgg_lr, 0.0005,
-              use_cpu=args.use_cpu)
+        fea_num = vggdim
+        print "fea_num: ", fea_num
+        b, alpha = [(0.3 * fea_num), (0.5 * fea_num), (0.7 * fea_num), (0.9 * fea_num), (fea_num), (3 * fea_num), (5 * fea_num), (7 * fea_num), (9 * fea_num), (0.3 * fea_num * 1e-1), (0.5 * fea_num * 1e-1), (0.7 * fea_num * 1e-1), (0.9 * fea_num * 1e-1), (fea_num * 1e-1),\
+                   (fea_num * 0.3 * 1e-2), (0.5 * fea_num * 1e-2), (0.7 * fea_num * 1e-2), (0.9 * fea_num * 1e-2), (fea_num * 1e-2), (0.3 * fea_num * 1e-3), (0.5 * fea_num * 1e-3), (0.7 * fea_num * 1e-3), (0.9 * fea_num * 1e-3), (fea_num * 1e-3)],\
+                   [fea_num**(0.9), fea_num**(0.7), fea_num**(0.5), fea_num**(0.3)]
+        for alpha_val in alpha:
+            for b_val in b:
+                a = [(1. + b_val * 1e-1), (1. + b_val * 1e-2)]
+                for a_val in a:
+                    start = time.time()
+                    st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
+                    print st
+                    max_epoch = args.maxepoch
+                    gm_num = args.gmnum
+                    pi, reg_lambda = [1.0/gm_num for _ in range(gm_num)], [_*10+1 for _ in  range(gm_num)]
+                    net = vgg.create_net(args.use_cpu)
+                    train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda, 
+                          net, 250, vgg_lr, 0.0005, use_cpu=args.use_cpu)
+                    done = time.time()
+                    do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
+                    print do
+                    elapsed = done - start
+                    print elapsed
     else:
         train_x, test_x = normalize_for_alexnet(train_x, test_x)
-        net = resnet.create_net(args.use_cpu)
-        train((train_x, train_y, test_x, test_y), net, 200, resnet_lr, 1e-4,
-              use_cpu=args.use_cpu)
+        fea_num = resnetdim
+        print "fea_num: ", fea_num
+        b, alpha = [(0.3 * fea_num), (0.5 * fea_num), (0.7 * fea_num), (0.9 * fea_num), (fea_num), (3 * fea_num), (5 * fea_num), (7 * fea_num), (9 * fea_num), (0.3 * fea_num * 1e-1), (0.5 * fea_num * 1e-1), (0.7 * fea_num * 1e-1), (0.9 * fea_num * 1e-1), (fea_num * 1e-1),\
+                   (fea_num * 0.3 * 1e-2), (0.5 * fea_num * 1e-2), (0.7 * fea_num * 1e-2), (0.9 * fea_num * 1e-2), (fea_num * 1e-2), (0.3 * fea_num * 1e-3), (0.5 * fea_num * 1e-3), (0.7 * fea_num * 1e-3), (0.9 * fea_num * 1e-3), (fea_num * 1e-3)],\
+                   [fea_num**(0.9), fea_num**(0.7), fea_num**(0.5), fea_num**(0.3)]
+        for alpha_val in alpha:
+            for b_val in b:
+                a = [(1. + b_val * 1e-1), (1. + b_val * 1e-2)]
+                for a_val in a:
+                    start = time.time()
+                    st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
+                    print st
+                    max_epoch = args.maxepoch
+                    gm_num = args.gmnum
+                    pi, reg_lambda = [1.0/gm_num for _ in range(gm_num)], [_*10+1 for _ in  range(gm_num)]
+                    net = resnet.create_net(args.use_cpu)
+                    train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda, 
+                          net, 200, resnet_lr, 1e-4, use_cpu=args.use_cpu)
+                    done = time.time()
+                    do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
+                    print do
+                    elapsed = done - start
+                    print elapsed

@@ -37,6 +37,7 @@ class GMOptimizer(Optimizer):
         print "self.weight_dim_list: ", self.weight_dim_list
 
     def apply_GM_regularizer_constraint(self, dev, cpudev, trainnum, net, weight_name_list, weight_dim_list, weightdimSum, epoch, value, grad, name, step):
+        # if np.ndim(tensor.to_numpy(value)) <= 2:
         if np.ndim(tensor.to_numpy(value)) != 2: 
             self.apply_regularizer_constraint(epoch, value, grad, name, step)
         else: # weight parameter
@@ -107,7 +108,7 @@ class GMRegularizer(Regularizer):
             self.update_GM_Prior_EM(weightdimSum, epoch)
         return grad
 
-class GMSGD(GMOptimizer):
+class GMSGD(GMOptimizer, SGD):
     '''The vallina Stochasitc Gradient Descent algorithm with momentum.
     But this SGD has a GM regularizer
     '''
@@ -115,17 +116,18 @@ class GMSGD(GMOptimizer):
     def __init__(self, cpudev=None, net=None, hyperpara=None, gm_num=None, pi=None, reg_lambda=None, 
                  lr=None, momentum=None, weight_decay=None,
                  regularizer=None, constraint=None):
-        super(GMSGD, self).__init__(cpudev=cpudev, net=net, hyperpara=hyperpara, gm_num=gm_num, pi=pi, reg_lambda=reg_lambda, 
+        GMOptimizer.__init__(self, cpudev=cpudev, net=net, hyperpara=hyperpara, gm_num=gm_num, pi=pi, reg_lambda=reg_lambda, 
                                   lr=lr, momentum=momentum, weight_decay=weight_decay, regularizer=regularizer,
                                   constraint=constraint)
-        conf = model_pb2.OptimizerConf()
-        if self.momentum is not None:
-            conf.momentum = self.momentum
-        conf.type = 'sgd'
-        self.opt = singa.CreateOptimizer('SGD')
-        self.opt.Setup(conf.SerializeToString())
-        # SGD.__init__(self, lr=lr, momentum=momentum, weight_decay=weight_decay,
-        #         regularizer=regularizer, constraint=constraint)
+        SGD.__init__(self, lr=lr, momentum=momentum, weight_decay=weight_decay,
+                 regularizer=regularizer, constraint=constraint)
+        # conf = model_pb2.OptimizerConf()
+        # if self.momentum is not None:
+        #     conf.momentum = self.momentum
+        # conf.type = 'sgd'
+        # self.opt = singa.CreateOptimizer('SGD')
+        # self.opt.Setup(conf.SerializeToString())
+        
 
     # compared with apply_with_lr, this need one more argument: isweight
     def apply_with_lr(self, dev, cpudev, trainnum, net, epoch, lr, grad, value, name, step=-1):
