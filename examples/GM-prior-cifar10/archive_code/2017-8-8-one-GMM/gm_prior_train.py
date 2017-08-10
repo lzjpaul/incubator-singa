@@ -137,7 +137,7 @@ def train(data, hyperpara, gm_num, pi, reg_lambda, net, max_epoch, get_lr, weigh
         cpudev = device.get_default_device()
 
     net.to_device(dev)
-    opt = gm_prior_optimizer.GMSGD(net=net, hyperpara=hyperpara, gm_num=gm_num, pi=pi, reg_lambda=reg_lambda, 
+    opt = gm_prior_optimizer.GMSGD(cpudev=cpudev, net=net, hyperpara=hyperpara, gm_num=gm_num, pi=pi, reg_lambda=reg_lambda, 
                                    momentum=0.9, weight_decay=weight_decay)
     for (p, specs) in zip(net.param_names(), net.param_specs()):
         opt.register(p, specs)
@@ -161,7 +161,7 @@ def train(data, hyperpara, gm_num, pi, reg_lambda, net, max_epoch, get_lr, weigh
             loss += l
             acc += a
             for (s, p, g) in zip(net.param_names(), net.param_values(), grads):
-                opt.apply_with_lr(dev=dev, trainnum=train_x.shape[0], net=net, epoch=epoch, lr=get_lr(epoch), grad=g, value=p, name=str(s), step=b)
+                opt.apply_with_lr(dev=dev, cpudev=cpudev, trainnum=train_x.shape[0], net=net, epoch=epoch, lr=get_lr(epoch), grad=g, value=p, name=str(s), step=b)
             # update progress bar
             utils.update_progress(b * 1.0 / num_train_batch,
                                   'training loss = %f, accuracy = %f' % (l, a))
