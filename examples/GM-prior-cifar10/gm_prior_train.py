@@ -124,7 +124,7 @@ def caffe_lr(epoch):
         return 0.0001
 
 
-def train(data, hyperpara, gm_num, pi, reg_lambda, net, max_epoch, get_lr, weight_decay, batch_size=100,
+def train(data, hyperpara, gm_num, pi, reg_lambda, uptfreq, net, max_epoch, get_lr, weight_decay, batch_size=100,
           use_cpu=False):
     print 'Start intialization............'
     if use_cpu:
@@ -137,7 +137,7 @@ def train(data, hyperpara, gm_num, pi, reg_lambda, net, max_epoch, get_lr, weigh
         cpudev = device.get_default_device()
 
     net.to_device(dev)
-    opt = gm_prior_optimizer.GMSGD(net=net, hyperpara=hyperpara, gm_num=gm_num, pi=pi, reg_lambda=reg_lambda, 
+    opt = gm_prior_optimizer.GMSGD(net=net, hyperpara=hyperpara, gm_num=gm_num, pi=pi, reg_lambda=reg_lambda, uptfreq=uptfreq, 
                                    momentum=0.9, weight_decay=weight_decay)
     for (p, specs) in zip(net.param_names(), net.param_specs()):
         opt.register(p, specs)
@@ -194,6 +194,8 @@ if __name__ == '__main__':
     parser.add_argument('-resnetdim', type=int, help='resnet dimension')
     parser.add_argument('-maxepoch', type=int, help='max_epoch')
     parser.add_argument('-gmnum', type=int, help='gm_number')
+    parser.add_argument('-gmuptfreq', type=int, help='gm update frequency, in steps')
+    parser.add_argument('-paramuptfreq', type=int, help='parameter update frequency, in steps')
     args = parser.parse_args()
     assert os.path.exists(args.data), \
         'Pls download the cifar10 dataset via "download_data.py py"'
@@ -205,6 +207,7 @@ if __name__ == '__main__':
     alexnetdim = args.alexnetdim
     vggdim = args.vggdim
     resnetdim = args.resnetdim
+    print "args.paramuptfreq: ", args.paramuptfreq
     if args.model == 'caffe':
         train_x, test_x = normalize_for_alexnet(train_x, test_x)
         fea_num = alexnetdim
@@ -226,7 +229,7 @@ if __name__ == '__main__':
                     pi, reg_lambda = [1.0/gm_num for _ in range(gm_num)], [_*10+1 for _ in  range(gm_num)]
                     net = caffe_net.create_net(args.use_cpu)
                     # for cifar10_full_train_test.prototxt
-                    train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda,
+                    train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda, [args.gmuptfreq, args.paramuptfreq], 
                           net, 160, alexnet_lr, 0.004, use_cpu=args.use_cpu)
                     # for cifar10_quick_train_test.prototxt
                     #train((train_x, train_y, test_x, test_y), net, 18, caffe_lr, 0.004,
@@ -256,7 +259,7 @@ if __name__ == '__main__':
                     gm_num = args.gmnum
                     pi, reg_lambda = [1.0/gm_num for _ in range(gm_num)], [_*10+1 for _ in  range(gm_num)]
                     net = alexnet.create_net(args.use_cpu)
-                    train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda,
+                    train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda, [args.gmuptfreq, args.paramuptfreq], 
                           net, 1, alexnet_lr, 0.004, use_cpu=args.use_cpu)
                     done = time.time()
                     do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
@@ -281,7 +284,7 @@ if __name__ == '__main__':
                     gm_num = args.gmnum
                     pi, reg_lambda = [1.0/gm_num for _ in range(gm_num)], [_*10+1 for _ in  range(gm_num)]
                     net = vgg.create_net(args.use_cpu)
-                    train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda, 
+                    train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda, [args.gmuptfreq, args.paramuptfreq], 
                           net, 250, vgg_lr, 0.0005, use_cpu=args.use_cpu)
                     done = time.time()
                     do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
@@ -306,7 +309,7 @@ if __name__ == '__main__':
                     gm_num = args.gmnum
                     pi, reg_lambda = [1.0/gm_num for _ in range(gm_num)], [_*10+1 for _ in  range(gm_num)]
                     net = resnet.create_net(args.use_cpu)
-                    train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda, 
+                    train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda, [args.gmuptfreq, args.paramuptfreq], 
                           net, 200, resnet_lr, 1e-4, use_cpu=args.use_cpu)
                     done = time.time()
                     do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
