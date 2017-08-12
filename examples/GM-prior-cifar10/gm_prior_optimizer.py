@@ -85,16 +85,18 @@ class GMRegularizer(Regularizer):
         # responsibility normalized with summation(denominator)
         self.responsibility = responsibility/(np.sum(responsibility, axis=1).reshape(self.w_array.shape))
     
-    def update_GM_Prior_EM(self, epoch):
+    def update_GM_Prior_EM(self, name, step):
         # update pi
         self.reg_lambda = (2 * (self.a - 1) + np.sum(self.responsibility, axis=0)) / (2 * self.b + np.sum(self.responsibility * np.square(self.w_array), axis=0))
-        # print "np.sum(self.responsibility, axis=0): ", np.sum(self.responsibility, axis=0)
-        # print "np.sum(self.responsibility * np.square(self.w[:-1]), axis=0): ", np.sum(self.responsibility * np.square(self.w_array), axis=0)
+        if step % self.gmuptfreq == 0:
+            print "name: ", name
+            print "np.sum(self.responsibility, axis=0): ", np.sum(self.responsibility, axis=0)
+            print "np.sum(self.responsibility * np.square(self.w[:-1]), axis=0): ", np.sum(self.responsibility * np.square(self.w_array), axis=0)
         # update reg_lambda
         self.pi = (np.sum(self.responsibility, axis=0) + self.alpha - 1) / (self.w_array.shape[0] + self.gm_num * (self.alpha - 1))
-        # print 'reg_lambda', self.reg_lambda
-        # print 'pi:', self.pi
-        # print 'self.w_array.shape[0]: ', self.w_array.shape[0]
+        if step % self.gmuptfreq == 0:
+            print 'reg_lambda', self.reg_lambda
+            print 'pi:', self.pi
 
     def apply(self, dev, trainnum, net, epoch, value, grad, name, step):
         self.w_array = tensor.to_numpy(value).reshape((-1, 1)) # used for EM update also
@@ -104,11 +106,19 @@ class GMRegularizer(Regularizer):
         reg_grad_w_dev = tensor.from_numpy((self.reg_grad_w.reshape(tensor.to_numpy(value).shape[0], -1))/float(trainnum))
         reg_grad_w_dev.to_device(dev)
         grad.to_device(dev)
+        if step % self.gmuptfreq == 0:
+            print "step: ", step
+            print "name: ", name
+            print "before axpy grad l2: ", grad.l2()
         tensor.axpy(1.0, reg_grad_w_dev, grad)
+        if step % self.gmuptfreq == 0:
+            print "value l2: ", value.l2()
+            print "reg_grad_w_dev l2: ", reg_grad_w_dev.l2()
+            print "grad l2: ", grad.l2()
         if epoch < 2 or step % self.gmuptfreq == 0:
             if epoch >=2 and step % self.paramuptfreq != 0:
                 self.calcResponsibility()
-            self.update_GM_Prior_EM(epoch)
+            self.update_GM_Prior_EM(name, step)
         return grad
 
 class GMSGD(GMOptimizer, SGD):

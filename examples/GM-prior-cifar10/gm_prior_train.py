@@ -163,8 +163,8 @@ def train(data, hyperpara, gm_num, pi, reg_lambda, uptfreq, net, max_epoch, get_
             for (s, p, g) in zip(net.param_names(), net.param_values(), grads):
                 opt.apply_with_lr(dev=dev, trainnum=train_x.shape[0], net=net, epoch=epoch, lr=get_lr(epoch), grad=g, value=p, name=str(s), step=b)
             # update progress bar
-            utils.update_progress(b * 1.0 / num_train_batch,
-                                  'training loss = %f, accuracy = %f' % (l, a))
+            # utils.update_progress(b * 1.0 / num_train_batch,
+            #                       'training loss = %f, accuracy = %f' % (l, a))
         info = '\ntraining loss = %f, training accuracy = %f, lr = %f' \
             % (loss / num_train_batch, acc / num_train_batch, get_lr(epoch))
         print info
@@ -202,8 +202,8 @@ if __name__ == '__main__':
     print 'Loading data ..................'
     train_x, train_y = load_train_data(args.data)
     test_x, test_y = load_test_data(args.data)
-    decay_array = np.array([0.01, 0.001, 0.0001]) #other parameters like bias may need weight_decay in the implementations
-    momentum_array = np.array([0.8, 0.9])
+    # decay_array = np.array([0.01, 0.001, 0.0001]) #other parameters like bias may need weight_decay in the implementations
+    # momentum_array = np.array([0.8, 0.9])
     alexnetdim = args.alexnetdim
     vggdim = args.vggdim
     resnetdim = args.resnetdim
@@ -260,7 +260,7 @@ if __name__ == '__main__':
                     net = alexnet.create_net(args.use_cpu)
                     print "[a_val, b_val, alpha_val]: ", [a_val, b_val, alpha_val]
                     train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda, [args.gmuptfreq, args.paramuptfreq], 
-                          net, 14, alexnet_lr, 0.004, use_cpu=args.use_cpu)
+                          net, 160, alexnet_lr, 0.004, use_cpu=args.use_cpu)
                     done = time.time()
                     do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
                     print do

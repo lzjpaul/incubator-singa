@@ -149,8 +149,8 @@ def train(data, net, max_epoch, get_lr, weight_decay, batch_size=100,
             for (s, p, g) in zip(net.param_names(), net.param_values(), grads):
                 opt.apply_with_lr(epoch, get_lr(epoch), g, p, str(s), b)
             # update progress bar
-            utils.update_progress(b * 1.0 / num_train_batch,
-                                  'training loss = %f, accuracy = %f' % (l, a))
+            # utils.update_progress(b * 1.0 / num_train_batch,
+            #                       'training loss = %f, accuracy = %f' % (l, a))
         info = '\ntraining loss = %f, training accuracy = %f, lr = %f' \
             % (loss / num_train_batch, acc / num_train_batch, get_lr(epoch))
         print info
@@ -193,7 +193,7 @@ if __name__ == '__main__':
     elif args.model == 'alexnet':
         train_x, test_x = normalize_for_alexnet(train_x, test_x)
         net = alexnet.create_net(args.use_cpu)
-        train((train_x, train_y, test_x, test_y), net, 2, alexnet_lr, 0.004,
+        train((train_x, train_y, test_x, test_y), net, 160, alexnet_lr, 0.004,
               use_cpu=args.use_cpu)
     elif args.model == 'vgg':
         train_x, test_x = normalize_for_vgg(train_x, test_x)
