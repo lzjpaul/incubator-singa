@@ -207,7 +207,6 @@ if __name__ == '__main__':
     alexnetdim = args.alexnetdim
     vggdim = args.vggdim
     resnetdim = args.resnetdim
-    print "args.paramuptfreq: ", args.paramuptfreq
     if args.model == 'caffe':
         train_x, test_x = normalize_for_alexnet(train_x, test_x)
         fea_num = alexnetdim
@@ -261,7 +260,7 @@ if __name__ == '__main__':
                     net = alexnet.create_net(args.use_cpu)
                     print "[a_val, b_val, alpha_val]: ", [a_val, b_val, alpha_val]
                     train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda, [args.gmuptfreq, args.paramuptfreq], 
-                          net, 4, alexnet_lr, 0.004, use_cpu=args.use_cpu)
+                          net, 14, alexnet_lr, 0.004, use_cpu=args.use_cpu)
                     done = time.time()
                     do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
                     print do

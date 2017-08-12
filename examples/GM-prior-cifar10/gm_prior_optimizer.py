@@ -59,7 +59,6 @@ class GMOptimizer(Optimizer):
         if np.ndim(tensor.to_numpy(value)) != 2:
             return self.apply_regularizer_constraint(epoch, value, grad, name, step)
         else: # weight parameter
-            print "run time name: ", name
             grad = self.gmregularizers[name].apply(dev, trainnum, net, epoch, value, grad, name, step)
             return grad
 
@@ -77,7 +76,7 @@ class GMRegularizer(Regularizer):
         print "init self.reg_lambda: ", self.reg_lambda
         print "init self.pi: ", self.pi
         self.gmuptfreq, self.paramuptfreq = uptfreq[0], uptfreq[1]
-        print "self.gmuptfreq, self.paramuptfreq: ", self.gmuptfreq, self.paramuptfreq
+        print "init self.gmuptfreq, self.paramuptfreq: ", self.gmuptfreq, self.paramuptfreq
 
     # calc the resposibilities for pj(wi)
     def calcResponsibility(self):
@@ -98,7 +97,6 @@ class GMRegularizer(Regularizer):
         # print 'self.w_array.shape[0]: ', self.w_array.shape[0]
 
     def apply(self, dev, trainnum, net, epoch, value, grad, name, step):
-        print "runtime self.a, self.b, self.alpha, self.gm_num: ", self.a, self.b, self.alpha, self.gm_num
         self.w_array = tensor.to_numpy(value).reshape((-1, 1)) # used for EM update also
         if epoch < 2 or step % self.paramuptfreq == 0:
             self.calcResponsibility()
