@@ -259,8 +259,9 @@ if __name__ == '__main__':
                     gm_num = args.gmnum
                     pi, reg_lambda = [1.0/gm_num for _ in range(gm_num)], [_*10+1 for _ in  range(gm_num)]
                     net = alexnet.create_net(args.use_cpu)
+                    print "[a_val, b_val, alpha_val]: ", [a_val, b_val, alpha_val]
                     train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda, [args.gmuptfreq, args.paramuptfreq], 
-                          net, 1, alexnet_lr, 0.004, use_cpu=args.use_cpu)
+                          net, 4, alexnet_lr, 0.004, use_cpu=args.use_cpu)
                     done = time.time()
                     do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
                     print do
