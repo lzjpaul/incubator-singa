@@ -43,7 +43,6 @@ import gm_prior_optimizer
 import alexnet
 import vgg
 import resnet
-import gm_prior_data as dt
 
 import datetime
 import time
@@ -80,16 +79,6 @@ def load_test_data(dir_path):
 
 
 def normalize_for_vgg(train_x, test_x):
-    mean = train_x.mean()
-    std = train_x.std()
-    train_x -= mean
-    test_x -= mean
-    train_x /= std
-    test_x /= std
-    return train_x, test_x
-
-
-def normalize_for_resnet(train_x, test_x):
     mean = train_x.mean()
     std = train_x.std()
     train_x -= mean
@@ -156,18 +145,16 @@ def train(data, hyperpara, gm_num, pi, reg_lambda, uptfreq, net, max_epoch, get_
     tx = tensor.Tensor((batch_size, 3, 32, 32), dev)
     ty = tensor.Tensor((batch_size,), dev, core_pb2.kInt)
     train_x, train_y, test_x, test_y = data
-    dl_train = dt.CifarBatchIter(train_x, train_y, batch_size, dt.numpy_crop_flip,
-            shuffle=True, capacity=10)
-    dl_train.start()
-    num_train = dl_train.num_samples
-    num_train_batch = num_train / batch_size
+    num_train_batch = train_x.shape[0] / batch_size
     num_test_batch = test_x.shape[0] / batch_size
-    print 'num_train, num_train_batch, num_test_batch: ', num_train, num_train_batch, num_test_batch
+    idx = np.arange(train_x.shape[0], dtype=np.int32)
     for epoch in range(max_epoch):
+        np.random.shuffle(idx)
         loss, acc = 0.0, 0.0
         print 'Epoch %d' % epoch
         for b in range(num_train_batch):
-            x, y = dl_train.next()
+            x = train_x[idx[b * batch_size: (b + 1) * batch_size]]
+            y = train_y[idx[b * batch_size: (b + 1) * batch_size]]
             tx.copy_from_numpy(x)
             ty.copy_from_numpy(y)
             grads, (l, a) = net.train(tx, ty)
@@ -194,7 +181,6 @@ def train(data, hyperpara, gm_num, pi, reg_lambda, uptfreq, net, max_epoch, get_
 
         print 'test loss = %f, test accuracy = %f' \
             % (loss / num_test_batch, acc / num_test_batch)
-    dl_train.end()
     net.save('model', 20)  # save model params into checkpoint file
 
 if __name__ == '__main__':
@@ -306,7 +292,7 @@ if __name__ == '__main__':
                     elapsed = done - start
                     print elapsed
     else:
-        train_x, test_x = normalize_for_resnet(train_x, test_x)
+        train_x, test_x = normalize_for_alexnet(train_x, test_x)
         fea_num = resnetdim
         print "fea_num: ", fea_num
         b, alpha = [(0.3 * fea_num), (0.5 * fea_num), (0.7 * fea_num), (0.9 * fea_num), (fea_num), (3 * fea_num), (5 * fea_num), (7 * fea_num), (9 * fea_num), (0.3 * fea_num * 1e-1), (0.5 * fea_num * 1e-1), (0.7 * fea_num * 1e-1), (0.9 * fea_num * 1e-1), (fea_num * 1e-1),\
