@@ -47,7 +47,6 @@ import gm_prior_data as dt
 
 import datetime
 import time
-import random
 
 
 def load_dataset(filepath):
@@ -136,7 +135,7 @@ def caffe_lr(epoch):
         return 0.0001
 
 
-def train(data, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq, net, max_epoch, get_lr, weight_decay, batch_size=100,
+def train(data, hyperpara, gm_num, pi, reg_lambda, uptfreq, net, max_epoch, get_lr, weight_decay, batch_size=100,
           use_cpu=False):
     print 'Start intialization............'
     if use_cpu:
@@ -149,16 +148,10 @@ def train(data, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq,
         cpudev = device.get_default_device()
 
     net.to_device(dev)
-    opt = gm_prior_optimizer.GMSGD(net=net, momentum=0.9, weight_decay=weight_decay)
+    opt = gm_prior_optimizer.GMSGD(net=net, hyperpara=hyperpara, gm_num=gm_num, pi=pi, reg_lambda=reg_lambda, uptfreq=uptfreq, 
+                                   momentum=0.9, weight_decay=weight_decay)
     for (p, specs) in zip(net.param_names(), net.param_specs()):
         opt.register(p, specs)
-    for (s, p) in zip(net.param_names(), net.param_values()):
-        opt.gm_register(s, p, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq)
-    opt.weightdimSum = sum(opt.weight_dim_list.values())
-    print "opt.weightdimSum: ", opt.weightdimSum
-    print "opt.weight_name_list: ", opt.weight_name_list
-    print "opt.weight_dim_list: ", opt.weight_dim_list
-
 
     tx = tensor.Tensor((batch_size, 3, 32, 32), dev)
     ty = tensor.Tensor((batch_size,), dev, core_pb2.kInt)
@@ -210,6 +203,9 @@ if __name__ == '__main__':
             default='alexnet')
     parser.add_argument('data', default='cifar-10-batches-py')
     parser.add_argument('--use_cpu', action='store_true')
+    parser.add_argument('-alexnetdim', type=int, help='alexnet dimension')
+    parser.add_argument('-vggdim', type=int, help='vgg dimension')
+    parser.add_argument('-resnetdim', type=int, help='resnet dimension')
     parser.add_argument('-maxepoch', type=int, help='max_epoch')
     parser.add_argument('-gmnum', type=int, help='gm_number')
     parser.add_argument('-gmuptfreq', type=int, help='gm update frequency, in steps')
@@ -222,20 +218,20 @@ if __name__ == '__main__':
     test_x, test_y = load_test_data(args.data)
     # decay_array = np.array([0.01, 0.001, 0.0001]) #other parameters like bias may need weight_decay in the implementations
     # momentum_array = np.array([0.8, 0.9])
-    b_list, alpha_list = [100., 14., 10., 3.5, 1., 0.6, 0.2, 0.1, 0.05, 0.03, 0.01],\
-                   [0.7, 0.5, 0.3]
-    a_list = [1e-1, 1e-2]
-    b_val_num = len(b_list)
-    alpha_val_num = len(alpha_list)
-    a_val_num = len(a_list)
-    gm_lambda_ratio_list = [0.01, 0.05, 0.1, 1.]
-    gm_lambda_ratio = random.choice(gm_lambda_ratio_list)
+    alexnetdim = args.alexnetdim
+    vggdim = args.vggdim
+    resnetdim = args.resnetdim
     if args.model == 'caffe':
         train_x, test_x = normalize_for_alexnet(train_x, test_x)
-        b_idx_arr, alpha_idx_arr, a_idx_arr = np.arange(b_val_num), np.arange(alpha_val_num), np.arange(a_val_num)
-        for alpha_idx in alpha_idx_arr:
-            for b_idx in b_idx_arr:
-                for a_idx in a_idx_arr:
+        fea_num = alexnetdim
+        print "fea_num: ", fea_num
+        b, alpha = [(0.3 * fea_num), (0.5 * fea_num), (0.7 * fea_num), (0.9 * fea_num), (fea_num), (3 * fea_num), (5 * fea_num), (7 * fea_num), (9 * fea_num), (0.3 * fea_num * 1e-1), (0.5 * fea_num * 1e-1), (0.7 * fea_num * 1e-1), (0.9 * fea_num * 1e-1), (fea_num * 1e-1),\
+                   (fea_num * 0.3 * 1e-2), (0.5 * fea_num * 1e-2), (0.7 * fea_num * 1e-2), (0.9 * fea_num * 1e-2), (fea_num * 1e-2), (0.3 * fea_num * 1e-3), (0.5 * fea_num * 1e-3), (0.7 * fea_num * 1e-3), (0.9 * fea_num * 1e-3), (fea_num * 1e-3)],\
+                   [fea_num**(0.9), fea_num**(0.7), fea_num**(0.5), fea_num**(0.3)]
+        for alpha_val in alpha:
+            for b_val in b:
+                a = [(1. + b_val * 1e-1), (1. + b_val * 1e-2)]
+                for a_val in a:
                     start = time.time()
                     st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
                     print st
@@ -243,9 +239,10 @@ if __name__ == '__main__':
                     print "train_x norm: ", np.linalg.norm(train_x)
                     max_epoch = args.maxepoch
                     gm_num = args.gmnum
+                    pi, reg_lambda = [1.0/gm_num for _ in range(gm_num)], [_*10+1 for _ in  range(gm_num)]
                     net = caffe_net.create_net(args.use_cpu)
                     # for cifar10_full_train_test.prototxt
-                    train((train_x, train_y, test_x, test_y), [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], 
+                    train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda, [args.gmuptfreq, args.paramuptfreq], 
                           net, 160, alexnet_lr, 0.004, use_cpu=args.use_cpu)
                     # for cifar10_quick_train_test.prototxt
                     #train((train_x, train_y, test_x, test_y), net, 18, caffe_lr, 0.004,
@@ -257,10 +254,15 @@ if __name__ == '__main__':
                     print elapsed
     elif args.model == 'alexnet':
         train_x, test_x = normalize_for_alexnet(train_x, test_x)
-        b_idx_arr, alpha_idx_arr, a_idx_arr = np.arange(b_val_num), np.arange(alpha_val_num), np.arange(a_val_num)
-        for alpha_idx in alpha_idx_arr:
-            for b_idx in b_idx_arr:
-                for a_idx in a_idx_arr:
+        fea_num = alexnetdim
+        print "fea_num: ", fea_num
+        b, alpha = [(0.3 * fea_num), (0.5 * fea_num), (0.7 * fea_num), (0.9 * fea_num), (fea_num), (3 * fea_num), (5 * fea_num), (7 * fea_num), (9 * fea_num), (0.3 * fea_num * 1e-1), (0.5 * fea_num * 1e-1), (0.7 * fea_num * 1e-1), (0.9 * fea_num * 1e-1), (fea_num * 1e-1),\
+                   (fea_num * 0.3 * 1e-2), (0.5 * fea_num * 1e-2), (0.7 * fea_num * 1e-2), (0.9 * fea_num * 1e-2), (fea_num * 1e-2), (0.3 * fea_num * 1e-3), (0.5 * fea_num * 1e-3), (0.7 * fea_num * 1e-3), (0.9 * fea_num * 1e-3), (fea_num * 1e-3)],\
+                   [fea_num**(0.9), fea_num**(0.7), fea_num**(0.5), fea_num**(0.3)]
+        for alpha_val in alpha:
+            for b_val in b:
+                a = [(1. + b_val * 1e-1), (1. + b_val * 1e-2)]
+                for a_val in a:
                     start = time.time()
                     st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
                     print st
@@ -268,9 +270,10 @@ if __name__ == '__main__':
                     print "train_x norm: ", np.linalg.norm(train_x)
                     max_epoch = args.maxepoch
                     gm_num = args.gmnum
+                    pi, reg_lambda = [1.0/gm_num for _ in range(gm_num)], [_*10+1 for _ in  range(gm_num)]
                     net = alexnet.create_net(args.use_cpu)
                     print "[a_val, b_val, alpha_val]: ", [a_val, b_val, alpha_val]
-                    train((train_x, train_y, test_x, test_y), [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], 
+                    train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda, [args.gmuptfreq, args.paramuptfreq], 
                           net, 160, alexnet_lr, 0.004, use_cpu=args.use_cpu)
                     done = time.time()
                     do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
@@ -279,17 +282,23 @@ if __name__ == '__main__':
                     print elapsed
     elif args.model == 'vgg':
         train_x, test_x = normalize_for_vgg(train_x, test_x)
-        b_idx_arr, alpha_idx_arr, a_idx_arr = np.arange(b_val_num), np.arange(alpha_val_num), np.arange(a_val_num)
-        for alpha_idx in alpha_idx_arr:
-            for b_idx in b_idx_arr:
-                for a_idx in a_idx_arr:
+        fea_num = vggdim
+        print "fea_num: ", fea_num
+        b, alpha = [(0.3 * fea_num), (0.5 * fea_num), (0.7 * fea_num), (0.9 * fea_num), (fea_num), (3 * fea_num), (5 * fea_num), (7 * fea_num), (9 * fea_num), (0.3 * fea_num * 1e-1), (0.5 * fea_num * 1e-1), (0.7 * fea_num * 1e-1), (0.9 * fea_num * 1e-1), (fea_num * 1e-1),\
+                   (fea_num * 0.3 * 1e-2), (0.5 * fea_num * 1e-2), (0.7 * fea_num * 1e-2), (0.9 * fea_num * 1e-2), (fea_num * 1e-2), (0.3 * fea_num * 1e-3), (0.5 * fea_num * 1e-3), (0.7 * fea_num * 1e-3), (0.9 * fea_num * 1e-3), (fea_num * 1e-3)],\
+                   [fea_num**(0.9), fea_num**(0.7), fea_num**(0.5), fea_num**(0.3)]
+        for alpha_val in alpha:
+            for b_val in b:
+                a = [(1. + b_val * 1e-1), (1. + b_val * 1e-2)]
+                for a_val in a:
                     start = time.time()
                     st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
                     print st
                     max_epoch = args.maxepoch
                     gm_num = args.gmnum
+                    pi, reg_lambda = [1.0/gm_num for _ in range(gm_num)], [_*10+1 for _ in  range(gm_num)]
                     net = vgg.create_net(args.use_cpu)
-                    train((train_x, train_y, test_x, test_y), [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], 
+                    train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda, [args.gmuptfreq, args.paramuptfreq], 
                           net, 250, vgg_lr, 0.0005, use_cpu=args.use_cpu)
                     done = time.time()
                     do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
@@ -298,17 +307,23 @@ if __name__ == '__main__':
                     print elapsed
     else:
         train_x, test_x = normalize_for_resnet(train_x, test_x)
-        b_idx_arr, alpha_idx_arr, a_idx_arr = np.arange(b_val_num), np.arange(alpha_val_num), np.arange(a_val_num)
-        for alpha_idx in alpha_idx_arr:
-            for b_idx in b_idx_arr:
-                for a_idx in a_idx_arr:
+        fea_num = resnetdim
+        print "fea_num: ", fea_num
+        b, alpha = [(0.3 * fea_num), (0.5 * fea_num), (0.7 * fea_num), (0.9 * fea_num), (fea_num), (3 * fea_num), (5 * fea_num), (7 * fea_num), (9 * fea_num), (0.3 * fea_num * 1e-1), (0.5 * fea_num * 1e-1), (0.7 * fea_num * 1e-1), (0.9 * fea_num * 1e-1), (fea_num * 1e-1),\
+                   (fea_num * 0.3 * 1e-2), (0.5 * fea_num * 1e-2), (0.7 * fea_num * 1e-2), (0.9 * fea_num * 1e-2), (fea_num * 1e-2), (0.3 * fea_num * 1e-3), (0.5 * fea_num * 1e-3), (0.7 * fea_num * 1e-3), (0.9 * fea_num * 1e-3), (fea_num * 1e-3)],\
+                   [fea_num**(0.9), fea_num**(0.7), fea_num**(0.5), fea_num**(0.3)]
+        for alpha_val in alpha:
+            for b_val in b:
+                a = [(1. + b_val * 1e-1), (1. + b_val * 1e-2)]
+                for a_val in a:
                     start = time.time()
                     st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
                     print st
                     max_epoch = args.maxepoch
                     gm_num = args.gmnum
+                    pi, reg_lambda = [1.0/gm_num for _ in range(gm_num)], [_*10+1 for _ in  range(gm_num)]
                     net = resnet.create_net(args.use_cpu)
-                    train((train_x, train_y, test_x, test_y), [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], 
+                    train((train_x, train_y, test_x, test_y), [a_val, b_val, alpha_val], gm_num, pi, reg_lambda, [args.gmuptfreq, args.paramuptfreq], 
                           net, 200, resnet_lr, 1e-4, use_cpu=args.use_cpu)
                     done = time.time()
                     do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')

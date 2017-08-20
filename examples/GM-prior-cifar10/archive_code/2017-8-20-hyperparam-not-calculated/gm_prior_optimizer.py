@@ -10,13 +10,13 @@ from singa import tensor
 from singa import singa_wrap as singa
 from singa.proto import model_pb2
 from scipy.stats import norm as gaussian
-import math
-
+import random
 class GMOptimizer(Optimizer):
     '''
     introduce hyper-parameters for GM-regularization: a, b, alpha
     '''
-    def __init__(self, net=None, lr=None, momentum=None, weight_decay=None,
+    def __init__(self, net=None, hyperpara=None, gm_num=None, pi=None, reg_lambda=None, uptfreq=None, 
+                 lr=None, momentum=None, weight_decay=None,
                  regularizer=None, constraint=None):
         Optimizer.__init__(self, lr=lr, momentum=momentum, weight_decay=weight_decay,
                  regularizer=regularizer, constraint=constraint)
@@ -24,36 +24,35 @@ class GMOptimizer(Optimizer):
         self.weight_name_list = {}
         self.weight_dim_list = {}
         self.gmregularizers = {}
+        self.extract_layer_name_dim_gmregularizer(net, hyperpara=hyperpara, gm_num=gm_num, pi=pi, reg_lambda=reg_lambda, uptfreq=uptfreq)
 
-    def layer_wise_hyperpara(self, fea_num, hyperpara_list, hyperpara_idx):
+    def layer_wise_hyperpara(self, fea_num):
         print "layer_wise fea_num: ", fea_num
-        a_list = hyperpara_list[0]
-        b_list = hyperpara_list[1]
-        alpha_list = hyperpara_list[2]
-        alpha_val = fea_num ** (alpha_list[hyperpara_idx[2]])
-        b_val = (b_list[hyperpara_idx[1]]) * fea_num
-        a_val = 1. + (b_val * a_list[hyperpara_idx[0]])
+        b, alpha = [(0.3 * fea_num), (0.5 * fea_num), (0.7 * fea_num), (0.9 * fea_num), (fea_num), (3 * fea_num), (5 * fea_num), (7 * fea_num), (9 * fea_num), (0.3 * fea_num * 1e-1), (0.5 * fea_num * 1e-1), (0.7 * fea_num * 1e-1), (0.9 * fea_num * 1e-1), (fea_num * 1e-1),\
+                   (fea_num * 0.3 * 1e-2), (0.5 * fea_num * 1e-2), (0.7 * fea_num * 1e-2), (0.9 * fea_num * 1e-2), (fea_num * 1e-2), (0.3 * fea_num * 1e-3), (0.5 * fea_num * 1e-3), (0.7 * fea_num * 1e-3), (0.9 * fea_num * 1e-3), (fea_num * 1e-3)],\
+                   [fea_num**(0.9), fea_num**(0.7), fea_num**(0.5), fea_num**(0.3)]
+        alpha_val = random.choice(alpha)
+        b_val = random.choice(b)
+        a = [(1. + b_val * 1e-1), (1. + b_val * 1e-2)]
+        a_val = random.choice(a)
         return [a_val, b_val, alpha_val]
 
-    # only for resnet
-    def gm_register(self, name, value, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq):
-        print "param name: ", name
-        print "param shape: ", tensor.to_numpy(value).shape
-        if np.ndim(tensor.to_numpy(value)) == 2:
-            self.weight_name_list[name] = name
-            dims = tensor.to_numpy(value).shape[0] * tensor.to_numpy(value).shape[1]
-            print "dims: ", dims
-            self.weight_dim_list[name] = dims
-            layer_hyperpara = self.layer_wise_hyperpara(dims, hyperpara_list, hyperpara_idx) # layerwise initialization of hyper-params
-            pi = [1.0/gm_num for _ in range(gm_num)]
-            k = 1.0 + gm_lambda_ratio
-            if 'conv' in name:
-                base = (3.0 * 3.0 * value.shape[0] / 2.0) / 10.0
-                reg_lambda = [base*math.pow(k,_) for _ in  range(gm_num)]
-            else:
-                base = ((value.shape[0] + value.shape[1]) / 6.0) / 10.0
-                reg_lambda = [base*math.pow(k,_) for _ in  range(gm_num)]
-            self.gmregularizers[name] = GMRegularizer(hyperpara=layer_hyperpara, gm_num=gm_num, pi=pi, reg_lambda=reg_lambda, uptfreq=uptfreq)
+    def extract_layer_name_dim_gmregularizer(self, net, hyperpara, gm_num, pi, reg_lambda, uptfreq):
+        for (s, p) in zip(net.param_names(), net.param_values()):
+            print "param name: ", s
+            print "param shape: ", tensor.to_numpy(p).shape
+            if np.ndim(tensor.to_numpy(p)) == 2:
+                self.weight_name_list[s] = s
+                dims = tensor.to_numpy(p).shape[0] * tensor.to_numpy(p).shape[1]
+                print "dims: ", dims
+                self.weight_dim_list[s] = dims
+                layer_hyperpara = self.layer_wise_hyperpara(dims) # layerwise initialization of hyper-params
+                self.gmregularizers[s] = GMRegularizer(hyperpara=layer_hyperpara, gm_num=gm_num, pi=pi, reg_lambda=reg_lambda, uptfreq=uptfreq)
+        self.weightdimSum = sum(self.weight_dim_list.values())
+        print "self.weightdimSum: ", self.weightdimSum
+        print "self.weight_name_list: ", self.weight_name_list
+        print "self.weight_dim_list: ", self.weight_dim_list
+
 
     def apply_GM_regularizer_constraint(self, dev, trainnum, net, epoch, value, grad, name, step):
         # if np.ndim(tensor.to_numpy(value)) <= 2:
@@ -128,9 +127,11 @@ class GMSGD(GMOptimizer, SGD):
     But this SGD has a GM regularizer
     '''
 
-    def __init__(self, net=None, lr=None, momentum=None, weight_decay=None,
+    def __init__(self, net=None, hyperpara=None, gm_num=None, pi=None, reg_lambda=None, uptfreq=None, 
+                 lr=None, momentum=None, weight_decay=None,
                  regularizer=None, constraint=None):
-        GMOptimizer.__init__(self, net=net, lr=lr, momentum=momentum, weight_decay=weight_decay, regularizer=regularizer,
+        GMOptimizer.__init__(self, net=net, hyperpara=hyperpara, gm_num=gm_num, pi=pi, reg_lambda=reg_lambda, uptfreq=uptfreq, 
+                                  lr=lr, momentum=momentum, weight_decay=weight_decay, regularizer=regularizer,
                                   constraint=constraint)
         SGD.__init__(self, lr=lr, momentum=momentum, weight_decay=weight_decay,
                  regularizer=regularizer, constraint=constraint)
