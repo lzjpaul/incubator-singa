@@ -108,15 +108,15 @@ class GMRegularizer(Regularizer):
         reg_grad_w_dev = tensor.from_numpy((self.reg_grad_w.reshape(tensor.to_numpy(value).shape[0], -1))/float(trainnum))
         reg_grad_w_dev.to_device(dev)
         grad.to_device(dev)
-        if step % self.gmuptfreq == 0:
+        if (epoch == 0 and step < 50) or step % self.gmuptfreq == 0:
             print "step: ", step
             print "name: ", name
-            print "before axpy grad l2: ", grad.l2()
+            print "data grad l2 norm: ", grad.l2()
+            print "reg_grad_w_dev l2 norm: ", reg_grad_w_dev.l2()
         tensor.axpy(1.0, reg_grad_w_dev, grad)
-        if step % self.gmuptfreq == 0:
-            print "value l2: ", value.l2()
-            print "reg_grad_w_dev l2: ", reg_grad_w_dev.l2()
-            print "grad l2: ", grad.l2()
+        if (epoch == 0 and step < 50) or step % self.gmuptfreq == 0:
+            print "delta w norm: ", grad.l2()
+            print "w norm: ", value.l2()
         if epoch < 2 or step % self.gmuptfreq == 0:
             if epoch >=2 and step % self.paramuptfreq != 0:
                 self.calcResponsibility()
