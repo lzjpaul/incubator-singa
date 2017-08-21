@@ -229,9 +229,8 @@ if __name__ == '__main__':
     alpha_val_num = len(alpha_list)
     a_val_num = len(a_list)
     # gm_lambda_ratio_list = [ -1., 0.05,  1.]
-    gm_lambda_ratio_list = [1.]
+    gm_lambda_ratio_list = [-1.]
     gm_lambda_ratio = random.choice(gm_lambda_ratio_list)
-    print "gm_lambda_ratio: ", gm_lambda_ratio
     if args.model == 'caffe':
         train_x, test_x = normalize_for_alexnet(train_x, test_x)
         b_idx_arr, alpha_idx_arr, a_idx_arr = np.arange(b_val_num), np.arange(alpha_val_num), np.arange(a_val_num)

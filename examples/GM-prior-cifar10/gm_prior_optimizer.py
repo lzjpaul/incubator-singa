@@ -47,6 +47,7 @@ class GMOptimizer(Optimizer):
             layer_hyperpara = self.layer_wise_hyperpara(dims, hyperpara_list, hyperpara_idx) # layerwise initialization of hyper-params
             pi = [1.0/gm_num for _ in range(gm_num)]
             k = 1.0 + gm_lambda_ratio
+            print "gm_lambda_ratio: ", gm_lambda_ratio
             if 'conv' in name:
                 base = (3.0 * 3.0 * value.shape[0] / 2.0) / 10.0
             else:
