@@ -49,10 +49,13 @@ class GMOptimizer(Optimizer):
             k = 1.0 + gm_lambda_ratio
             if 'conv' in name:
                 base = (3.0 * 3.0 * value.shape[0] / 2.0) / 10.0
-                reg_lambda = [base*math.pow(k,_) for _ in  range(gm_num)]
             else:
                 base = ((value.shape[0] + value.shape[1]) / 6.0) / 10.0
+            if gm_lambda_ratio > 0.0:
                 reg_lambda = [base*math.pow(k,_) for _ in  range(gm_num)]
+            else:
+                reg_lambda_range = base * 4.0
+                reg_lambda = np.arange(1.0, reg_lambda_range, reg_lambda_range/gm_num)
             self.gmregularizers[name] = GMRegularizer(hyperpara=layer_hyperpara, gm_num=gm_num, pi=pi, reg_lambda=reg_lambda, uptfreq=uptfreq)
 
     def apply_GM_regularizer_constraint(self, dev, trainnum, net, epoch, value, grad, name, step):

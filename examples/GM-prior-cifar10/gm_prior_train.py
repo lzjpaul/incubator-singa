@@ -222,14 +222,16 @@ if __name__ == '__main__':
     test_x, test_y = load_test_data(args.data)
     # decay_array = np.array([0.01, 0.001, 0.0001]) #other parameters like bias may need weight_decay in the implementations
     # momentum_array = np.array([0.8, 0.9])
-    b_list, alpha_list = [100., 14., 10., 3.5, 1., 0.6, 0.2, 0.1, 0.05, 0.03, 0.01],\
+    b_list, alpha_list = [100., 14., 10., 3.5, 1., 0.6, 0.2, 0.1, 0.05, 0.03, 0.01, 0.001, 0.0001],\
                    [0.7, 0.5, 0.3]
     a_list = [1e-1, 1e-2]
     b_val_num = len(b_list)
     alpha_val_num = len(alpha_list)
     a_val_num = len(a_list)
-    gm_lambda_ratio_list = [0.01, 0.05, 0.1, 1.]
+    # gm_lambda_ratio_list = [ -1., 0.05,  1.]
+    gm_lambda_ratio_list = [1.]
     gm_lambda_ratio = random.choice(gm_lambda_ratio_list)
+    print "gm_lambda_ratio: ", gm_lambda_ratio
     if args.model == 'caffe':
         train_x, test_x = normalize_for_alexnet(train_x, test_x)
         b_idx_arr, alpha_idx_arr, a_idx_arr = np.arange(b_val_num), np.arange(alpha_val_num), np.arange(a_val_num)
