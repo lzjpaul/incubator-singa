@@ -135,8 +135,22 @@ def caffe_lr(epoch):
     else:
         return 0.0001
 
+def write_out_result(resultpath, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq, lr, weight_decay, batch_size):
+    f= open(resultpath, 'a')
+    f.write("new result: \n")
+    f.write("a: " + str(hyperpara_list[0][hyperpara_idx[0]]) + "\n")
+    f.write("b: " + str(hyperpara_list[1][hyperpara_idx[1]]) + "\n")
+    f.write("alpha: " + str(hyperpara_list[2][hyperpara_idx[2]]) + "\n")
+    f.write("gm_num: " + str(gm_num) + "\n")
+    f.write("gm_lambda_ratio: " + str(gm_lambda_ratio) + "\n")
+    f.write("gmuptfreq: " + str(uptfreq[0]) + "\n")
+    f.write("paramuptfreq: " + str(uptfreq[1]) + "\n")
+    f.write("lr: " + str(lr) + "\n")
+    f.write("weight_decay: " + str(weight_decay) + "\n")
+    f.write("batch_size: " + str(batch_size) + "\n")
+    f.close()
 
-def train(data, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq, net, max_epoch, get_lr, weight_decay, gpuid, batch_size=100,
+def train(resultpath, data, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq, net, max_epoch, get_lr, weight_decay, gpuid, batch_size=100,
           use_cpu=False):
     print 'Start intialization............'
     if use_cpu:
@@ -204,6 +218,7 @@ def train(data, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq,
         if epoch == (max_epoch - 1):
             print 'final test loss = %f, test accuracy = %f' \
             % (loss / num_test_batch, acc / num_test_batch)
+            write_out_result(resultpath, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq, get_lr(epoch), weight_decay, batch_size)      
     dl_train.end()
     net.save('model', 20)  # save model params into checkpoint file
 
@@ -231,7 +246,8 @@ if __name__ == '__main__':
     parser.add_argument('-gmuptfreq', type=int, help='gm update frequency, in steps')
     parser.add_argument('-paramuptfreq', type=int, help='parameter update frequency, in steps')
     parser.add_argument('-gpuid', type=int, help='gpuid')
-    parser.add_argument('-hyperparampath', type=str, help='hyper parameters path' )
+    parser.add_argument('-hyperparampath', type=str, help='hyper parameters path')
+    parser.add_argument('-resultpath', type=str, help='result path')
     args = parser.parse_args()
     assert os.path.exists(args.data), \
         'Pls download the cifar10 dataset via "download_data.py py"'
@@ -264,7 +280,7 @@ if __name__ == '__main__':
                     gm_num = args.gmnum
                     net = caffe_net.create_net(args.use_cpu)
                     # for cifar10_full_train_test.prototxt
-                    train((train_x, train_y, test_x, test_y), [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], net, 160, alexnet_lr, 0.004, args.gpuid, use_cpu=args.use_cpu)
+                    train(args.resultpath, (train_x, train_y, test_x, test_y), [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], net, 160, alexnet_lr, 0.004, args.gpuid, use_cpu=args.use_cpu)
                     # for cifar10_quick_train_test.prototxt
                     #train((train_x, train_y, test_x, test_y), net, 18, caffe_lr, 0.004,
                     #      use_cpu=args.use_cpu)
@@ -287,8 +303,7 @@ if __name__ == '__main__':
                     max_epoch = args.maxepoch
                     gm_num = args.gmnum
                     net = alexnet.create_net(args.use_cpu)
-                    train((train_x, train_y, test_x, test_y), [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], 
-                          net, 160, alexnet_lr, 0.004, args.gpuid, use_cpu=args.use_cpu)
+                    train(args.resultpath, (train_x, train_y, test_x, test_y), [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], net, 160, alexnet_lr, 0.004, args.gpuid, use_cpu=args.use_cpu)
                     done = time.time()
                     do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
                     print do
@@ -306,8 +321,7 @@ if __name__ == '__main__':
                     max_epoch = args.maxepoch
                     gm_num = args.gmnum
                     net = vgg.create_net(args.use_cpu)
-                    train((train_x, train_y, test_x, test_y), [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], 
-                          net, 250, vgg_lr, 0.0005, args.gpuid, use_cpu=args.use_cpu)
+                    train(args.resultpath, (train_x, train_y, test_x, test_y), [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], net, 250, vgg_lr, 0.0005, args.gpuid, use_cpu=args.use_cpu)
                     done = time.time()
                     do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
                     print do
@@ -325,8 +339,7 @@ if __name__ == '__main__':
                     max_epoch = args.maxepoch
                     gm_num = args.gmnum
                     net = resnet.create_net(args.use_cpu)
-                    train((train_x, train_y, test_x, test_y), [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], 
-                          net, 200, resnet_lr, 1e-4, args.gpuid, use_cpu=args.use_cpu)
+                    train(args.resultpath, (train_x, train_y, test_x, test_y), [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], net, 200, resnet_lr, 1e-4, args.gpuid, use_cpu=args.use_cpu)
                     done = time.time()
                     do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
                     print do
