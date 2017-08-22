@@ -207,6 +207,19 @@ def train(data, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq,
     dl_train.end()
     net.save('model', 20)  # save model params into checkpoint file
 
+def get_hyperparams(hyperparampath, gm_lambda_ratio_list, a_list, alpha_list, b_list):
+    hyperparam_config = np.genfromtxt(hyperparampath, delimiter=",")
+    hyperparam_config = hyperparam_config.astype(int)
+    gm_lambda_ratio_list = gm_lambda_ratio_list[hyperparam_config[0][0]:hyperparam_config[0][1]]
+    a_list = a_list[hyperparam_config[1][0]:hyperparam_config[1][1]]
+    alpha_list = alpha_list[hyperparam_config[2][0]:hyperparam_config[2][1]]
+    b_list = b_list[hyperparam_config[3][0]:hyperparam_config[3][1]]
+    print gm_lambda_ratio_list
+    print a_list
+    print alpha_list
+    print b_list
+    return gm_lambda_ratio_list, a_list, alpha_list, b_list
+    
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train dcnn for cifar10')
     parser.add_argument('model', choices=['vgg', 'alexnet', 'resnet', 'caffe'],
@@ -218,6 +231,7 @@ if __name__ == '__main__':
     parser.add_argument('-gmuptfreq', type=int, help='gm update frequency, in steps')
     parser.add_argument('-paramuptfreq', type=int, help='parameter update frequency, in steps')
     parser.add_argument('-gpuid', type=int, help='gpuid')
+    parser.add_argument('-hyperparampath', type=str, help='hyper parameters path' )
     args = parser.parse_args()
     assert os.path.exists(args.data), \
         'Pls download the cifar10 dataset via "download_data.py py"'
@@ -226,14 +240,14 @@ if __name__ == '__main__':
     test_x, test_y = load_test_data(args.data)
     # decay_array = np.array([0.01, 0.001, 0.0001]) #other parameters like bias may need weight_decay in the implementations
     # momentum_array = np.array([0.8, 0.9])
+    gm_lambda_ratio_list = [ -1., 0.05,  1.]
     b_list, alpha_list = [100., 10., 1., 0.3, 0.1, 0.03, 0.01, 0.001, 0.0001],\
                    [0.7, 0.5, 0.3]
     a_list = [1e-1, 1e-2]
+    gm_lambda_ratio_list, a_list, alpha_list, b_list = get_hyperparams(args.hyperparampath, gm_lambda_ratio_list, a_list, alpha_list, b_list)
     b_val_num = len(b_list)
     alpha_val_num = len(alpha_list)
     a_val_num = len(a_list)
-    gm_lambda_ratio_list = [ -1., 0.05,  1.]
-    # gm_lambda_ratio_list = [-1.]
     gm_lambda_ratio = random.choice(gm_lambda_ratio_list)
     if args.model == 'caffe':
         train_x, test_x = normalize_for_alexnet(train_x, test_x)
