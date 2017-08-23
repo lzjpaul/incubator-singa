@@ -135,7 +135,7 @@ def caffe_lr(epoch):
     else:
         return 0.0001
 
-def write_out_result(resultpath, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq, lr, weight_decay, batch_size):
+def write_out_result(resultpath, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq, lr, weight_decay, batch_size, test_loss, test_accuracy):
     f= open(resultpath, 'a')
     f.write("new result: \n")
     f.write("a: " + str(hyperpara_list[0][hyperpara_idx[0]]) + "\n")
@@ -148,6 +148,9 @@ def write_out_result(resultpath, hyperpara_list, hyperpara_idx, gm_num, gm_lambd
     f.write("lr: " + str(lr) + "\n")
     f.write("weight_decay: " + str(weight_decay) + "\n")
     f.write("batch_size: " + str(batch_size) + "\n")
+    f.write("test loss: " + str(test_loss) + "\n")
+    f.write("test accuracy: " + str(test_accuracy) + "\n")
+    f.write("\n")
     f.close()
 
 def train(resultpath, data, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq, net, max_epoch, get_lr, weight_decay, gpuid, batch_size=100,
@@ -218,7 +221,7 @@ def train(resultpath, data, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_rat
         if epoch == (max_epoch - 1):
             print 'final test loss = %f, test accuracy = %f' \
             % (loss / num_test_batch, acc / num_test_batch)
-            write_out_result(resultpath, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq, get_lr(epoch), weight_decay, batch_size)      
+            write_out_result(resultpath, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq, get_lr(epoch), weight_decay, batch_size, loss / num_test_batch, acc / num_test_batch)      
     dl_train.end()
     net.save('model', 20)  # save model params into checkpoint file
 
