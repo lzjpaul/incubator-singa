@@ -1,0 +1,1 @@
+python gm_prior_train_lambda_3_a_2_alpha_3_b_1.py -maxepoch 10 -gmnum 4 -gmuptfreq 100 -paramuptfreq 50 -gpuid 2 resnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0821/GMM-DL-three/GMM-DL-three-35
