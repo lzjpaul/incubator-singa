@@ -1,18 +1,37 @@
 import numpy as np
 import os
 
-
+# modify a,b,alpha list
+# modify idx_list
+# modify gpu id
+'''
+check and process:
+(1) printed parameters correct?
+(2) scripts, gpuid
+(3) create folders in /data folder
+'''
 class Config_Script:
     def __init__(self):
-        self.gm_lambda_ratio_list = [ -1., 0.05,  1.]
+        # 8-24 alexnet
+        self.gm_lambda_ratio_list = [-1., 0.05, 1.]
         self.a_list = [1e-1, 1e-2]
-        self.b_list, self.alpha_list = [100., 10., 1., 0.3, 0.1, 0.03, 0.01, 0.001, 0.0001], [0.7, 0.5, 0.3]
+        self.b_list, self.alpha_list = [100., 10., 1., 0.3, 0.1, 0.03, 0.01, 0.001, 0.0001, 0.0003, 0.00001], [0.7, 0.5, 0.3]
+       
+        # 8-23
+        # self.gm_lambda_ratio_list = [ -1., 1.0,  1.5]
+        # self.a_list = [1e-2]
+        # self.b_list, self.alpha_list = [0.09, 0.07, 0.05, 0.04, 0.03, 0.02], [0.5, 0.3]
 
+        # 8-21
+        # self.lambda_idx_list = [np.array([0,1]), np.array([1,2]), np.array([2,3])]
+        # self.a_idx_list=[np.array([0,1]), np.array([1,2])]
+        # self.alpha_idx_list = [np.array([0,1]), np.array([1,2]), np.array([2,3])]
+        # self.b_idx_list = [np.array([0,5]), np.array([5, 9])]
         # modify here
         self.lambda_idx_list = [np.array([0,1]), np.array([1,2]), np.array([2,3])]
-        self.a_idx_list=[np.array([0,1]), np.array([1,2])]
+        self.a_idx_list= [np.array([0,1]), np.array([1,2])]
         self.alpha_idx_list = [np.array([0,1]), np.array([1,2]), np.array([2,3])]
-        self.b_idx_list = [np.array([0,5]), np.array([5, 9])]
+        self.b_idx_list = [np.array([0,5]), np.array([5, 11])]
 
     def gen_hyperparam_config(self, hyperparam_path):
         index = 0
@@ -51,10 +70,10 @@ class Config_Script:
                 for k in range(len(self.alpha_idx_list)):
                     for l in range(len(self.b_idx_list)):
                         python_programme = "gm_prior_train.py "
-                        hyper_param_path = "script_generator/8-23/hyperparams" # modify here
+                        hyper_param_path = "script_generator/8-24/hyperparams" # modify here
                         hyper_param_prefix = 'lambda_' + str(i) + '_a_' + str(j) + '_alpha_' + str(k) + '_b_' + str(l)
-                        data_path = "/data/zhaojing/regularization/log0823/GMM-DL-four" # modify here
-                        script = ("python " + python_programme + "-maxepoch 10 -gmnum 4 -gmuptfreq 100 -paramuptfreq 50 -gpuid 0 -hyperparampath " + str(os.path.join(hyper_param_path, (hyper_param_prefix + ".csv"))) + " -resultpath " + str(os.path.join(data_path, ('GMM-DL-four_' + hyper_param_prefix + "_result "))) + "alexnet cifar-10-batches-py/ | tee -a " + data_path + "/GMM-DL-four-" + str(index) + ".log\n") # modify two places of 'GMM-DL-four-'
+                        data_path = "/data/zhaojing/regularization/log0824/GMM-DL-five" # modify here
+                        script = ("python " + python_programme + "-maxepoch 10 -gmnum 4 -gmuptfreq 100 -paramuptfreq 50 -gpuid 0 -hyperparampath " + str(os.path.join(hyper_param_path, (hyper_param_prefix + ".csv"))) + " -resultpath " + str(os.path.join(data_path, ('GMM-DL-five_' + hyper_param_prefix + "_result.txt "))) + "alexnet cifar-10-batches-py/ | tee -a " + data_path + "/GMM-DL-five-" + str(index) + ".log\n") # modify two places of 'GMM-DL-four-' + resnet
  
                         index = (index + 1)
                         f= open(sh_script_path, 'a')
@@ -74,7 +93,7 @@ class Config_Script:
 
 if __name__ == '__main__':
    cs = Config_Script()
-   cs.gen_hyperparam_config('8-23/hyperparams')
-   cs.gen_sh_script('8-23/scripts/GMM-DL-four.sh') # need to go into to modify
+   # cs.gen_hyperparam_config('8-24/hyperparams')
+   # cs.gen_sh_script('8-24/scripts/GMM-DL-five.sh') # need to go into to modify
    # need to modify gpu id manually first
-   cs.gen_multiple_sh_scripts('8-23/scripts/GMM-DL-four.sh', '8-23/scripts/GMM-DL-four-')
+   cs.gen_multiple_sh_scripts('8-24/scripts/GMM-DL-five.sh', '8-24/scripts/GMM-DL-five-')

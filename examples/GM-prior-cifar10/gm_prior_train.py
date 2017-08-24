@@ -153,7 +153,7 @@ def write_out_result(resultpath, hyperpara_list, hyperpara_idx, gm_num, gm_lambd
     f.write("\n")
     f.close()
 
-def train(resultpath, data, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq, net, max_epoch, get_lr, weight_decay, gpuid, batch_size=100,
+def train(resultpath, data, model_name, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq, net, max_epoch, get_lr, weight_decay, gpuid, batch_size=100,
           use_cpu=False):
     print 'Start intialization............'
     if use_cpu:
@@ -170,7 +170,7 @@ def train(resultpath, data, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_rat
     for (p, specs) in zip(net.param_names(), net.param_specs()):
         opt.register(p, specs)
     for (s, p) in zip(net.param_names(), net.param_values()):
-        opt.gm_register(s, p, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq)
+        opt.gm_register(s, p, model_name, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq)
     opt.weightdimSum = sum(opt.weight_dim_list.values())
     print "opt.weightdimSum: ", opt.weightdimSum
     print "opt.weight_name_list: ", opt.weight_name_list
@@ -259,10 +259,22 @@ if __name__ == '__main__':
     test_x, test_y = load_test_data(args.data)
     # decay_array = np.array([0.01, 0.001, 0.0001]) #other parameters like bias may need weight_decay in the implementations
     # momentum_array = np.array([0.8, 0.9])
-    gm_lambda_ratio_list = [ -1., 0.05,  1.]
-    b_list, alpha_list = [100., 10., 1., 0.3, 0.1, 0.03, 0.01, 0.001, 0.0001],\
-                   [0.7, 0.5, 0.3]
+    # 8-21
+    # gm_lambda_ratio_list = [ -1., 0.05,  1.]
+    # b_list, alpha_list = [100., 10., 1., 0.3, 0.1, 0.03, 0.01, 0.001, 0.0001],\
+    #                [0.7, 0.5, 0.3]
+    # a_list = [1e-1, 1e-2]
+    # 8-23
+    # gm_lambda_ratio_list = [ -1., 1., 1.5]
+    # a_list = [1e-2]
+    # b_list, alpha_list = [0.09, 0.07, 0.05, 0.04, 0.03, 0.02],\
+    #                [0.5, 0.3]
+    # 8-24-alexnet
+    gm_lambda_ratio_list = [ -1., 0.05, 1.]
     a_list = [1e-1, 1e-2]
+    b_list, alpha_list = [100., 10., 1., 0.3, 0.1, 0.03, 0.01, 0.001, 0.0001, 0.0003, 0.00001],\
+                   [0.7, 0.5, 0.3]
+    ###################################################
     gm_lambda_ratio_list, a_list, alpha_list, b_list = get_hyperparams(args.hyperparampath, gm_lambda_ratio_list, a_list, alpha_list, b_list)
     b_val_num = len(b_list)
     alpha_val_num = len(alpha_list)
@@ -283,7 +295,7 @@ if __name__ == '__main__':
                     gm_num = args.gmnum
                     net = caffe_net.create_net(args.use_cpu)
                     # for cifar10_full_train_test.prototxt
-                    train(args.resultpath, (train_x, train_y, test_x, test_y), [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], net, 160, alexnet_lr, 0.004, args.gpuid, use_cpu=args.use_cpu)
+                    train(args.resultpath, (train_x, train_y, test_x, test_y), args.model, [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], net, 160, alexnet_lr, 0.004, args.gpuid, use_cpu=args.use_cpu)
                     # for cifar10_quick_train_test.prototxt
                     #train((train_x, train_y, test_x, test_y), net, 18, caffe_lr, 0.004,
                     #      use_cpu=args.use_cpu)
@@ -306,7 +318,7 @@ if __name__ == '__main__':
                     max_epoch = args.maxepoch
                     gm_num = args.gmnum
                     net = alexnet.create_net(args.use_cpu)
-                    train(args.resultpath, (train_x, train_y, test_x, test_y), [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], net, 160, alexnet_lr, 0.004, args.gpuid, use_cpu=args.use_cpu)
+                    train(args.resultpath, (train_x, train_y, test_x, test_y), args.model, [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], net, 160, alexnet_lr, 0.004, args.gpuid, use_cpu=args.use_cpu)
                     done = time.time()
                     do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
                     print do
@@ -324,7 +336,7 @@ if __name__ == '__main__':
                     max_epoch = args.maxepoch
                     gm_num = args.gmnum
                     net = vgg.create_net(args.use_cpu)
-                    train(args.resultpath, (train_x, train_y, test_x, test_y), [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], net, 250, vgg_lr, 0.0005, args.gpuid, use_cpu=args.use_cpu)
+                    train(args.resultpath, (train_x, train_y, test_x, test_y), args.model, [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], net, 250, vgg_lr, 0.0005, args.gpuid, use_cpu=args.use_cpu)
                     done = time.time()
                     do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
                     print do
@@ -342,7 +354,7 @@ if __name__ == '__main__':
                     max_epoch = args.maxepoch
                     gm_num = args.gmnum
                     net = resnet.create_net(args.use_cpu)
-                    train(args.resultpath, (train_x, train_y, test_x, test_y), [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], net, 200, resnet_lr, 1e-4, args.gpuid, use_cpu=args.use_cpu)
+                    train(args.resultpath, (train_x, train_y, test_x, test_y), args.model, [a_list, b_list, alpha_list], [a_idx, b_idx, alpha_idx], gm_num, gm_lambda_ratio, [args.gmuptfreq, args.paramuptfreq], net, 200, resnet_lr, 1e-4, args.gpuid, use_cpu=args.use_cpu)
                     done = time.time()
                     do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
                     print do

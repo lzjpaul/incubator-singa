@@ -35,8 +35,7 @@ class GMOptimizer(Optimizer):
         a_val = 1. + (b_val * a_list[hyperpara_idx[0]])
         return [a_val, b_val, alpha_val]
 
-    # only for resnet
-    def gm_register(self, name, value, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq):
+    def gm_register(self, name, value, model_name, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq):
         print "param name: ", name
         print "param shape: ", tensor.to_numpy(value).shape
         if np.ndim(tensor.to_numpy(value)) == 2:
@@ -48,10 +47,19 @@ class GMOptimizer(Optimizer):
             pi = [1.0/gm_num for _ in range(gm_num)]
             k = 1.0 + gm_lambda_ratio
             print "gm_lambda_ratio: ", gm_lambda_ratio
-            if 'conv' in name:
-                base = (3.0 * 3.0 * value.shape[0] / 2.0) / 10.0
-            else:
-                base = ((value.shape[0] + value.shape[1]) / 6.0) / 10.0
+            # calculate base
+            if model_name == 'alexnet':
+                if 'conv1' in name:
+                    base = 100000000.0 / 10000000.0
+                else:
+                    base = 10000.0 / 1000.0
+            else: # for resnet
+                if 'conv' in name:
+                    base = (3.0 * 3.0 * value.shape[0] / 2.0) / 10.0
+                else:
+                    base = ((value.shape[0] + value.shape[1]) / 6.0) / 10.0
+            print "base: ", base
+            # calculate GM initialized lambda (1/variance)
             if gm_lambda_ratio > 0.0:
                 reg_lambda = [base*math.pow(k,_) for _ in  range(gm_num)]
             else:
