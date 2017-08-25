@@ -4,15 +4,16 @@ import os
 # modify a,b,alpha list
 # modify idx_list
 # modify gpu id
+# create folders in /data folder
+# copy programms to other machines
 '''
 check and process:
 (1) printed parameters correct?
 (2) scripts, gpuid
-(3) create folders in /data folder
 '''
 class Config_Script:
     def __init__(self):
-        # 8-24 alexnet
+        # 8-24 alexnet + 8-25-alexnet-no-data-aug
         self.gm_lambda_ratio_list = [-1., 0.05, 1.]
         self.a_list = [1e-1, 1e-2]
         self.b_list, self.alpha_list = [100., 10., 1., 0.3, 0.1, 0.03, 0.01, 0.001, 0.0001, 0.0003, 0.00001], [0.7, 0.5, 0.3]
@@ -69,11 +70,11 @@ class Config_Script:
             for j in range(len(self.a_idx_list)):
                 for k in range(len(self.alpha_idx_list)):
                     for l in range(len(self.b_idx_list)):
-                        python_programme = "gm_prior_train.py "
-                        hyper_param_path = "script_generator/8-24/hyperparams" # modify here
+                        python_programme = "gm_prior_train_no_data_augment.py " # modify here!
+                        hyper_param_path = "script_generator/8-25/hyperparams" # modify here
                         hyper_param_prefix = 'lambda_' + str(i) + '_a_' + str(j) + '_alpha_' + str(k) + '_b_' + str(l)
-                        data_path = "/data/zhaojing/regularization/log0824/GMM-DL-five" # modify here
-                        script = ("python " + python_programme + "-maxepoch 10 -gmnum 4 -gmuptfreq 100 -paramuptfreq 50 -gpuid 0 -hyperparampath " + str(os.path.join(hyper_param_path, (hyper_param_prefix + ".csv"))) + " -resultpath " + str(os.path.join(data_path, ('GMM-DL-five_' + hyper_param_prefix + "_result.txt "))) + "alexnet cifar-10-batches-py/ | tee -a " + data_path + "/GMM-DL-five-" + str(index) + ".log\n") # modify two places of 'GMM-DL-four-' + resnet
+                        data_path = "/data/zhaojing/regularization/log0825/GMM-DL-six" # modify here
+                        script = ("python " + python_programme + "-maxepoch 10 -gmnum 4 -gmuptfreq 100 -paramuptfreq 50 -gpuid 0 -hyperparampath " + str(os.path.join(hyper_param_path, (hyper_param_prefix + ".csv"))) + " -resultpath " + str(os.path.join(data_path, ('GMM-DL-six_' + hyper_param_prefix + "_result.txt "))) + "alexnet cifar-10-batches-py/ | tee -a " + data_path + "/GMM-DL-six-" + str(index) + ".log\n") # modify two places of 'GMM-DL-four-' + resnet + gm_prior_train.py
  
                         index = (index + 1)
                         f= open(sh_script_path, 'a')
@@ -93,7 +94,7 @@ class Config_Script:
 
 if __name__ == '__main__':
    cs = Config_Script()
-   # cs.gen_hyperparam_config('8-24/hyperparams')
-   # cs.gen_sh_script('8-24/scripts/GMM-DL-five.sh') # need to go into to modify
+   # cs.gen_hyperparam_config('8-25/hyperparams')
+   # cs.gen_sh_script('8-25/scripts/GMM-DL-six.sh') # need to go into to modify
    # need to modify gpu id manually first
-   cs.gen_multiple_sh_scripts('8-24/scripts/GMM-DL-five.sh', '8-24/scripts/GMM-DL-five-')
+   cs.gen_multiple_sh_scripts('8-25/scripts/GMM-DL-six.sh', '8-25/scripts/GMM-DL-six-')
