@@ -134,7 +134,7 @@ def train(dev, agent, max_epoch, use_cpu, batch_size=100):
     n_folds = 5
     for i, (train_index, test_index) in enumerate(StratifiedKFold(all_label.reshape(all_label.shape[0]), n_folds=n_folds)):
         train_feature, train_label, test_feature, test_label = all_feature[train_index], all_label[train_index], all_feature[test_index], all_label[test_index]
-        if i == 4:
+        if i == 0:
             print "fold: ", i
             break
     in_shape = np.array([1, 12, 375])
