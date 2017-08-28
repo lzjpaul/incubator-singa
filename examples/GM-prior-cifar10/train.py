@@ -37,6 +37,8 @@ import vgg
 import resnet
 import gm_prior_data as dt
 
+import datetime
+import time
 
 def load_dataset(filepath):
     print 'Loading data file %s' % filepath
@@ -130,7 +132,7 @@ def train(data, net, max_epoch, get_lr, weight_decay, batch_size=100,
         dev = device.get_default_device()
     else:
         print 'Using GPU'
-        dev = device.create_cuda_gpu()
+        dev = device.create_cuda_gpu_on(0)
 
     net.to_device(dev)
     opt = optimizer.SGD(momentum=0.9, weight_decay=weight_decay)
@@ -161,8 +163,8 @@ def train(data, net, max_epoch, get_lr, weight_decay, batch_size=100,
             for (s, p, g) in zip(net.param_names(), net.param_values(), grads):
                 opt.apply_with_lr(epoch, get_lr(epoch), g, p, str(s), b)
             # update progress bar
-            utils.update_progress(b * 1.0 / num_train_batch,
-                                  'training loss = %f, accuracy = %f' % (l, a))
+            # utils.update_progress(b * 1.0 / num_train_batch,
+            #                       'training loss = %f, accuracy = %f' % (l, a))
         info = '\ntraining loss = %f, training accuracy = %f, lr = %f' \
             % (loss / num_train_batch, acc / num_train_batch, get_lr(epoch))
         print info
@@ -196,6 +198,9 @@ if __name__ == '__main__':
     test_x, test_y = load_test_data(args.data)
     if args.model == 'caffe':
         train_x, test_x = normalize_for_alexnet(train_x, test_x)
+        start = time.time()
+        st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
+        print st
         net = caffe_net.create_net(args.use_cpu)
         # for cifar10_full_train_test.prototxt
         train((train_x, train_y, test_x, test_y), net, 160, alexnet_lr, 0.004,
@@ -203,18 +208,47 @@ if __name__ == '__main__':
         # for cifar10_quick_train_test.prototxt
         #train((train_x, train_y, test_x, test_y), net, 18, caffe_lr, 0.004,
         #      use_cpu=args.use_cpu)
+        done = time.time()
+        do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
+        print do
+        elapsed = done - start
+        print elapsed
     elif args.model == 'alexnet':
         train_x, test_x = normalize_for_alexnet(train_x, test_x)
+        start = time.time()
+        st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
+        print st
         net = alexnet.create_net(args.use_cpu)
         train((train_x, train_y, test_x, test_y), net, 160, alexnet_lr, 0.004,
               use_cpu=args.use_cpu)
+        done = time.time()
+        do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
+        print do
+        elapsed = done - start
+        print elapsed
     elif args.model == 'vgg':
         train_x, test_x = normalize_for_vgg(train_x, test_x)
+        start = time.time()
+        st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
+        print st
         net = vgg.create_net(args.use_cpu)
         train((train_x, train_y, test_x, test_y), net, 250, vgg_lr, 0.0005,
               use_cpu=args.use_cpu)
+        done = time.time()
+        do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
+        print do
+        elapsed = done - start
+        print elapsed
     else:
         train_x, test_x = normalize_for_resnet(train_x, test_x)
+        start = time.time()
+        st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
+        print st
         net = resnet.create_net(args.use_cpu)
         train((train_x, train_y, test_x, test_y), net, 200, resnet_lr, 1e-4,
               use_cpu=args.use_cpu)
+        done = time.time()
+        do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
+        print do
+        elapsed = done - start
+        print elapsed
