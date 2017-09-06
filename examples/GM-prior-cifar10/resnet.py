@@ -26,12 +26,14 @@ import cPickle as pickle
 # use the python modules by installing py singa in build/python
 # pip install -e .
 
+import numpy as np
 from singa import layer
 from singa import initializer
 from singa import metric
 from singa import loss
 from singa import net as ffnet
-
+from gm_prior_initializer import numpy_initializer_uniform
+from gm_prior_initializer import numpy_initializer_gaussian
 
 def Block(net, name, nb_filters, stride):
     split = net.add(layer.Split(name + "-split", 2))
@@ -74,6 +76,7 @@ def create_net(use_cpu=False):
     net.add(layer.Flatten('flat'))
     net.add(layer.Dense('ip5', 10))
     print 'Start intialization............'
+    random_seed_idx = 0
     for (p, name) in zip(net.param_values(), net.param_names()):
         # print name, p.shape
         if 'mean' in name or 'beta' in name:
@@ -82,14 +85,18 @@ def create_net(use_cpu=False):
             p.set_value(1.0)
         elif 'gamma' in name:
             initializer.uniform(p, 0, 1)
+            p.copy_from_numpy(numpy_initializer_uniform(random_seed_idx, p, fan_in=0, fan_out=1).astype(np.float32))
         elif len(p.shape) > 1:
             if 'conv' in name:
-                # initializer.gaussian(p, 0, math.sqrt(2.0/p.shape[1]))
                 initializer.gaussian(p, 0, 9.0 * p.shape[0])
+                p.copy_from_numpy(numpy_initializer_gaussian(random_seed_idx, p, fan_in=0, fan_out=9.0 * p.shape[0]).astype(np.float32))
             else:
                 initializer.uniform(p, p.shape[0], p.shape[1])
+                p.copy_from_numpy(numpy_initializer_uniform(random_seed_idx, p, fan_in=p.shape[0], fan_out=p.shape[1]).astype(np.float32))
         else:
             p.set_value(0)
         # print name, p.l1()
+        print "random_seed_idx: ", random_seed_idx
+        random_seed_idx = random_seed_idx + 1
 
     return net

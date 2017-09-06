@@ -25,7 +25,8 @@ from singa import layer
 from singa import metric
 from singa import loss
 from singa import net as ffnet
-
+import numpy as np
+from singa import tensor
 
 def create_net(use_cpu=False):
     if use_cpu:
@@ -50,12 +51,19 @@ def create_net(use_cpu=False):
     net.add(layer.AvgPooling2D('pool3', 3, 2, pad=1))
     net.add(layer.Flatten('flat'))
     net.add(layer.Dense( 'dense', 10, W_specs=W2_specs.copy(), b_specs=b_specs.copy()))
+    random_seed_index = 0
     for (p, specs) in zip(net.param_values(), net.param_specs()):
         filler = specs.filler
         if filler.type == 'gaussian':
             p.gaussian(filler.mean, filler.std)
+            print p
+            np.random.seed(random_seed_index)
+            p.copy_from_numpy(np.random.normal(filler.mean, filler.std, size=p.shape).astype(np.float32))
+            print p
         else:
             p.set_value(0)
         print specs.name, filler.type, p.l1()
+        print "random_seed_index: ", random_seed_index
+        random_seed_index = random_seed_index + 1
 
     return net
