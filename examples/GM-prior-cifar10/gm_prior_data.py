@@ -61,7 +61,6 @@ class CifarBatchIter(data.ImageBatchIter):
 def data_augment_tool(epoch, img_feature_file):
     print "original cifar shape: ", img_feature_file.shape
     random_seed_base = epoch * img_feature_file.shape[0]
-    print "random_seed_base: ", random_seed_base
     img_list = []
     for i in range(img_feature_file.shape[0]):
         img_list.append(img_feature_file[i])

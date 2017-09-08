@@ -179,7 +179,7 @@ def train(resultpath, data, model_name, hyperpara_list, hyperpara_idx, gm_num, g
     tx = tensor.Tensor((batch_size, 3, 32, 32), dev)
     ty = tensor.Tensor((batch_size,), dev, core_pb2.kInt)
     train_x, train_y, test_x, test_y = data
-    num_train_batch = train_x.shape[0] / batch_size 
+    num_train_batch = train_x.shape[0] / batch_size
     num_test_batch = test_x.shape[0] / batch_size
     idx = np.arange(train_x.shape[0], dtype=np.int32)
     print 'num_train_batch, num_test_batch: ', num_train_batch, num_test_batch

@@ -229,7 +229,7 @@ if __name__ == '__main__':
         elapsed = done - start
         print elapsed
     else:
-        train_x, test_x = normalize_for_alexnet(train_x, test_x)
+        train_x, test_x = normalize_for_resnet(train_x, test_x)
         start = time.time()
         st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
         print st

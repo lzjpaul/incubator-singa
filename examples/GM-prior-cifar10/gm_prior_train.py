@@ -180,10 +180,6 @@ def train(resultpath, data, model_name, hyperpara_list, hyperpara_idx, gm_num, g
     tx = tensor.Tensor((batch_size, 3, 32, 32), dev)
     ty = tensor.Tensor((batch_size,), dev, core_pb2.kInt)
     train_x, train_y, test_x, test_y = data
-    # dl_train = dt.CifarBatchIter(train_x, train_y, batch_size, dt.numpy_crop_flip,
-    #         shuffle=True, capacity=10)
-    # dl_train.start()
-    # num_train = dl_train.num_samples
     num_train_batch = train_x.shape[0] / batch_size
     num_test_batch = test_x.shape[0] / batch_size
     print 'num_train_batch, num_test_batch: ', num_train_batch, num_test_batch
@@ -229,7 +225,6 @@ def train(resultpath, data, model_name, hyperpara_list, hyperpara_idx, gm_num, g
             print 'final test loss = %f, test accuracy = %f' \
             % (loss / num_test_batch, acc / num_test_batch)
             write_out_result(resultpath, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq, get_lr(epoch), weight_decay, batch_size, loss / num_test_batch, acc / num_test_batch)      
-    # dl_train.end()
     net.save('model', 20)  # save model params into checkpoint file
 
 def get_hyperparams(hyperparampath, gm_lambda_ratio_list, a_list, alpha_list, b_list):
