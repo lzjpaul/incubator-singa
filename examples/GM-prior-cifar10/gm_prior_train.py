@@ -275,10 +275,15 @@ if __name__ == '__main__':
     # b_list, alpha_list = [0.09, 0.07, 0.05, 0.04, 0.03, 0.02],\
     #                [0.5, 0.3]
     # 8-24-alexnet
-    gm_lambda_ratio_list = [ -1., 0.05, 1.]
+    # gm_lambda_ratio_list = [ -1., 0.05, 1.]
+    # a_list = [1e-1, 1e-2]
+    # b_list, alpha_list = [100., 10., 1., 0.3, 0.1, 0.03, 0.01, 0.001, 0.0001, 0.0003, 0.00001],\
+    #                [0.7, 0.5, 0.3]
+    # 9-8
+    gm_lambda_ratio_list = [ -1., 0.0,  1.]
     a_list = [1e-1, 1e-2]
-    b_list, alpha_list = [100., 10., 1., 0.3, 0.1, 0.03, 0.01, 0.001, 0.0001, 0.0003, 0.00001],\
-                   [0.7, 0.5, 0.3]
+    b_list, alpha_list = [0.5, 0.2, 0.1, 0.05, 0.02, 0.01, 0.005],\
+                    [0.9, 0.7, 0.5, 0.3]
     ###################################################
     gm_lambda_ratio_list, a_list, alpha_list, b_list = get_hyperparams(args.hyperparampath, gm_lambda_ratio_list, a_list, alpha_list, b_list)
     b_val_num = len(b_list)
