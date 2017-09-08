@@ -225,7 +225,10 @@ def train(resultpath, data, model_name, hyperpara_list, hyperpara_idx, gm_num, g
             print 'final test loss = %f, test accuracy = %f' \
             % (loss / num_test_batch, acc / num_test_batch)
             write_out_result(resultpath, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq, get_lr(epoch), weight_decay, batch_size, loss / num_test_batch, acc / num_test_batch)      
-    net.save('model', 20)  # save model params into checkpoint file
+    model_time = time.time()
+    model_time = datetime.datetime.fromtimestamp(model_time).strftime('%Y-%m-%d-%H-%M-%S')
+    print 'model time: ', model_time
+    net.save('model-time-' + model_time, 20)  # save model params into checkpoint file
 
 def get_hyperparams(hyperparampath, gm_lambda_ratio_list, a_list, alpha_list, b_list):
     hyperparam_config = np.genfromtxt(hyperparampath, delimiter=",")
