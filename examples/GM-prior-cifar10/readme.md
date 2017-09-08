@@ -17,3 +17,9 @@ tuning hyper-parameters:
 (1) GM_num
 (2) a, b, alpha
 (3) pi, lambda
+
+2017-9-7
+away from 0.9206
+(1) parameter gaussian initialization 
+(2) mini-batch / queue are fixed order
+

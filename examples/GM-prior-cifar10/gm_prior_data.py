@@ -23,6 +23,7 @@ class CifarBatchIter(data.ImageBatchIter):
         print "self.num_samples: ", self.num_samples
 
     def run(self):
+        random_seed_idx = 0
         img_list = []
         for i in range(self.img_feature_file.shape[0]):
             img_list.append((self.img_feature_file[i], self.img_label_file[i]))
@@ -30,7 +31,7 @@ class CifarBatchIter(data.ImageBatchIter):
         shuffle_timer = 100
         while not self.stop:
             if index == 0 and self.shuffle:
-                np.random.seed(shuffle_timer)
+                random.seed(shuffle_timer)
                 random.shuffle(img_list)
                 shuffle_timer = shuffle_timer + 1
             if not self.queue.full():
@@ -39,7 +40,8 @@ class CifarBatchIter(data.ImageBatchIter):
                 i = 0
                 while i < self.batch_size:
                     img_feature, img_label = img_list[index]
-                    aug_img_features = self.image_transform(img_feature, (32, 32), 4)
+                    aug_img_features = self.image_transform(random_seed_idx, img_feature, (32, 32), 4)
+                    random_seed_idx = random_seed_idx + 1
                     assert i + len(aug_img_features) <= self.batch_size, \
                         'too many images (%d) in a batch (%d)' % \
                         (i + len(aug_img_features), self.batch_size)
@@ -56,8 +58,31 @@ class CifarBatchIter(data.ImageBatchIter):
                 time.sleep(0.1)
         return
 
-def numpy_crop(img_feature, crop_shape, pad):
+def data_augment_tool(epoch, img_feature_file):
+    print "original cifar shape: ", img_feature_file.shape
+    random_seed_base = epoch * img_feature_file.shape[0]
+    print "random_seed_base: ", random_seed_base
+    img_list = []
+    for i in range(img_feature_file.shape[0]):
+        img_list.append(img_feature_file[i])
+    x = []
+    i = 0
+    while i < img_feature_file.shape[0]:
+        img_feature = img_list[i]
+        aug_img_features = numpy_crop_flip((random_seed_base+i), img_feature, (32, 32), 4)
+        # assert i + len(aug_img_features) <= img_feature_file.shape[0], \
+        #    'too many images (%d) in a batch (%d)' % \
+        #    (i + len(aug_img_features), self.batch_size)
+        for aug_img_feature in aug_img_features:
+            x.append(aug_img_feature)
+            i += 1
+    # enqueue one mini-batch
+    print "augment cifar shape: ", np.asarray(x, np.float32).shape
+    return np.asarray(x, np.float32)
+
+def numpy_crop(random_seed_idx, img_feature, crop_shape, pad):
     new_img_feature = np.zeros(img_feature.shape)
+    np.random.seed(random_seed_idx)
     xoffs, yoffs = (np.random.random_integers(-pad, pad), np.random.random_integers(-pad, pad))
     input_y = (max(0, 0 + yoffs), min(32, 32 + yoffs))
     data_y = (max(0, 0 - yoffs), min(32, 32 - yoffs))
@@ -67,10 +92,11 @@ def numpy_crop(img_feature, crop_shape, pad):
     return new_img_feature
 
 
-def numpy_crop_flip(img_feature, crop_shape, pad):
+def numpy_crop_flip(random_seed_idx, img_feature, crop_shape, pad):
     # print "img_feature shape: ", img_feature.shape
     img_features = []
-    img_feature = numpy_crop(img_feature, crop_shape, pad)
+    img_feature = numpy_crop(random_seed_idx, img_feature, crop_shape, pad)
+    np.random.seed(random_seed_idx)
     if np.random.randint(2)==0:
         img_feature = np.flip(img_feature, 2)
     img_features.append(img_feature)

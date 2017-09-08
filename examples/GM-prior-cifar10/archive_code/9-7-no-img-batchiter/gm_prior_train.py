@@ -180,25 +180,18 @@ def train(resultpath, data, model_name, hyperpara_list, hyperpara_idx, gm_num, g
     tx = tensor.Tensor((batch_size, 3, 32, 32), dev)
     ty = tensor.Tensor((batch_size,), dev, core_pb2.kInt)
     train_x, train_y, test_x, test_y = data
-    # dl_train = dt.CifarBatchIter(train_x, train_y, batch_size, dt.numpy_crop_flip,
-    #         shuffle=True, capacity=10)
-    # dl_train.start()
-    # num_train = dl_train.num_samples
-    num_train_batch = train_x.shape[0] / batch_size
+    dl_train = dt.CifarBatchIter(train_x, train_y, batch_size, dt.numpy_crop_flip,
+            shuffle=True, capacity=10)
+    dl_train.start()
+    num_train = dl_train.num_samples
+    num_train_batch = num_train / batch_size
     num_test_batch = test_x.shape[0] / batch_size
-    print 'num_train_batch, num_test_batch: ', num_train_batch, num_test_batch
-    idx = np.arange(train_x.shape[0], dtype=np.int32)
+    print 'num_train, num_train_batch, num_test_batch: ', num_train, num_train_batch, num_test_batch
     for epoch in range(max_epoch):
-        np.random.seed(epoch)
-        np.random.shuffle(idx)
         loss, acc = 0.0, 0.0
         print 'Epoch %d' % epoch
-        print 'train_x l2: ', np.linalg.norm(train_x)
-        train_x_augment = dt.data_augment_tool(epoch, train_x)
-        print 'train_augment l2: ', np.linalg.norm(train_x_augment)
         for b in range(num_train_batch):
-            x = train_x_augment[idx[b * batch_size: (b + 1) * batch_size]]
-            y = train_y[idx[b * batch_size: (b + 1) * batch_size]]
+            x, y = dl_train.next()
             tx.copy_from_numpy(x)
             ty.copy_from_numpy(y)
             grads, (l, a) = net.train(tx, ty)
@@ -229,7 +222,7 @@ def train(resultpath, data, model_name, hyperpara_list, hyperpara_idx, gm_num, g
             print 'final test loss = %f, test accuracy = %f' \
             % (loss / num_test_batch, acc / num_test_batch)
             write_out_result(resultpath, hyperpara_list, hyperpara_idx, gm_num, gm_lambda_ratio, uptfreq, get_lr(epoch), weight_decay, batch_size, loss / num_test_batch, acc / num_test_batch)      
-    # dl_train.end()
+    dl_train.end()
     net.save('model', 20)  # save model params into checkpoint file
 
 def get_hyperparams(hyperparampath, gm_lambda_ratio_list, a_list, alpha_list, b_list):
