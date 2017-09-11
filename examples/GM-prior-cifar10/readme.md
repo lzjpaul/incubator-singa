@@ -20,6 +20,11 @@ tuning hyper-parameters:
 
 2017-9-7
 away from 0.9206
-(1) parameter gaussian initialization 
+(1) gaussian mixture initialization (using linear)
 (2) mini-batch / queue are fixed order
 
+2017-9-9
+(1) the parameters scale are from 1,2,5,10 ...
+
+2017-9-11
+(1) mini-batch are using less memory operations (only augment in batch manner)

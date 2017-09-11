@@ -190,8 +190,10 @@ def train(resultpath, data, model_name, hyperpara_list, hyperpara_idx, gm_num, g
         loss, acc = 0.0, 0.0
         print 'Epoch %d' % epoch
         print 'train_x l2: ', np.linalg.norm(train_x)
+        train_x_augment = dt.data_augment_tool(epoch, train_x)
+        print 'train_augment l2: ', np.linalg.norm(train_x_augment)
         for b in range(num_train_batch):
-            x = dt.batch_data_augment_tool(epoch, train_x.shape[0], idx[b * batch_size: (b + 1) * batch_size], train_x[idx[b * batch_size: (b + 1) * batch_size]]) 
+            x = train_x_augment[idx[b * batch_size: (b + 1) * batch_size]]
             y = train_y[idx[b * batch_size: (b + 1) * batch_size]]
             tx.copy_from_numpy(x)
             ty.copy_from_numpy(y)
