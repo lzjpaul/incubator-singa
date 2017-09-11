@@ -1,0 +1,1 @@
+python train.py resnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0908/GMM-DL-eight-baseline/GMM-DL-eight-baseline-0.log

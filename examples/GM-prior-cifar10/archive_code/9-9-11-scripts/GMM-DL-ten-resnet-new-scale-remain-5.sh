@@ -1,0 +1,1 @@
+python train_no_data_augment_gpu_1.py alexnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0909/GMM-DL-ten-resnet-new-scale-remain/GMM-DL-ten-baseline-3.log
