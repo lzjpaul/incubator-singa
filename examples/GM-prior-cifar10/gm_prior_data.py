@@ -58,6 +58,27 @@ class CifarBatchIter(data.ImageBatchIter):
                 time.sleep(0.1)
         return
 
+def batch_data_augment_tool(epoch, epoch_sample_num, img_idx, img_feature_file):
+    # print "original cifar shape: ", img_feature_file.shape
+    random_seed_base = epoch * epoch_sample_num  # modify here
+    img_list = []
+    for i in range(img_feature_file.shape[0]):
+        img_list.append(img_feature_file[i])
+    x = []
+    i = 0
+    while i < img_feature_file.shape[0]:
+        img_feature = img_list[i]
+        aug_img_feature = numpy_crop_flip((random_seed_base+img_idx[i]), img_feature, (32, 32), 4) # modify here img_idx[i]
+        # assert i + len(aug_img_features) <= img_feature_file.shape[0], \
+        #    'too many images (%d) in a batch (%d)' % \
+        #    (i + len(aug_img_features), self.batch_size)
+        x.append(aug_img_feature) # modify here
+        i += 1
+    # enqueue one mini-batch
+    # print "augment cifar shape: ", np.asarray(x, np.float32).shape
+    return np.asarray(x, np.float32)
+
+
 def data_augment_tool(epoch, img_feature_file):
     print "original cifar shape: ", img_feature_file.shape
     random_seed_base = epoch * img_feature_file.shape[0]
@@ -79,6 +100,7 @@ def data_augment_tool(epoch, img_feature_file):
     print "augment cifar shape: ", np.asarray(x, np.float32).shape
     return np.asarray(x, np.float32)
 
+
 def numpy_crop(random_seed_idx, img_feature, crop_shape, pad):
     new_img_feature = np.zeros(img_feature.shape)
     np.random.seed(random_seed_idx)
@@ -93,10 +115,8 @@ def numpy_crop(random_seed_idx, img_feature, crop_shape, pad):
 
 def numpy_crop_flip(random_seed_idx, img_feature, crop_shape, pad):
     # print "img_feature shape: ", img_feature.shape
-    img_features = []
     img_feature = numpy_crop(random_seed_idx, img_feature, crop_shape, pad)
     np.random.seed(random_seed_idx)
     if np.random.randint(2)==0:
         img_feature = np.flip(img_feature, 2)
-    img_features.append(img_feature)
-    return img_features
+    return img_feature

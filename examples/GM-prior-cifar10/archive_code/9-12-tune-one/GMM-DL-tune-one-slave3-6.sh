@@ -1,0 +1,1 @@
+python train_no_data_augment_no_regu.py alexnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0912/GMM-DL-tune-one/GMM-DL-tune-one-17.log

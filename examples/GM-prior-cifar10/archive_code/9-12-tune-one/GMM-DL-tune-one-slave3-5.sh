@@ -1,0 +1,1 @@
+python train_no_regu.py resnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0912/GMM-DL-tune-one/GMM-DL-tune-one-16.log
