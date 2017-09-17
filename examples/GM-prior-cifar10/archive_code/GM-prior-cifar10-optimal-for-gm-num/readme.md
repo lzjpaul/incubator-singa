@@ -29,5 +29,8 @@ away from 0.9206
 2017-9-11
 (1) mini-batch are using less memory operations (only augment in batch manner)
 
-2017-9-12
-(1) linear initialization: base * float(gm_num)
+2017-9-11
+(1) disable the get_hyperparams
+need to modify optimizer.py!!!!!!!!! (base * gm_num)
+gm_prior_train_optimal_for_gm_num.py
+gm_prior_train_no_data_augment_optimal_for_gm_num.py

@@ -26,8 +26,13 @@ away from 0.9206
 2017-9-9
 (1) the parameters scale are from 1,2,5,10 ...
 
+## begining tune parameters (away from 0.9204 for resnet)
+
 2017-9-11
 (1) mini-batch are using less memory operations (only augment in batch manner)
 
 2017-9-12
 (1) linear initialization: base * float(gm_num)
+
+2017-9-13
+(1) turn back to large memory mini-batch

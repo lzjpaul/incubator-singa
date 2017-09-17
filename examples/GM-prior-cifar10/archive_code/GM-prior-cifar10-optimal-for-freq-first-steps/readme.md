@@ -29,5 +29,12 @@ away from 0.9206
 2017-9-11
 (1) mini-batch are using less memory operations (only augment in batch manner)
 
+2017-9-11
+(1) disable the get_hyperparams
+gm_prior_train_optimal_for_freq.py
+gm_prior_train_no_data_augment_optimal_for_freq.py
+
 2017-9-12
-(1) linear initialization: base * float(gm_num)
+(1) base * gm_num
+(2) add one more parameter to the apply function to control first steps
+(3) gm_prior_train_no_data_augment_optimal_for_freq_first_steps.py 
