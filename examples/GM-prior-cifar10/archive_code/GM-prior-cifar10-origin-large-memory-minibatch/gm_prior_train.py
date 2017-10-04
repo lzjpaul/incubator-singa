@@ -290,10 +290,15 @@ if __name__ == '__main__':
     # b_list, alpha_list = [0.05, 0.02, 0.1],\
     #                 [0.7, 0.5, 0.3]
     # 9-12 resnet new scale rerun to plot alpha_init
+    # gm_lambda_ratio_list = [ -1., 0.0, 1.]
+    # a_list = [1e-1, 1e-2]
+    # b_list, alpha_list = [0.05, 0.02, 0.1, 0.01],\
+    #                [0.9, 0.7, 0.5, 0.3]
+    # 9-12 resnet new scale rerun to plot alpha_init, now only 0.05, 0.02 !!
     gm_lambda_ratio_list = [ -1., 0.0, 1.]
     a_list = [1e-1, 1e-2]
-    b_list, alpha_list = [0.05, 0.02, 0.1, 0.01],\
-                    [0.9, 0.7, 0.5, 0.3]
+    b_list, alpha_list = [0.05, 0.02, 0.05, 0.02],\
+                   [0.9, 0.7, 0.5, 0.3]
     ###################################################
     gm_lambda_ratio_list, a_list, alpha_list, b_list = get_hyperparams(args.hyperparampath, gm_lambda_ratio_list, a_list, alpha_list, b_list)
     b_val_num = len(b_list)

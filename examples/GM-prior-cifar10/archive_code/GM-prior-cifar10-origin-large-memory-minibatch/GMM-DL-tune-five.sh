@@ -1,0 +1,16 @@
+python train_gpu_0.py resnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0920/GMM-DL-tune-five/GMM-DL-tune-five-1.log
+python train_wd_0_gpu_0.py resnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0920/GMM-DL-tune-five/GMM-DL-tune-five-2.log.log
+python train_no_data_augment_gpu_0.py alexnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0920/GMM-DL-tune-five/GMM-DL-tune-five-3.log.log
+python train_no_data_augment_wd_0_gpu_0.py alexnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0920/GMM-DL-tune-five/GMM-DL-tune-five-4.log.log
+python train_gpu_0.py resnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0920/GMM-DL-tune-five/GMM-DL-tune-five-1.log
+python train_wd_0_gpu_0.py resnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0920/GMM-DL-tune-five/GMM-DL-tune-five-2.log.log
+python train_no_data_augment_gpu_0.py alexnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0920/GMM-DL-tune-five/GMM-DL-tune-five-3.log.log
+python train_no_data_augment_wd_0_gpu_0.py alexnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0920/GMM-DL-tune-five/GMM-DL-tune-five-4.log.log
+python train_gpu_0.py resnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0920/GMM-DL-tune-five/GMM-DL-tune-five-1.log
+python train_wd_0_gpu_0.py resnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0920/GMM-DL-tune-five/GMM-DL-tune-five-2.log.log
+python train_no_data_augment_gpu_0.py alexnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0920/GMM-DL-tune-five/GMM-DL-tune-five-3.log.log
+python train_no_data_augment_wd_0_gpu_0.py alexnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0920/GMM-DL-tune-five/GMM-DL-tune-five-4.log.log
+python train_gpu_0.py resnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0920/GMM-DL-tune-five/GMM-DL-tune-five-1.log
+python train_wd_0_gpu_0.py resnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0920/GMM-DL-tune-five/GMM-DL-tune-five-2.log.log
+python train_no_data_augment_gpu_0.py alexnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0920/GMM-DL-tune-five/GMM-DL-tune-five-3.log.log
+python train_no_data_augment_wd_0_gpu_0.py alexnet cifar-10-batches-py/ | tee -a /data/zhaojing/regularization/log0920/GMM-DL-tune-five/GMM-DL-tune-five-4.log.log
