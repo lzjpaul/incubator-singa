@@ -53,14 +53,18 @@ def main():
         parser.add_argument('-visfolder', type=str, help='visfolder')
         parser.add_argument('-trainratio', type=float, help='ratio of train samples')
         parser.add_argument('-validationratio', type=float, help='ratio of validation samples')
-        parser.add_argument('-testratio', type=float, help='ratio of test samples')        
-        parser.add_argument('-p', '--port', default=9989, help='listening port')
+        parser.add_argument('-testratio', type=float, help='ratio of test samples')
+        parser.add_argument('-g', '--gpuid', type=int, default=0, help='gpu id') 
+        parser.add_argument('-p', '--port', type=int, default=9989, help='listening port')
         parser.add_argument('-C', '--use_cpu', action="store_true")
         parser.add_argument('--max_epoch', default=800)
 
         # Process arguments
         args = parser.parse_args()
+        gpuid = args.gpuid
         port = args.port
+        print 'gpuid: ', gpuid
+        print 'port: ', port
 
         use_cpu = args.use_cpu
         if use_cpu:
@@ -68,7 +72,7 @@ def main():
             dev = device.get_default_device()
         else:
             print "runing with gpu"
-            dev = device.create_cuda_gpu()
+            dev = device.create_cuda_gpu_on(gpuid)
 
         # start to train
         agent = Agent(port)
