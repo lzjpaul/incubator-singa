@@ -233,7 +233,7 @@ def train_with_parameter(inputfolder, outputfolder, visfolder, trainratio, valid
                                  net.param_values(), grads):
                 opt.apply_with_lr(epoch, get_lr(epoch), g, p, str(s.name))
             info = 'training loss = %f, training accuracy = %f' % (l, a)
-            utils.update_progress(b * 1.0 / num_train_batch, info)
+            # utils.update_progress(b * 1.0 / num_train_batch, info)
         # put training status info into a shared queue
         info = dict(phase='train', step=epoch,
                     accuracy=acc/num_train_batch,
