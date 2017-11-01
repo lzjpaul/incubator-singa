@@ -42,14 +42,22 @@ def explain_occlude_area_format_out(sampleid, visfolder, test_feature, test_labe
             # the features of significant features are non-zero
             index_matrix[((height_idx * stride_y + j) * width + width_idx * stride_x) : ((height_idx * stride_y + j) * width + width_idx * stride_x + kernel_x)] = float(1.0)
     print "index_matrix sum: ", index_matrix.sum()
+    index_matrix = index_matrix.reshape((height, width))
+    ### hard-code LOS and DRG ###
+    index_matrix[11, 61:68] = 1 # last visit LOS
+    index_matrix[:, 170:374] = 1 
+    print "index_matrix shape: ", index_matrix.shape
     print "index_martix: "
     # print np.nonzero(index_matrix.reshape((height, width)))[0].reshape((-1,1))
     # print np.nonzero(index_matrix.reshape((height, width)))[1].reshape((-1,1))
-    print np.concatenate((np.nonzero(index_matrix.reshape((height, width)))[0].reshape((-1,1)), np.nonzero(index_matrix.reshape((height, width)))[1].reshape((-1,1))), axis=1)
+    feature_explanation = np.genfromtxt('/home/zhaojing/gemini-pipeline/10-14-gemini-main/gemini/model/CNN-code/readmission-feature-mapping-explanation.csv', delimiter=',', dtype=str)
+    feature_explanation = feature_explanation[:, 0]
+    print np.concatenate((np.nonzero(index_matrix)[0].reshape((-1,1)), np.nonzero(index_matrix)[1].reshape((-1,1))), axis=1)
+    print np.concatenate((np.nonzero(index_matrix)[0].reshape((-1,1)).astype(str), feature_explanation[np.nonzero(index_matrix)[1].reshape((-1,1))]), axis=1)
     # check the shape
     for n in range(test_feature.shape[0]):
         # for this specific patient, which features are non-zero
-        sample_index_matrix = test_feature[n].reshape((height, width)) * index_matrix.reshape((height, width))
+        sample_index_matrix = test_feature[n].reshape((height, width)) * index_matrix
         print "sample: ", n
         print "label: ", test_label[n]
         print "readmitted-prob: ", probmatrix[n]
@@ -57,10 +65,12 @@ def explain_occlude_area_format_out(sampleid, visfolder, test_feature, test_labe
         # print np.nonzero(sample_index_matrix)[0].reshape((-1, 1))
         # print np.nonzero(sample_index_matrix)[1].reshape((-1, 1))
         print np.concatenate((np.nonzero(sample_index_matrix)[0].reshape((-1, 1)), np.nonzero(sample_index_matrix)[1].reshape((-1, 1))), axis=1)
+        print np.concatenate((np.nonzero(sample_index_matrix)[0].reshape((-1, 1)).astype(str), feature_explanation[np.nonzero(sample_index_matrix)[1].reshape((-1, 1))]), axis=1)
         print "\n"
+        feature_explanation = np.genfromtxt('/home/zhaojing/gemini-pipeline/10-14-gemini-main/gemini/model/CNN-code/readmission-feature-mapping-explanation.csv', delimiter=',', dtype=str)
+        feature_explanation = feature_explanation[:, 0]
         if (n+1) == sampleid:
-            feature_explanation = np.genfromtxt('/home/zhaojing/gemini-pipeline/10-14-gemini-main/gemini/model/CNN-code/readmission-feature-mapping-explanation.csv', delimiter=',', dtype=str)
-            feature_explanation = feature_explanation[:, 0]
+        # if (n+1) > 0:
             sample_info_dict = {} # for output to json
             sample_info_dict['header']=probmatrix[n]
             feature_idx_array = np.nonzero(sample_index_matrix)[1].reshape((-1, 1))

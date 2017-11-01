@@ -10,14 +10,14 @@ import sys
 
 file = open('readmitted_prob.csv')
 y_scores = np.genfromtxt(file, delimiter=",")
-# y_scores = y_scores[0:351]
-y_scores = y_scores[100:248]
+y_scores = y_scores[0:351]
+# y_scores = y_scores[200:351]
 print "y_scores shape = \n", y_scores.shape
 
 file = open('nuh_fa_readmission_case_label.csv')
 y_true = np.genfromtxt(file, delimiter=",")
-# y_true = y_true[0:351]
-y_true = y_true[100:248]
+y_true = y_true[0:351]
+# y_true = y_true[200:351]
 y_true = y_true.astype(np.int)
 print "y_true shape = \n", y_true.shape
 
@@ -118,3 +118,4 @@ print recall_0
 print "harmonic"
 print 2*recall_1*recall_0 / float(recall_1 + recall_0)
 # python test_metrics_threshold.py 0.115
+# python test_metrics_threshold.py 0.209 (all)
