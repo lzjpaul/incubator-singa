@@ -12,3 +12,6 @@ train-paper-result-best-param
 train-paper-result-load-params-best-param.py
 (1) top_n changed
 (2) hard code so that DRG codes are in the index_list
+
+train-paper-result-load-params-best-param-cpu.py
+(1) do not calculate true_label_prob_matrix

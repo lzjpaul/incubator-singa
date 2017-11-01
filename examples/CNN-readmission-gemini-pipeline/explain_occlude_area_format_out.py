@@ -45,7 +45,13 @@ def explain_occlude_area_format_out(sampleid, visfolder, test_feature, test_labe
     index_matrix = index_matrix.reshape((height, width))
     ### hard-code LOS and DRG ###
     index_matrix[11, 61:68] = 1 # last visit LOS
-    index_matrix[:, 170:374] = 1 
+    index_matrix[:, 170:374] = 1 # DRG
+    ### delete the following features ###
+    index_matrix[:, 29:36] = 0 # MartialStatus
+    index_matrix[:, 44:53] = 0 # Number_of_SOC_Visits
+    ### only last visit shows the following information (visit level information except DRG)
+    index_matrix[0:11, 61:107] = 0
+    index_matrix[0:11, 130:170] = 0 
     print "index_matrix shape: ", index_matrix.shape
     print "index_martix: "
     # print np.nonzero(index_matrix.reshape((height, width)))[0].reshape((-1,1))
@@ -77,7 +83,7 @@ def explain_occlude_area_format_out(sampleid, visfolder, test_feature, test_labe
             feature_list = []
             for feature_idx in range(feature_idx_array.shape[0]):
                 feature_list.append(feature_explanation[feature_idx_array[feature_idx]][0])
-            sample_info_dict['content']=feature_list
+            sample_info_dict['content']=list(set(feature_list))
             print feature_list
             try:
                 with open(os.path.join(visfolder, str(sampleid)+'.json'), 'w') as sample_info_writer:
