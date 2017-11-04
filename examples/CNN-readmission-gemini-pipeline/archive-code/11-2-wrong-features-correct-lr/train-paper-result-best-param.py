@@ -135,7 +135,7 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
     opt = optimizer.SGD(momentum=0.9, weight_decay=0.01)
     agent.push(MsgType.kStatus, 'Downlaoding data...')
     # all_feature, all_label = get_data(os.path.join(inputfolder, 'features.txt'), os.path.join(inputfolder, 'label.txt'))  # PUT THE DATA on/to dbsystem
-    all_feature, all_label = get_data(os.path.join(inputfolder, 'nuh_fa_readmission_case_demor_inpa_kb_ordered_output_severity_onehot_12slots_reverse_modified.csv'), os.path.join(inputfolder, 'nuh_fa_readmission_case_label.csv'))  # PUT THE DATA on/to dbsystem
+    all_feature, all_label = get_data(os.path.join(inputfolder, 'nuh_fa_readmission_case_demor_inpa_kb_ordered_output_severity_onehot_12slots_reverse.csv'), os.path.join(inputfolder, 'nuh_fa_readmission_case_label.csv'))  # PUT THE DATA on/to dbsystem
     agent.push(MsgType.kStatus, 'Finish downloading data')
     n_folds = 5
     print "all_label shape: ", all_label.shape

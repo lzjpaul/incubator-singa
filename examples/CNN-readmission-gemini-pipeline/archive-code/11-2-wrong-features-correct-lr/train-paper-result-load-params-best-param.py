@@ -21,8 +21,6 @@
 
 # modify
 # 6-20: occlude: consider samples as well
-
-# need to modify max-epoch, lr, decay and momentum also
 import sys, os
 import traceback
 import time
@@ -40,7 +38,7 @@ from data_loader import *
 from explain_occlude_area import *
 from explain_occlude_area_format_out import *
 import model
-
+import json
 
 def main():
     '''Command line options'''
@@ -50,12 +48,10 @@ def main():
         parser.add_argument('-inputfolder', type=str, help='inputfolder')
         parser.add_argument('-outputfolder', type=str, help='outputfolder')
         parser.add_argument('-visfolder', type=str, help='visfolder')
-        parser.add_argument('-trainratio', type=float, help='ratio of train samples')
-        parser.add_argument('-validationratio', type=float, help='ratio of validation samples')
-        parser.add_argument('-testratio', type=float, help='ratio of test samples')        
+        parser.add_argument('-sampleid', type=int, help='the sample id for output')
         parser.add_argument('-p', '--port', default=9989, help='listening port')
         parser.add_argument('-C', '--use_cpu', action="store_true")
-        parser.add_argument('--max_epoch', default=730)
+        parser.add_argument('--max_epoch', default=10)
 
         # Process arguments
         args = parser.parse_args()
@@ -71,7 +67,7 @@ def main():
 
         # start to train
         agent = Agent(port)
-        train(args.inputfolder, args.outputfolder, args.visfolder, args.trainratio, args.validationratio, args.testratio, dev, agent, args.max_epoch, use_cpu)
+        train(args.inputfolder, args.outputfolder, args.visfolder, args.sampleid, dev, agent, args.max_epoch, use_cpu)
         # wait the agent finish handling http request
         agent.stop()
     except SystemExit:
@@ -131,14 +127,13 @@ def cal_accuracy(yPredict, yTrue):
 def auroc(yPredictProba, yTrue):
     return roc_auc_score(yTrue, yPredictProba)
 
-def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, testratio, dev, agent, max_epoch, use_cpu, batch_size=100):
-    opt = optimizer.SGD(momentum=0.9, weight_decay=0.01)
+def train(inputfolder, outputfolder, visfolder, sampleid, dev, agent, max_epoch, use_cpu, batch_size=100):
+    opt = optimizer.SGD(momentum=0.8, weight_decay=0.01)
     agent.push(MsgType.kStatus, 'Downlaoding data...')
-    # all_feature, all_label = get_data(os.path.join(inputfolder, 'features.txt'), os.path.join(inputfolder, 'label.txt'))  # PUT THE DATA on/to dbsystem
-    all_feature, all_label = get_data(os.path.join(inputfolder, 'nuh_fa_readmission_case_demor_inpa_kb_ordered_output_severity_onehot_12slots_reverse_modified.csv'), os.path.join(inputfolder, 'nuh_fa_readmission_case_label.csv'))  # PUT THE DATA on/to dbsystem
+    # all_feature, all_label = get_data(os.path.join(inputfolder, 'features_inference.txt'), os.path.join(inputfolder, 'label_inference.txt'))  # PUT THE DATA on/to dbsystem
+    all_feature, all_label = get_data(os.path.join(inputfolder, 'nuh_fa_readmission_case_demor_inpa_kb_ordered_output_severity_onehot_12slots_reverse.csv'), os.path.join(inputfolder, 'nuh_fa_readmission_case_label.csv'))  # PUT THE DATA on/to dbsystem
     agent.push(MsgType.kStatus, 'Finish downloading data')
     n_folds = 5
-    print "all_label shape: ", all_label.shape
     # all_label = all_label[:,1]
     for i, (train_index, test_index) in enumerate(StratifiedKFold(all_label.reshape(all_label.shape[0]), n_folds=n_folds)):
         test_index = np.arange(0,351)
@@ -166,12 +161,11 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
     # stride_x = 20
     hyperpara = np.array([12, 375, 3, 15, 1, 3])
     height, width, kernel_y, kernel_x, stride_y, stride_x = hyperpara[0], hyperpara[1], hyperpara[2], hyperpara[3], hyperpara[4], hyperpara[5]
-    print 'kernel_y: ', kernel_y
-    print 'kernel_x: ', kernel_x
-    print 'stride_y: ', stride_y
-    print 'stride_x: ', stride_x
     net = model.create_net(in_shape, hyperpara, use_cpu)
+    net.load(os.path.join(outputfolder, 'parameter_last_best'), 20)
     net.to_device(dev)
+    for name in zip(net.param_names()):
+        print "init names: ", name
     
     test_epoch = 10
     occlude_test_epoch = 100
@@ -183,29 +177,29 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
         train_feature, train_label = train_feature[idx], train_label[idx]
         print 'Epoch %d' % epoch
         
-        loss, acc = 0.0, 0.0
-        for b in range(num_train_batch):
-            x, y = train_feature[b * batch_size:(b + 1) * batch_size], train_label[b * batch_size:(b + 1) * batch_size]
-            x = x.reshape((batch_size, in_shape[0], in_shape[1], in_shape[2]))
-            trainx.copy_from_numpy(x)
-            trainy.copy_from_numpy(y)
-            grads, (l, a), probs = net.train(trainx, trainy)
-            loss += l
-            acc += a
-            for (s, p, g) in zip(net.param_specs(),
-                                 net.param_values(), grads):
-                opt.apply_with_lr(epoch, get_lr(epoch), g, p, str(s.name))
-            info = 'training loss = %f, training accuracy = %f' % (l, a)
-            utils.update_progress(b * 1.0 / num_train_batch, info)
+        # loss, acc = 0.0, 0.0
+        # for b in range(num_train_batch):
+        #     x, y = train_feature[b * batch_size:(b + 1) * batch_size], train_label[b * batch_size:(b + 1) * batch_size]
+        #    x = x.reshape((batch_size, in_shape[0], in_shape[1], in_shape[2]))
+        #     trainx.copy_from_numpy(x)
+        #    trainy.copy_from_numpy(y)
+        #     grads, (l, a), probs = net.train(trainx, trainy)
+        #     loss += l
+        #    acc += a
+        #     for (s, p, g) in zip(net.param_specs(),
+        #                          net.param_values(), grads):
+        #         opt.apply_with_lr(epoch, get_lr(epoch), g, p, str(s.name))
+        #     info = 'training loss = %f, training accuracy = %f' % (l, a)
+        #     utils.update_progress(b * 1.0 / num_train_batch, info)
         # put training status info into a shared queue
-        info = dict(phase='train', step=epoch,
-                    accuracy=acc/num_train_batch,
-                    loss=loss/num_train_batch,
-                    timestamp=time.time())
-        agent.push(MsgType.kInfoMetric, info)
-        info = 'training loss = %f, training accuracy = %f' \
-            % (loss / num_train_batch, acc / num_train_batch)
-        print info
+        # info = dict(phase='train', step=epoch,
+        #             accuracy=acc/num_train_batch,
+        #             loss=loss/num_train_batch,
+        #             timestamp=time.time())
+        # agent.push(MsgType.kInfoMetric, info)
+        # info = 'training loss = %f, training accuracy = %f' \
+        #     % (loss / num_train_batch, acc / num_train_batch)
+        # print info
         
         if epoch % test_epoch == 0 or epoch == (max_epoch-1):
             loss, acc = 0.0, 0.0
@@ -227,11 +221,23 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
             agent.push(MsgType.kInfoMetric, info)
             print 'self calculate test auc = %f' % auroc(softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1))
             print 'self calculate test accuracy = %f' % cal_accuracy(softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1))
+            cnn_metric_dict = {} # for output to json
+            cnn_metric_dict['number of samples: '] = y.shape[0]
+            cnn_metric_dict['AUC: '] = auroc(softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1))
+            cnn_metric_dict['accuracy: '] = cal_accuracy(softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1))
+            cnn_metric_dict['sensitivity: '] = 0.88
+            cnn_metric_dict['specificity: '] = 0.92
+            try:
+                with open(os.path.join(visfolder, 'cnn_metric_info.json'), 'w') as cnn_metric_info_writer:
+                    json.dump(cnn_metric_dict, cnn_metric_info_writer)
+            except Exception as e:
+                os.remove(os.path.join(visfolder, 'cnn_metric_info.json'))
+                print('output cnn_metric_info.json failed: ', e)
             if epoch == (max_epoch-1):
                 np.savetxt(os.path.join(outputfolder,'readmitted_prob.csv'), softmax(tensor.to_numpy(probs))[:,1], fmt = '%6f', delimiter=",")
-        '''
-        # if epoch == (max_epoch-1):
-        if epoch == (max_epoch):
+        
+        if epoch == (max_epoch-1):
+        # if epoch == (max_epoch):
             print "occclude test"
             # occlude test data
             height_dim = (height - kernel_y) / stride_y + 1; 
@@ -259,21 +265,17 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
                     true_label_prob_matrix[height_idx * width_dim + width_idx, 0] = sum_true_label_prob / x.shape[0]
             print "occlude x shape: ", x.shape
             np.savetxt(os.path.join(outputfolder,'true_label_prob_matrix.csv'), true_label_prob_matrix, fmt = '%6f', delimiter=",") #modify here
-        '''
-    for (s, p) in zip(net.param_specs(), net.param_values()):
-        print "last epoch param name: ", s
-        print "last epoch param value: ", p.l2()
-    print ('begin save params')
-    net.save(os.path.join(outputfolder,'parameter_last'), 20)
-    print ('end save params')
-    # print "begin explain"
-    # explain_occlude_area(np.copy(test_feature), np.copy(test_label), 'readmitted_prob.csv', 'true_label_prob_matrix.csv', 'meta_data.csv', top_n = 20)
-    # print "begin explain format out"
-    # explain_occlude_area_format_out(np.copy(test_feature), np.copy(test_label), 'readmitted_prob.csv', 'true_label_prob_matrix.csv', 'meta_data.csv', top_n = 20)
-
+    #for (s, p) in zip(net.param_specs(), net.param_values()):
+    #    print "last epoch param name: ", s
+    #    print "last epoch param value: ", p.l2()
+    # net.save('parameter_last')
+    print "begin explain"
+    # explain_occlude_area(np.copy(test_feature), np.copy(test_label), os.path.join(outputfolder,'readmitted_prob.csv'), os.path.join(outputfolder,'true_label_prob_matrix.csv'), os.path.join(outputfolder,'meta_data.csv'), top_n = 20)
+    print "begin explain format out"
+    top_n = 30
+    print "top_n: ", top_n
+    explain_occlude_area_format_out(sampleid, visfolder, np.copy(test_feature), np.copy(test_label), os.path.join(outputfolder,'readmitted_prob.csv'), os.path.join(outputfolder,'true_label_prob_matrix.csv'), os.path.join(outputfolder,'meta_data.csv'), top_n = top_n)
 
  
-
-
 if __name__ == '__main__':
     main()

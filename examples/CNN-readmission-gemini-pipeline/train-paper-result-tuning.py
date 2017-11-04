@@ -20,7 +20,7 @@
 # occlude test are added here
 
 # modify
-# 6-20: occlude: consider samples as well
+# result path
 import sys, os
 import traceback
 import time
@@ -144,7 +144,7 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
     kernel_x_param_array = np.array([6, 10, 15, 20, 25, 30, 35, 40, 65, 80, 100])
     stride_y_param_array = 1
     stride_x_param_array = np.array([3, 5, 8, 10])
-    all_feature, all_label = get_data(os.path.join(inputfolder, 'nuh_fa_readmission_case_demor_inpa_kb_ordered_output_severity_onehot_12slots_reverse.csv'), os.path.join(inputfolder, 'nuh_fa_readmission_case_label.csv'))  # PUT THE DATA on/to dbsystem
+    all_feature, all_label = get_data(os.path.join(inputfolder, 'nuh_fa_readmission_case_demor_inpa_kb_ordered_output_severity_onehot_12slots_reverse_modified.csv'), os.path.join(inputfolder, 'nuh_fa_readmission_case_label.csv'))  # PUT THE DATA on/to dbsystem
 
     for i in range(len(lr_array)):
         lr_param = lr_array[i]
@@ -231,7 +231,7 @@ def train_with_parameter(inputfolder, outputfolder, visfolder, trainratio, valid
             acc += a
             for (s, p, g) in zip(net.param_specs(),
                                  net.param_values(), grads):
-                opt.apply_with_lr(epoch, get_lr(epoch), g, p, str(s.name))
+                opt.apply_with_lr(epoch, lr_param, g, p, str(s.name))
             info = 'training loss = %f, training accuracy = %f' % (l, a)
             # utils.update_progress(b * 1.0 / num_train_batch, info)
         # put training status info into a shared queue

@@ -21,8 +21,6 @@
 
 # modify
 # 6-20: occlude: consider samples as well
-
-# need to modify max-epoch, lr, decay and momentum also
 import sys, os
 import traceback
 import time
@@ -41,6 +39,9 @@ from explain_occlude_area import *
 from explain_occlude_area_format_out import *
 import model
 
+import datetime
+import time
+import random
 
 def main():
     '''Command line options'''
@@ -52,14 +53,18 @@ def main():
         parser.add_argument('-visfolder', type=str, help='visfolder')
         parser.add_argument('-trainratio', type=float, help='ratio of train samples')
         parser.add_argument('-validationratio', type=float, help='ratio of validation samples')
-        parser.add_argument('-testratio', type=float, help='ratio of test samples')        
-        parser.add_argument('-p', '--port', default=9989, help='listening port')
+        parser.add_argument('-testratio', type=float, help='ratio of test samples')
+        parser.add_argument('-g', '--gpuid', type=int, default=0, help='gpu id') 
+        parser.add_argument('-p', '--port', type=int, default=9989, help='listening port')
         parser.add_argument('-C', '--use_cpu', action="store_true")
-        parser.add_argument('--max_epoch', default=730)
+        parser.add_argument('--max_epoch', default=800)
 
         # Process arguments
         args = parser.parse_args()
+        gpuid = args.gpuid
         port = args.port
+        print 'gpuid: ', gpuid
+        print 'port: ', port
 
         use_cpu = args.use_cpu
         if use_cpu:
@@ -67,7 +72,7 @@ def main():
             dev = device.get_default_device()
         else:
             print "runing with gpu"
-            dev = device.create_cuda_gpu()
+            dev = device.create_cuda_gpu_on(gpuid)
 
         # start to train
         agent = Agent(port)
@@ -132,14 +137,48 @@ def auroc(yPredictProba, yTrue):
     return roc_auc_score(yTrue, yPredictProba)
 
 def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, testratio, dev, agent, max_epoch, use_cpu, batch_size=100):
-    opt = optimizer.SGD(momentum=0.9, weight_decay=0.01)
+    lr_array = np.array([0.001, 0.0001, 0.01, 0.1])
+    decay_array = np.array([0.01, 0.001, 0.0001])
+    momentum_array = np.array([0.8, 0.9])
+    kernel_y_param_array = np.array([2, 3])
+    kernel_x_param_array = np.array([6, 10, 15, 20, 25, 30, 35, 40, 65, 80, 100])
+    stride_y_param_array = 1
+    stride_x_param_array = np.array([3, 5, 8, 10])
+    all_feature, all_label = get_data(os.path.join(inputfolder, 'nuh_fa_readmission_case_demor_inpa_kb_ordered_output_severity_onehot_12slots_reverse.csv'), os.path.join(inputfolder, 'nuh_fa_readmission_case_label.csv'))  # PUT THE DATA on/to dbsystem
+
+    for i in range(len(lr_array)):
+        lr_param = lr_array[i]
+        for j in range(len(decay_array)):
+            decay_param = decay_array[j]
+            for k in range(len(momentum_array)):
+                momentum_param = momentum_array[k]
+                for m in range(len(kernel_x_param_array)):
+                    kernel_x_param = kernel_x_param_array[m]
+                    for n in range(len(kernel_y_param_array)):
+                        kernel_y_param = kernel_y_param_array[n]
+                        #stride_x_param = stride_x_param_array[random.randint(0,len(stride_x_param_array)-1)]
+                        if kernel_x_param == 6:
+                            stride_x_param = stride_x_param_array[random.randint(0,0)]
+                        elif kernel_x_param == 10 or kernel_x_param == 15 or kernel_x_param == 20:
+                            stride_x_param = stride_x_param_array[random.randint(0,1)]
+                        else:
+                            stride_x_param = stride_x_param_array[random.randint(0,len(stride_x_param_array)-1)]
+                        # stride_y_param = stride_y_param_array[random.randint(0,len(stride_y_param_array))]
+                        stride_y_param = random.randint(1,2)
+                        train_with_parameter(inputfolder, outputfolder, visfolder, trainratio, validationratio, testratio, lr_param, decay_param, momentum_param, kernel_y_param, kernel_x_param, stride_y_param, stride_x_param, all_feature, all_label, dev, agent, max_epoch, use_cpu, batch_size)
+
+
+def train_with_parameter(inputfolder, outputfolder, visfolder, trainratio, validationratio, testratio, lr_param, decay_param, momentum_param, kernel_y_param, kernel_x_param, stride_y_param, stride_x_param, all_feature, all_label, dev, agent, max_epoch, use_cpu, batch_size=100):
+    opt = optimizer.SGD(momentum=momentum_param, weight_decay=decay_param)
     agent.push(MsgType.kStatus, 'Downlaoding data...')
     # all_feature, all_label = get_data(os.path.join(inputfolder, 'features.txt'), os.path.join(inputfolder, 'label.txt'))  # PUT THE DATA on/to dbsystem
-    all_feature, all_label = get_data(os.path.join(inputfolder, 'nuh_fa_readmission_case_demor_inpa_kb_ordered_output_severity_onehot_12slots_reverse_modified.csv'), os.path.join(inputfolder, 'nuh_fa_readmission_case_label.csv'))  # PUT THE DATA on/to dbsystem
+    # all_feature, all_label = get_data(os.path.join(inputfolder, 'nuh_fa_readmission_case_demor_inpa_kb_ordered_output_severity_onehot_12slots_reverse.csv'), os.path.join(inputfolder, 'nuh_fa_readmission_case_label.csv'))  # PUT THE DATA on/to dbsystem
     agent.push(MsgType.kStatus, 'Finish downloading data')
     n_folds = 5
     print "all_label shape: ", all_label.shape
     # all_label = all_label[:,1]
+    test_auc_list = []
+    test_accuracy_list = []
     for i, (train_index, test_index) in enumerate(StratifiedKFold(all_label.reshape(all_label.shape[0]), n_folds=n_folds)):
         test_index = np.arange(0,351)
         train_index = np.arange(351,1755)
@@ -164,12 +203,10 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
     # kernel_x = 80
     # stride_y = 1
     # stride_x = 20
-    hyperpara = np.array([12, 375, 3, 15, 1, 3])
+    # hyperpara = np.array([12, 375, 3, 20, 1, 5])
+    hyperpara = np.array([12, 375, kernel_y_param, kernel_x_param, stride_y_param, stride_x_param])
+    # height, width, kernel_y, kernel_x, stride_y, stride_x = hyperpara[0], hyperpara[1], hyperpara[2], hyperpara[3], hyperpara[4], hyperpara[5]
     height, width, kernel_y, kernel_x, stride_y, stride_x = hyperpara[0], hyperpara[1], hyperpara[2], hyperpara[3], hyperpara[4], hyperpara[5]
-    print 'kernel_y: ', kernel_y
-    print 'kernel_x: ', kernel_x
-    print 'stride_y: ', stride_y
-    print 'stride_x: ', stride_x
     net = model.create_net(in_shape, hyperpara, use_cpu)
     net.to_device(dev)
     
@@ -194,9 +231,9 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
             acc += a
             for (s, p, g) in zip(net.param_specs(),
                                  net.param_values(), grads):
-                opt.apply_with_lr(epoch, get_lr(epoch), g, p, str(s.name))
+                opt.apply_with_lr(epoch, lr_param, g, p, str(s.name))
             info = 'training loss = %f, training accuracy = %f' % (l, a)
-            utils.update_progress(b * 1.0 / num_train_batch, info)
+            # utils.update_progress(b * 1.0 / num_train_batch, info)
         # put training status info into a shared queue
         info = dict(phase='train', step=epoch,
                     accuracy=acc/num_train_batch,
@@ -225,46 +262,36 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
                 loss = loss,
                 timestamp = time.time())
             agent.push(MsgType.kInfoMetric, info)
-            print 'self calculate test auc = %f' % auroc(softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1))
-            print 'self calculate test accuracy = %f' % cal_accuracy(softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1))
+            test_auc = auroc(softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1))
+            test_accuracy = cal_accuracy(softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1))
+            test_auc_list.append(test_auc)
+            test_accuracy_list.append(test_accuracy) 
+            print 'self calculate test auc = %f' % test_auc
+            print 'self calculate test accuracy = %f' % test_accuracy
             if epoch == (max_epoch-1):
                 np.savetxt(os.path.join(outputfolder,'readmitted_prob.csv'), softmax(tensor.to_numpy(probs))[:,1], fmt = '%6f', delimiter=",")
-        '''
-        # if epoch == (max_epoch-1):
-        if epoch == (max_epoch):
-            print "occclude test"
-            # occlude test data
-            height_dim = (height - kernel_y) / stride_y + 1; 
-            width_dim = (width - kernel_x) / stride_x + 1;
-            meta_data = np.array([height_dim, height, kernel_y, stride_y, width_dim, width, kernel_x, stride_x])
-            np.savetxt(os.path.join(outputfolder,'meta_data.csv'), meta_data, fmt = '%6f', delimiter=",") #modify here
-            true_label_prob_matrix = np.zeros([(height_dim * width_dim), 1])
-            for height_idx in range(height_dim):
-                for width_idx in range(width_dim):
-                    occlude_test_feature, occlude_test_label = get_occlude_data(np.copy(test_feature), np.copy(test_label), \
-                    height, width, height_idx, width_idx, kernel_y, kernel_x, stride_y, stride_x)
-                    loss, acc = 0.0, 0.0
-                    x, y = occlude_test_feature, occlude_test_label # !!! where are the labels?
-                    x = x.reshape((x.shape[0], in_shape[0], in_shape[1], in_shape[2]))
-                    testx.copy_from_numpy(x)
-                    testy.copy_from_numpy(y)
-                    l, a, probs = net.evaluate(testx, testy)
-                    y_scores = softmax(tensor.to_numpy(probs))[:,1]
-                    sum_true_label_prob = 0.0
-                    for i in range(0, x.shape[0]): # !!! y_scores ~~ the probability of 1 !!!
-                        if y[i] == 1:
-                            sum_true_label_prob = sum_true_label_prob + y_scores[i]
-                        elif y[i] == 0:
-                            sum_true_label_prob = sum_true_label_prob + (1 - y_scores[i])
-                    true_label_prob_matrix[height_idx * width_dim + width_idx, 0] = sum_true_label_prob / x.shape[0]
-            print "occlude x shape: ", x.shape
-            np.savetxt(os.path.join(outputfolder,'true_label_prob_matrix.csv'), true_label_prob_matrix, fmt = '%6f', delimiter=",") #modify here
-        '''
     for (s, p) in zip(net.param_specs(), net.param_values()):
         print "last epoch param name: ", s
         print "last epoch param value: ", p.l2()
+    model_time = time.time()
+    model_time = datetime.datetime.fromtimestamp(model_time).strftime('%Y-%m-%d-%H-%M-%S')
+    print 'model time: ', model_time
+    f = open('model-checkpoints/results.txt', 'a')
+    f.write("new model result: " + "\n")
+    f.write("model_time: " + str(model_time) + "\n")
+    f.write("lr_param: " + str(lr_param) + "\n")
+    f.write("decay_param: " + str(decay_param) + "\n")
+    f.write("momentum_param: " + str(momentum_param) + "\n")
+    f.write("kernel_y_param: " + str(kernel_y_param) + "\n")
+    f.write("kernel_x_param: " + str(kernel_x_param) + "\n")
+    f.write("stride_y_param: " + str(stride_y_param) + "\n")
+    f.write("stride_x_param: " + str(stride_x_param) + "\n")
+    f.write("best test_auc: " + str(np.asarray(test_auc_list).max()) + "\n")
+    f.write("best test_accuracy: " + str(np.asarray(test_accuracy_list).max()) + "\n")
+    f.write("\n")
     print ('begin save params')
-    net.save(os.path.join(outputfolder,'parameter_last'), 20)
+    # net.save(os.path.join(outputfolder,'parameter_last'), 20)
+    net.save('model-checkpoints/model-time-' + model_time, 20) # save model params into checkpoint file
     print ('end save params')
     # print "begin explain"
     # explain_occlude_area(np.copy(test_feature), np.copy(test_label), 'readmitted_prob.csv', 'true_label_prob_matrix.csv', 'meta_data.csv', top_n = 20)

@@ -131,7 +131,7 @@ def train(inputfolder, outputfolder, visfolder, sampleid, dev, agent, max_epoch,
     opt = optimizer.SGD(momentum=0.8, weight_decay=0.01)
     agent.push(MsgType.kStatus, 'Downlaoding data...')
     # all_feature, all_label = get_data(os.path.join(inputfolder, 'features_inference.txt'), os.path.join(inputfolder, 'label_inference.txt'))  # PUT THE DATA on/to dbsystem
-    all_feature, all_label = get_data(os.path.join(inputfolder, 'nuh_fa_readmission_case_demor_inpa_kb_ordered_output_severity_onehot_12slots_reverse.csv'), os.path.join(inputfolder, 'nuh_fa_readmission_case_label.csv'))  # PUT THE DATA on/to dbsystem
+    all_feature, all_label = get_data(os.path.join(inputfolder, 'nuh_fa_readmission_case_demor_inpa_kb_ordered_output_severity_onehot_12slots_reverse_modified.csv'), os.path.join(inputfolder, 'nuh_fa_readmission_case_label.csv'))  # PUT THE DATA on/to dbsystem
     agent.push(MsgType.kStatus, 'Finish downloading data')
     n_folds = 5
     # all_label = all_label[:,1]
