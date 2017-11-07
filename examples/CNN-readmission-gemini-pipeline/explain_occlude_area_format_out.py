@@ -47,17 +47,19 @@ def explain_occlude_area_format_out(sampleid, visfolder, test_feature, test_labe
     index_matrix[11, 61:68] = 1 # last visit LOS
     index_matrix[:, 170:374] = 1 # DRG
     ### delete the following features ###
-    index_matrix[:, 11:22] = 0 # Nationality
+    index_matrix[:, 11:29] = 0 # Nationality and Race
     index_matrix[:, 29:36] = 0 # MartialStatus
     index_matrix[:, 44:53] = 0 # Number_of_SOC_Visits
     ### only last visit shows the following information (visit level information except DRG)
     index_matrix[0:11, 61:107] = 0
-    index_matrix[0:11, 130:170] = 0 
+    index_matrix[0:11, 130:170] = 0
+    ### diabetes and Malay
+    index_matrix[:, 26] = 1 # Race: Malay
     print "index_matrix shape: ", index_matrix.shape
     print "index_martix: "
     # print np.nonzero(index_matrix.reshape((height, width)))[0].reshape((-1,1))
     # print np.nonzero(index_matrix.reshape((height, width)))[1].reshape((-1,1))
-    feature_explanation = np.genfromtxt('/home/zhaojing/gemini-pipeline/10-14-gemini-main/gemini/model/CNN-code/readmission-feature-mapping-explanation.csv', delimiter=',', dtype=str)
+    feature_explanation = np.genfromtxt('/home/zhaojing/gemini-pipeline/10-14-gemini-main/gemini/model/CNN-code/readmission-feature-mapping-explanation.txt', delimiter='\t', dtype=str)
     feature_explanation = feature_explanation[:, 0]
     print np.concatenate((np.nonzero(index_matrix)[0].reshape((-1,1)), np.nonzero(index_matrix)[1].reshape((-1,1))), axis=1)
     print np.concatenate((np.nonzero(index_matrix)[0].reshape((-1,1)).astype(str), feature_explanation[np.nonzero(index_matrix)[1].reshape((-1,1))]), axis=1)
@@ -74,8 +76,8 @@ def explain_occlude_area_format_out(sampleid, visfolder, test_feature, test_labe
         print np.concatenate((np.nonzero(sample_index_matrix)[0].reshape((-1, 1)), np.nonzero(sample_index_matrix)[1].reshape((-1, 1))), axis=1)
         print np.concatenate((np.nonzero(sample_index_matrix)[0].reshape((-1, 1)).astype(str), feature_explanation[np.nonzero(sample_index_matrix)[1].reshape((-1, 1))]), axis=1)
         print "\n"
-        feature_explanation = np.genfromtxt('/home/zhaojing/gemini-pipeline/10-14-gemini-main/gemini/model/CNN-code/readmission-feature-mapping-explanation.csv', delimiter=',', dtype=str)
-        feature_explanation = feature_explanation[:, 0]
+        # feature_explanation = np.genfromtxt('/home/zhaojing/gemini-pipeline/10-14-gemini-main/gemini/model/CNN-code/readmission-feature-mapping-explanation.csv', delimiter=',', dtype=str)
+        # feature_explanation = feature_explanation[:, 0]
         if (n+1) == sampleid:
         # if (n+1) > 0:
             sample_info_dict = {} # for output to json

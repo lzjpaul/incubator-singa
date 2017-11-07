@@ -119,3 +119,4 @@ print "harmonic"
 print 2*recall_1*recall_0 / float(recall_1 + recall_0)
 # python test_metrics_threshold.py 0.115
 # python test_metrics_threshold.py 0.209 (all)
+# python test_metrics_threshold.py 0.25 (all)
