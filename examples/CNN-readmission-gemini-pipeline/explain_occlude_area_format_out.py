@@ -14,6 +14,8 @@ from rafiki.agent import Agent, MsgType
 import model
 import json
 # the information is output according to standardformat
+# the indices of generating json is deduplicated
+# the features are ranked features
 
 def explain_occlude_area_format_out(sampleid, visfolder, test_feature, test_label, probpath, truelabelprobpath, metadatapath, top_n):
     probmatrix = np.genfromtxt(probpath, delimiter=',')
@@ -78,15 +80,30 @@ def explain_occlude_area_format_out(sampleid, visfolder, test_feature, test_labe
         print "\n"
         # feature_explanation = np.genfromtxt('/home/zhaojing/gemini-pipeline/10-14-gemini-main/gemini/model/CNN-code/readmission-feature-mapping-explanation.csv', delimiter=',', dtype=str)
         # feature_explanation = feature_explanation[:, 0]
-        if (n+1) == sampleid:
-        # if (n+1) > 0:
+        # if (n+1) == sampleid:
+        if (n+1) > 0:
             sample_info_dict = {} # for output to json
             sample_info_dict['header']=probmatrix[n]
             feature_idx_array = np.nonzero(sample_index_matrix)[1].reshape((-1, 1))
+            print "feature_idx_array: ", feature_idx_array
+            # unique elements of the feature_idx_array
+            feature_idx_array = np.unique(feature_idx_array)
+            print "unique feature_idx_array: ", feature_idx_array
+            # sort the feature_idx_array according to ordered features
+            ranked_all_features_idx = np.genfromtxt('ranked_readmission_feature_mapping_explanation.txt', delimiter='\t', dtype=str)[:, 2].astype(np.int)
+            # map to a ranked feature index (according to significance) table
+            ranked_feature_idx = ranked_all_features_idx[feature_idx_array]
+            ranked_feature_idx_sort = np.argsort(ranked_feature_idx)
+            feature_idx_array = feature_idx_array[ranked_feature_idx_sort]
+            print "sorted feature_idx_array: ", feature_idx_array
+            # print "feature_explanation: ", feature_explanation
             feature_list = []
             for feature_idx in range(feature_idx_array.shape[0]):
-                feature_list.append(feature_explanation[feature_idx_array[feature_idx]][0])
-            sample_info_dict['content']=list(set(feature_list))
+                print "feature_idx: ", feature_idx
+                print "feature_idx_array[feature_idx]: ", feature_idx_array[feature_idx]
+                print "feature_explanation[feature_idx_array[feature_idx]]: ", feature_explanation[feature_idx_array[feature_idx]]
+                feature_list.append(feature_explanation[feature_idx_array[feature_idx]])
+            sample_info_dict['content']=feature_list
             print feature_list
             try:
                 with open(os.path.join(visfolder, str(sampleid)+'.json'), 'w') as sample_info_writer:
