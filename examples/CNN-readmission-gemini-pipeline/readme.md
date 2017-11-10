@@ -21,3 +21,7 @@ get_lr is replaced by lr_param
 
 11-4
 now the features are correct: 11 cases occupy the last 11 slots
+
+11-10
+-big-lr.py --> CNN-readmission-trainvalidationtest.py
+for inference, only test samples are loaded

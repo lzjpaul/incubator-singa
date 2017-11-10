@@ -56,12 +56,12 @@ def explain_occlude_area_format_out(sampleid, visfolder, test_feature, test_labe
     index_matrix[0:11, 61:107] = 0
     index_matrix[0:11, 130:170] = 0
     ### diabetes and Malay
-    index_matrix[:, 26] = 1 # Race: Malay
+    # index_matrix[:, 26] = 1 # Race: Malay
     print "index_matrix shape: ", index_matrix.shape
     print "index_martix: "
     # print np.nonzero(index_matrix.reshape((height, width)))[0].reshape((-1,1))
     # print np.nonzero(index_matrix.reshape((height, width)))[1].reshape((-1,1))
-    feature_explanation = np.genfromtxt('/home/zhaojing/gemini-pipeline/10-14-gemini-main/gemini/model/CNN-code/readmission-feature-mapping-explanation.txt', delimiter='\t', dtype=str)
+    feature_explanation = np.genfromtxt('readmission-feature-mapping-explanation.txt', delimiter='\t', dtype=str)
     feature_explanation = feature_explanation[:, 0]
     print np.concatenate((np.nonzero(index_matrix)[0].reshape((-1,1)), np.nonzero(index_matrix)[1].reshape((-1,1))), axis=1)
     print np.concatenate((np.nonzero(index_matrix)[0].reshape((-1,1)).astype(str), feature_explanation[np.nonzero(index_matrix)[1].reshape((-1,1))]), axis=1)
@@ -80,10 +80,10 @@ def explain_occlude_area_format_out(sampleid, visfolder, test_feature, test_labe
         print "\n"
         # feature_explanation = np.genfromtxt('/home/zhaojing/gemini-pipeline/10-14-gemini-main/gemini/model/CNN-code/readmission-feature-mapping-explanation.csv', delimiter=',', dtype=str)
         # feature_explanation = feature_explanation[:, 0]
-        # if (n+1) == sampleid:
-        if (n+1) > 0:
+        if (n+1) == sampleid:
+        # if (n+1) > 0:
             sample_info_dict = {} # for output to json
-            sample_info_dict['header']=probmatrix[n]
+            sample_info_dict['header']=round(probmatrix[n], 2)
             feature_idx_array = np.nonzero(sample_index_matrix)[1].reshape((-1, 1))
             print "feature_idx_array: ", feature_idx_array
             # unique elements of the feature_idx_array
@@ -91,6 +91,8 @@ def explain_occlude_area_format_out(sampleid, visfolder, test_feature, test_labe
             print "unique feature_idx_array: ", feature_idx_array
             # sort the feature_idx_array according to ordered features
             ranked_all_features_idx = np.genfromtxt('ranked_readmission_feature_mapping_explanation.txt', delimiter='\t', dtype=str)[:, 2].astype(np.int)
+            # the DRGs are ranked from catastrophic to minor
+            ranked_all_features_idx[170:375] = -ranked_all_features_idx[170:375]
             # map to a ranked feature index (according to significance) table
             ranked_feature_idx = ranked_all_features_idx[feature_idx_array]
             ranked_feature_idx_sort = np.argsort(ranked_feature_idx)
@@ -99,9 +101,9 @@ def explain_occlude_area_format_out(sampleid, visfolder, test_feature, test_labe
             # print "feature_explanation: ", feature_explanation
             feature_list = []
             for feature_idx in range(feature_idx_array.shape[0]):
-                print "feature_idx: ", feature_idx
-                print "feature_idx_array[feature_idx]: ", feature_idx_array[feature_idx]
-                print "feature_explanation[feature_idx_array[feature_idx]]: ", feature_explanation[feature_idx_array[feature_idx]]
+                # print "feature_idx: ", feature_idx
+                # print "feature_idx_array[feature_idx]: ", feature_idx_array[feature_idx]
+                # print "feature_explanation[feature_idx_array[feature_idx]]: ", feature_explanation[feature_idx_array[feature_idx]]
                 feature_list.append(feature_explanation[feature_idx_array[feature_idx]])
             sample_info_dict['content']=feature_list
             print feature_list
