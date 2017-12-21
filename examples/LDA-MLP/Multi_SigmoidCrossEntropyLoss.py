@@ -40,14 +40,27 @@ class MultiSigmoidCrossEntropy(loss.Loss):
         Returns:
             a Tensor with one error value per sample
         '''
+        print 'in MultiSigmoid loss forward'
         p = tensor.sigmoid(x)
+        print 'after tensor sigmoid'
         if flag:
             self.truth = y
             self.prob = p
+        print 'after flag'
         np = 1 - p
+        print '1-p shape: ', (1 - p).shape
+        print 'p: ', p
+        print 'y: ', y
+        print 'y shape: ', y.shape
+        print 'y-p shape: ', (y-p).shape
+        print '1-y shape: ', (1 - y).shape
         p += (p < self.epsilon) * self.epsilon
         np += (np < self.epsilon) * self.epsilon
+        print 'after p and np epsilon'
+        print 'np shape: ', np.shape
+        print 'y-1 shape: ', (y-1).shape
         l = (y-1) * tensor.log(np) - y * tensor.log(p)
+        print 'after calculating loss l'
         # TODO(wangwei): add unary operation -Tensor
         return tensor.average(l, axis=1)
 

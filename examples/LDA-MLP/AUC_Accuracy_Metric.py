@@ -41,20 +41,32 @@ class AUCAccuracy(metric.Metric):
 
         x_np = tensor.to_numpy(x)
         y_np = tensor.to_numpy(y)
-
+        
+        print 'before printing x_np shape'
         print 'x_np shape: ', x_np.shape
         print 'y_np shape: ', y_np.shape
 
-        pred_x_np = x_np > 0.0
+        pred_x_np = (x_np > 0.0)
 
-        accuracy = tensor.from_numpy(pred_x_np == y_np) # still a matrix
-        macro_auc = roc_auc_score(y_np, x_np, average='macro')
-        micro_auc = roc_auc_score(y_np, x_np, average='micro')
+        print '(pred_x_np == y_np).astype(np.int32): ', (pred_x_np == y_np).astype(np.int32)
+        # accuracy = tensor.from_numpy((pred_x_np == y_np).astype(np.float32)) # still a matrix
+        accuracy = ((pred_x_np == y_np).astype(np.float32)) # still a matrix
+        accuracy = np.sum(accuracy)/(accuracy.shape[0]*accuracy.shape[1])
+        print 'y_np: ', y_np
+        print 'y_np shape: ', y_np.shape
+        print 'x_np: ', x_np
+        print 'x_np shape: ', x_np.shape
+        if y_np.shape[0] < 300: # this is train batch
+            macro_auc = 0.0
+            micro_auc = 0.0
+        else:
+            macro_auc = roc_auc_score(y_np.astype(np.int32), x_np, average='macro')
+            micro_auc = roc_auc_score(y_np.astype(np.int32), x_np, average='micro')
 
 
         x.to_device(dev)
         y.to_device(dev)
-        accuracy.to_device(dev)
+        # accuracy.to_device(dev)
 
         return [accuracy, macro_auc, micro_auc]
 
@@ -67,4 +79,5 @@ class AUCAccuracy(metric.Metric):
             a float value for the averaged metric
         '''
         accuracy, macro_auc, micro_auc = self.forward(x, y)
-        return [tensor.average(accuracy), macro_auc, micro_auc]
+        # return [tensor.average(accuracy), macro_auc, micro_auc]
+        return [accuracy, macro_auc, micro_auc]

@@ -73,7 +73,7 @@ class LDARegularizer(Regularizer):
         self.theta_alldoc = np.zeros((self.doc_num, self.topic_num))
         # update theta_all_doc
         for doc_idx in range(self.doc_num):
-            theta_doc = (np.sum((responsibility_all_doc[doc_idx] * np.absolute(self.w_array[:, doc_idx]).reshape((-1,1))), axis=0) + (self.alpha - 1)) / np.sum(np.sum((responsibility_all_doc[doc_idx] * np.absolute(self.w_array[:, doc_idx]).reshape((-1,1))), axis=0) + (self.alpha - 1))
+            theta_doc = (np.sum((self.responsibility_all_doc[doc_idx] * np.absolute(self.w_array[:, doc_idx]).reshape((-1,1))), axis=0) + (self.alpha - 1)) / np.sum(np.sum((self.responsibility_all_doc[doc_idx] * np.absolute(self.w_array[:, doc_idx]).reshape((-1,1))), axis=0) + (self.alpha - 1))
             self.theta_alldoc[doc_idx] = theta_doc
             if step % self.ldauptfreq == 0:
                 print 'theta_alldoc:', self.theta_alldoc

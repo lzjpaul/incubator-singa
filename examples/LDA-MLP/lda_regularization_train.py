@@ -84,9 +84,11 @@ def train(data, model_name, hyperpara, ldapara, phi, uptfreq, net, max_epoch, ge
 
     train_x, train_y, test_x, test_y = data
     ttrainx = tensor.Tensor((batch_size, train_x.shape[1]), dev)
-    ttrainy = tensor.Tensor((batch_size, train_y.shape[1]), dev, core_pb2.kInt)
+    # ttrainy = tensor.Tensor((batch_size, train_y.shape[1]), dev, core_pb2.kInt)
+    ttrainy = tensor.Tensor((batch_size, train_y.shape[1]), dev)
     ttestx = tensor.Tensor((test_x.shape[0], test_x.shape[1]), dev)
-    ttesty = tensor.Tensor((test_x.shape[0], test_y.shape[1]), dev, core_pb2.kInt)
+    # ttesty = tensor.Tensor((test_x.shape[0], test_y.shape[1]), dev, core_pb2.kInt)
+    ttesty = tensor.Tensor((test_x.shape[0], test_y.shape[1]), dev)
     num_train_batch = train_x.shape[0] / batch_size
     print 'num_train_batch: ', num_train_batch
     idx = np.arange(train_x.shape[0], dtype=np.int32)
