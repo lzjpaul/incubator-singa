@@ -29,8 +29,8 @@ def create_net(in_shape, use_cpu=False):
         layer.engine = 'singacpp'
 
     net = myffnet.ProbFeedForwardNet(Multi_SigmoidCrossEntropyLoss.MultiSigmoidCrossEntropy(), AUC_Accuracy_Metric.AUCAccuracy())
-    net.add(layer.Dense('dense', 128, input_sample_shape=in_shape))
-    net.add(layer.Dense('dense', 80))
+    net.add(layer.Dense('dense1', 128, input_sample_shape=in_shape))
+    net.add(layer.Dense('dense2', 80))
     for (pname, pvalue) in zip(net.param_names(), net.param_values()):
         if len(pvalue.shape) > 1:
             initializer.gaussian(pvalue, pvalue.shape[0], pvalue.shape[1])

@@ -39,14 +39,14 @@ import time
 import random
 
 def load_train_data(featurefilepath, labelfilepath):
-    train_x = np.genfromtxt(featurefilepath, delimiter=',')
-    train_y = np.genfromtxt(labelfilepath, delimiter=',')
+    train_x = np.genfromtxt(featurefilepath, dtype=np.float32, delimiter=',')
+    train_y = np.genfromtxt(labelfilepath, dtype=np.int32, delimiter=',')
     print 'after loading train data'
     return train_x, train_y
 
 def load_test_data(featurefilepath, labelfilepath):
-    test_x = np.genfromtxt(featurefilepath, delimiter=',')
-    test_y = np.genfromtxt(labelfilepath, delimiter=',')
+    test_x = np.genfromtxt(featurefilepath, dtype=np.float32, delimiter=',')
+    test_y = np.genfromtxt(labelfilepath, dtype=np.int32, delimiter=',')
     print 'after lodading test data'
     return test_x, test_y
 
@@ -62,7 +62,7 @@ def normalize_for_vgg(train_x, test_x):
 def mlp_lr(epoch):
     return 0.01
 
-def train(data, model_name, hyperpara, topic_num, uptfreq, net, max_epoch, get_lr, weight_decay, gpuid, batch_size=100,
+def train(data, model_name, hyperpara, ldapara, phi, uptfreq, net, max_epoch, get_lr, weight_decay, gpuid, batch_size=100,
           use_cpu=False):
     print 'Start intialization............'
     if use_cpu:
@@ -75,19 +75,20 @@ def train(data, model_name, hyperpara, topic_num, uptfreq, net, max_epoch, get_l
         cpudev = device.get_default_device()
 
     net.to_device(dev)
-    opt = lda_prior_optimizer.LDASGD(net=net, momentum=0.9, weight_decay=weight_decay)
+    opt = lda_regularization_optimizer.LDASGD(net=net, momentum=0.9, weight_decay=weight_decay)
     for (p, specs) in zip(net.param_names(), net.param_specs()):
+        print 'param names: ', p
         opt.register(p, specs)
     for (s, p) in zip(net.param_names(), net.param_values()):
-        opt.lda_register(hyperpara, topic_num, uptfreq)
+        opt.lda_register(hyperpara, ldapara, phi, uptfreq)
 
     train_x, train_y, test_x, test_y = data
     ttrainx = tensor.Tensor((batch_size, train_x.shape[1]), dev)
-    ttrainy = tensor.Tensor((batch_size,), dev, core_pb2.kInt)
+    ttrainy = tensor.Tensor((batch_size, train_y.shape[1]), dev, core_pb2.kInt)
     ttestx = tensor.Tensor((test_x.shape[0], test_x.shape[1]), dev)
-    ttesty = tensor.Tensor((test_x.shape[0],), dev, core_pb2.kInt)
+    ttesty = tensor.Tensor((test_x.shape[0], test_y.shape[1]), dev, core_pb2.kInt)
     num_train_batch = train_x.shape[0] / batch_size
-    print 'num_train_batch, num_test_batch: ', num_train_batch, num_test_batch
+    print 'num_train_batch: ', num_train_batch
     idx = np.arange(train_x.shape[0], dtype=np.int32)
     test_epoch = 10
     for epoch in range(max_epoch):
@@ -146,6 +147,9 @@ if __name__ == '__main__':
     print 'Loading data ..................'
     train_x, train_y = load_train_data('data-repository/feature_matrix_try.csv', 'data-repository/result_matrix_try.csv')
     test_x, test_y = load_test_data('data-repository/feature_matrix_try.csv', 'data-repository/result_matrix_try.csv')
+    alpha = 0.05
+    phi = np.genfromtxt('data-repository/phi.csv', delimiter=',')
+    phi = np.transpose(phi)
     if args.model == 'ldamlp':
         start = time.time()
         st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
@@ -153,9 +157,11 @@ if __name__ == '__main__':
         print "train_x shape: ", train_x.shape
         print "train_x norm: ", np.linalg.norm(train_x)
         max_epoch = args.maxepoch
+        doc_num = 128 # hard-code, number of hidden units 
         topic_num = args.topicnum
-        net = lda_mlp_model.create_net((4351,), args.use_cpu)
-        train((train_x, train_y, test_x, test_y), args.model, [alpha], topic_num, [args.ldauptfreq, args.paramuptfreq], net, 160, mlp_lr, 0.004, args.gpuid, use_cpu=args.use_cpu)
+        word_num = train_x.shape[1]
+        net = lda_mlp_model.create_net((word_num,), args.use_cpu)
+        train((train_x, train_y, test_x, test_y), args.model, [alpha], [doc_num, topic_num, word_num], phi, [args.ldauptfreq, args.paramuptfreq], net, 160, mlp_lr, 0.004, args.gpuid, use_cpu=args.use_cpu)
         done = time.time()
         do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
         print do

@@ -21,15 +21,15 @@ class LDAOptimizer(Optimizer):
         Optimizer.__init__(self, lr=lr, momentum=momentum, weight_decay=weight_decay,
                  regularizer=regularizer, constraint=constraint)
 
-    def lda_register(self, hyperpara, topic_num, uptfreq):
-        theta = [1.0/topic_num for _ in range(topic_num)]
-        self.ldaregularizer = LDARegularizer(hyperpara=hyperpara, topic_num=topic_num, theta=theta, uptfreq=uptfreq)
+    def lda_register(self, hyperpara, ldapara, phi, uptfreq):
+        theta = [1.0/ldapara[1] for _ in range(ldapara[1])]
+        self.ldaregularizer = LDARegularizer(hyperpara=hyperpara, ldapara=ldapara, theta=theta, phi=phi, uptfreq=uptfreq)
 
     def apply_LDA_regularizer_constraint(self, dev, trainnum, net, epoch, value, grad, name, step):
         # if np.ndim(tensor.to_numpy(value)) <= 2:
-        if np.ndim(tensor.to_numpy(value)) != 2:
+        if name != 'dense1/weight':
             return self.apply_regularizer_constraint(epoch, value, grad, name, step)
-        else: # weight parameter
+        else: # ip1/weight parameter
             grad = self.ldaregularizer.apply(dev, trainnum, net, epoch, value, grad, name, step)
             return grad
 
@@ -40,9 +40,11 @@ class LDARegularizer(Regularizer):
         hyperparameters: a, b, alpha (like the coefficient of L2), uptfreq
     '''
 
-    def __init__(self, hyperpara=None, topic_num=None, theta=None, uptfreq=None):
-        self.alpha, self.topic_num = hyperpara[0], topic_num
-        print "self.alpha, self.topic_num: ", self.alpha, self.topic_num
+    def __init__(self, hyperpara=None, ldapara=None, theta=None, phi=None, uptfreq=None):
+        self.alpha, self.phi = hyperpara[0], np.copy(phi)
+        self.doc_num, self.topic_num, self.word_num = ldapara[0], ldapara[1], ldapara[2]
+        print "self.alpha, self.doc_num, self.topic_num, self.word_num: ", self.alpha, self.doc_num, self.topic_num, self.word_num
+        print "self.phi shape: ", self.phi.shape
         self.theta_alldoc = np.zeros((self.doc_num, self.topic_num))
         for doc_idx in range(self.doc_num):
             self.theta_alldoc[doc_idx,:] = np.copy(theta)
@@ -78,7 +80,6 @@ class LDARegularizer(Regularizer):
 
     def apply(self, dev, trainnum, net, epoch, value, grad, name, step):
         self.w_array = tensor.to_numpy(value)
-        self.word_num, self.doc_num = self.w_array.shape[0], self.w_array.shape[1]
         if epoch < 2 or step % self.paramuptfreq == 0:
             self.calcResponsibility()
             # self.reg_grad_w = np.sum(self.responsibility*self.reg_lambda, axis=1).reshape(self.w_array.shape) * self.w_array

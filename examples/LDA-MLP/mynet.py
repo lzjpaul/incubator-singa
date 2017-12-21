@@ -24,8 +24,11 @@ class ProbFeedForwardNet(ffnet.FeedForwardNet):
             gradients of parameters and the loss and metric values.
         '''
         out = self.forward(kTrain, x)
+        print 'before loss forward' 
         l = self.loss.forward(kTrain, out, y)
+        print 'after loss forward'
         g = self.loss.backward()
+        print 'after loss backward'
         g /= x.shape[0]
         m = None
         if self.metric is not None:
