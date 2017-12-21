@@ -21,7 +21,7 @@ import numpy as np
 from singa import metric
 from sklearn.metrics import roc_auc_score
 
-class Precision(metric.Metric):
+class AUCAccuracy(metric.Metric):
     '''Make the top-k labels of max probability as the prediction
     Compute the precision against the groundtruth labels
     '''

@@ -24,12 +24,12 @@ import mynet as myffnet
 import Multi_SigmoidCrossEntropyLoss
 import AUC_Accuracy_Metric
 
-def create_net(use_cpu=False):
+def create_net(in_shape, use_cpu=False):
     if use_cpu:
         layer.engine = 'singacpp'
 
     net = myffnet.ProbFeedForwardNet(Multi_SigmoidCrossEntropyLoss.MultiSigmoidCrossEntropy(), AUC_Accuracy_Metric.AUCAccuracy())
-    net.add(layer.Dense('dense', 128))
+    net.add(layer.Dense('dense', 128, input_sample_shape=in_shape))
     net.add(layer.Dense('dense', 80))
     for (pname, pvalue) in zip(net.param_names(), net.param_values()):
         if len(pvalue.shape) > 1:

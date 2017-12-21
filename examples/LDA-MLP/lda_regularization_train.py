@@ -144,8 +144,8 @@ if __name__ == '__main__':
     #parser.add_argument('-resultpath', type=str, help='result path')
     args = parser.parse_args()
     print 'Loading data ..................'
-    train_x, train_y = load_train_data('data-repository/feature_matrix.csv', 'data-repository/result_matrix.csv')
-    test_x, test_y = load_test_data('data-repository/feature_matrix.csv', 'data-repository/result_matrix.csv')
+    train_x, train_y = load_train_data('data-repository/feature_matrix_try.csv', 'data-repository/result_matrix_try.csv')
+    test_x, test_y = load_test_data('data-repository/feature_matrix_try.csv', 'data-repository/result_matrix_try.csv')
     if args.model == 'ldamlp':
         start = time.time()
         st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
@@ -154,7 +154,7 @@ if __name__ == '__main__':
         print "train_x norm: ", np.linalg.norm(train_x)
         max_epoch = args.maxepoch
         topic_num = args.topicnum
-        net = lda_mlp_model.create_net(args.use_cpu)
+        net = lda_mlp_model.create_net((4351,), args.use_cpu)
         train((train_x, train_y, test_x, test_y), args.model, [alpha], topic_num, [args.ldauptfreq, args.paramuptfreq], net, 160, mlp_lr, 0.004, args.gpuid, use_cpu=args.use_cpu)
         done = time.time()
         do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')

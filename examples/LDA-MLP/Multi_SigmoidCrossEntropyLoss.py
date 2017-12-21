@@ -26,7 +26,7 @@ class MultiSigmoidCrossEntropy(loss.Loss):
     truth values with the prediction probability generated from Sigmoid.
     '''
     def __init__(self, epsilon=1e-8):
-        super(SigmoidCrossEntropy, self).__init__()
+        super(MultiSigmoidCrossEntropy, self).__init__()
         self.truth = None
         self.prob = None
         self.epsilon = epsilon  # to avoid log(x) with x being too small
