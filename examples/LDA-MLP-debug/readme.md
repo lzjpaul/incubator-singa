@@ -46,3 +46,4 @@ away from 0.9206
 (3) using float32 to read in label
 (4) momentum: 0.0 (ada gradient)
 (5) adding sigmoid layer!!
+(6) in AUCAcfuray loss layer, need to manually sigmoid!!

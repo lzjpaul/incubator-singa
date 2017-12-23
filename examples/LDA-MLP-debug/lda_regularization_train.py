@@ -161,10 +161,10 @@ if __name__ == '__main__':
     train_x, train_y = all_x[0:train_num], all_y[0:train_num]
     test_x, test_y = all_x[train_num:all_x.shape[0]], all_y[train_num:all_x.shape[0]]
     '''
-
+    
     train_x, train_y = load_train_data('data-repository/train_x.csv', 'data-repository/train_y.csv')
     test_x, test_y = load_test_data('data-repository/test_x.csv', 'data-repository/test_y.csv')
-
+    
     print 'train number: ', train_x.shape[0]
     print 'test number: ', test_x.shape[0]
     alpha = 0.05

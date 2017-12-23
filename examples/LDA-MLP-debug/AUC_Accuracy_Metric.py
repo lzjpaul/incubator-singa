@@ -34,13 +34,15 @@ class AUCAccuracy(metric.Metric):
         Returns:
             a tensor of floats, one per sample
         '''
-
+        p = tensor.sigmoid(x) 
         dev = x.device
         x.to_host()
         y.to_host()
+        p.to_host()
 
         x_np = tensor.to_numpy(x)
         y_np = tensor.to_numpy(y)
+        p_np = tensor.to_numpy(p)
        
         pred_x_np = (x_np > 0.0).astype(np.float32)
         
@@ -51,8 +53,8 @@ class AUCAccuracy(metric.Metric):
             macro_auc = 0.0
             micro_auc = 0.0
         else:
-            macro_auc = roc_auc_score(y_np.astype(np.int32), x_np, average='macro')
-            micro_auc = roc_auc_score(y_np.astype(np.int32), x_np, average='micro')
+            macro_auc = roc_auc_score(y_np.astype(np.int32), p_np, average='macro')
+            micro_auc = roc_auc_score(y_np.astype(np.int32), p_np, average='micro')
 
 
         x.to_device(dev)
