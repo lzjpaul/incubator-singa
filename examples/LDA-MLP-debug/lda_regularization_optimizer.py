@@ -27,9 +27,9 @@ class LDAOptimizer(Optimizer):
 
     def apply_LDA_regularizer_constraint(self, dev, trainnum, net, epoch, value, grad, name, step):
         # if name != 'dense1/weight':
-        if name != 'weight':
+        if name != 'dense1/weight':
             return self.apply_regularizer_constraint(epoch, value, grad, name, step)
-        else: # ip1/weight parameter
+        else: # dense1/weight parameter
             grad = self.ldaregularizer.apply(dev, trainnum, net, epoch, value, grad, name, step)
             return grad
 
@@ -48,6 +48,7 @@ class LDARegularizer(Regularizer):
         self.theta_alldoc = np.zeros((self.doc_num, self.topic_num))
         for doc_idx in range(self.doc_num):
             self.theta_alldoc[doc_idx,:] = np.copy(theta)
+        print "init self.theta_alldoc shape: ", self.theta_alldoc.shape
         print "init self.theta_alldoc: ", self.theta_alldoc
         self.ldauptfreq, self.paramuptfreq = uptfreq[0], uptfreq[1]
         print "init self.ldauptfreq, self.paramuptfreq: ", self.ldauptfreq, self.paramuptfreq
@@ -57,8 +58,22 @@ class LDARegularizer(Regularizer):
         self.responsibility_all_doc = np.zeros((self.doc_num, self.word_num, self.topic_num))
         for doc_idx in range(self.doc_num):
             responsibility_doc = self.phi*(self.theta_alldoc[doc_idx].reshape((1, -1)))
+            print 'responsibility_doc[10]: ', responsibility_doc[10]
             # responsibility normalized with summation(denominator)
             self.responsibility_all_doc[doc_idx] = responsibility_doc/(np.sum(responsibility_doc, axis=1).reshape(-1,1))
+            # for some words, the topic distributions are all zeros, we will fill these word's topic distribution with average value
+            zero_idx = np.where((np.sum(responsibility_doc, axis=1)) == 0)[0]
+            average_theta_matrix = np.full((len(zero_idx), self.topic_num), 1./self.topic_num)
+            self.responsibility_all_doc[doc_idx][zero_idx] = average_theta_matrix
+            print "doc_idx: ", doc_idx
+            print "self.responsibility_all_doc[doc_idx][10]: ", self.responsibility_all_doc[doc_idx][10]
+            print "self.responsibility_all_doc[doc_idx][zero_idx].shape: ", self.responsibility_all_doc[doc_idx][zero_idx].shape
+            print "len(zero_idx): ", len(zero_idx)
+            # print "word responsibility sum[:100]: ", np.sum(self.responsibility_all_doc[doc_idx], axis=1)[:100]
+            # print "word responsibility sum shape: ", np.sum(self.responsibility_all_doc[doc_idx], axis=1).shape
+            # print "word responsibility sum nan place: ", np.argwhere(np.isnan(np.sum(self.responsibility_all_doc[doc_idx], axis=1)))
+            # print "word responsibility sum sum: ", np.sum(np.sum(self.responsibility_all_doc[doc_idx], axis=1))
+        print 'self.responsibility_all_doc sum: ', np.sum(self.responsibility_all_doc)
 
     def calcRegGrad(self):
         theta_phi_all_doc = np.zeros((self.word_num, self.doc_num))

@@ -47,3 +47,7 @@ away from 0.9206
 (4) momentum: 0.0 (ada gradient)
 (5) adding sigmoid layer!!
 (6) in AUCAcfuray loss layer, need to manually sigmoid!!
+
+2017-12-24
+(1) lda_register: only one lda regularizer is registered!
+(2) in phi, for some words, all topic is zero!!
