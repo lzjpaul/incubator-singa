@@ -75,7 +75,7 @@ class LDARegularizer(Regularizer):
             # print "word responsibility sum shape: ", np.sum(self.responsibility_all_doc[doc_idx], axis=1).shape
             # print "word responsibility sum nan place: ", np.argwhere(np.isnan(np.sum(self.responsibility_all_doc[doc_idx], axis=1)))
             # print "word responsibility sum sum: ", np.sum(np.sum(self.responsibility_all_doc[doc_idx], axis=1))
-        print 'self.responsibility_all_doc sum: ', np.sum(self.responsibility_all_doc)
+        # print 'self.responsibility_all_doc sum: ', np.sum(self.responsibility_all_doc)
 
     def calcRegGrad(self):
         theta_phi_all_doc = np.zeros((self.word_num, self.doc_num))
@@ -89,8 +89,8 @@ class LDARegularizer(Regularizer):
             # print 'len(zero_idx): ', len(zero_idx)
             # print 'theta_phi_doc[zero_idx]: ', theta_phi_doc[zero_idx]
             theta_phi_all_doc[:, doc_idx] = theta_phi_doc
-        print 'theta_phi_all_doc sum: ', np.sum(theta_phi_all_doc)
-        print 'min: np.sort(np.unique(theta_phi_all_doc.reshape((1,-1)))): ', np.sort(np.unique(theta_phi_all_doc.reshape((1,-1))))
+        # print 'print theta_phi_all_doc sum: ', np.sum(theta_phi_all_doc)
+        # print 'print min: np.sort(np.unique(theta_phi_all_doc.reshape((1,-1)))): ', np.sort(np.unique(theta_phi_all_doc.reshape((1,-1))))
         return -(np.sign(self.w_array) * theta_phi_all_doc)
     
     def update_LDA_EM(self, name, step):
@@ -100,9 +100,8 @@ class LDARegularizer(Regularizer):
             theta_doc = (np.sum((self.responsibility_all_doc[doc_idx] * np.absolute(self.w_array[:, doc_idx]).reshape((-1,1))), axis=0) + (self.alpha - 1)) / np.sum(np.sum((self.responsibility_all_doc[doc_idx] * np.absolute(self.w_array[:, doc_idx]).reshape((-1,1))), axis=0) + (self.alpha - 1))
             self.theta_alldoc[doc_idx] = theta_doc
             if step % self.ldauptfreq == 0:
-                print 'step: ', step
-                print 'theta_alldoc:', self.theta_alldoc
-        print 'sum: np.sum(self.theta_alldoc): ', np.sum(self.theta_alldoc)
+                print 'theta_doc:', theta_doc
+        # print 'sum: np.sum(self.theta_alldoc): ', np.sum(self.theta_alldoc)
 
     def apply(self, dev, trainnum, net, epoch, value, grad, name, step):
         self.w_array = tensor.to_numpy(value)

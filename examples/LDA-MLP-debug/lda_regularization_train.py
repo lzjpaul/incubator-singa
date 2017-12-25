@@ -156,16 +156,16 @@ if __name__ == '__main__':
     #parser.add_argument('-resultpath', type=str, help='result path')
     args = parser.parse_args()
     print 'Loading data ..................'
-    
+    ''' 
     all_x, all_y = load_all_data('data-repository/feature_matrix_try.csv', 'data-repository/result_matrix_try.csv')
     train_num = int(all_x.shape[0] * 0.8)
     train_x, train_y = all_x[0:train_num], all_y[0:train_num]
     test_x, test_y = all_x[train_num:all_x.shape[0]], all_y[train_num:all_x.shape[0]]
-    
-    ''' 
+    '''
+     
     train_x, train_y = load_train_data('data-repository/train_x.csv', 'data-repository/train_y.csv')
     test_x, test_y = load_test_data('data-repository/test_x.csv', 'data-repository/test_y.csv')
-    '''
+    
     print 'train number: ', train_x.shape[0]
     print 'test number: ', test_x.shape[0]
     alpha = 1 + 0.05
