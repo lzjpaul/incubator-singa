@@ -51,3 +51,4 @@ away from 0.9206
 2017-12-24
 (1) lda_register: only one lda regularizer is registered!
 (2) in phi, for some words, all topic is zero!!
+(3) for log(phi*theta), some are zero in log!!

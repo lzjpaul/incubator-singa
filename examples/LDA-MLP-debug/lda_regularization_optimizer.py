@@ -58,17 +58,19 @@ class LDARegularizer(Regularizer):
         self.responsibility_all_doc = np.zeros((self.doc_num, self.word_num, self.topic_num))
         for doc_idx in range(self.doc_num):
             responsibility_doc = self.phi*(self.theta_alldoc[doc_idx].reshape((1, -1)))
-            print 'responsibility_doc[10]: ', responsibility_doc[10]
+            # print 'responsibility_doc[10]: ', responsibility_doc[10]
             # responsibility normalized with summation(denominator)
             self.responsibility_all_doc[doc_idx] = responsibility_doc/(np.sum(responsibility_doc, axis=1).reshape(-1,1))
             # for some words, the topic distributions are all zeros, we will fill these word's topic distribution with average value
             zero_idx = np.where((np.sum(responsibility_doc, axis=1)) == 0)[0]
             average_theta_matrix = np.full((len(zero_idx), self.topic_num), 1./self.topic_num)
             self.responsibility_all_doc[doc_idx][zero_idx] = average_theta_matrix
+            '''
             print "doc_idx: ", doc_idx
             print "self.responsibility_all_doc[doc_idx][10]: ", self.responsibility_all_doc[doc_idx][10]
             print "self.responsibility_all_doc[doc_idx][zero_idx].shape: ", self.responsibility_all_doc[doc_idx][zero_idx].shape
             print "len(zero_idx): ", len(zero_idx)
+            '''
             # print "word responsibility sum[:100]: ", np.sum(self.responsibility_all_doc[doc_idx], axis=1)[:100]
             # print "word responsibility sum shape: ", np.sum(self.responsibility_all_doc[doc_idx], axis=1).shape
             # print "word responsibility sum nan place: ", np.argwhere(np.isnan(np.sum(self.responsibility_all_doc[doc_idx], axis=1)))
@@ -80,8 +82,15 @@ class LDARegularizer(Regularizer):
         for doc_idx in range(self.doc_num):
             theta_phi_doc = self.phi*(self.theta_alldoc[doc_idx].reshape((1, -1)))
             theta_phi_doc = np.sum(theta_phi_doc, axis=1)
-            theta_phi_doc = np.log(theta_phi_doc) 
+            zero_idx = np.where(theta_phi_doc == 0)[0]
+            min_theta_phi_doc = np.full((len(zero_idx),), -100.)
+            theta_phi_doc = np.log(theta_phi_doc)
+            theta_phi_doc[zero_idx] = min_theta_phi_doc
+            # print 'len(zero_idx): ', len(zero_idx)
+            # print 'theta_phi_doc[zero_idx]: ', theta_phi_doc[zero_idx]
             theta_phi_all_doc[:, doc_idx] = theta_phi_doc
+        print 'theta_phi_all_doc sum: ', np.sum(theta_phi_all_doc)
+        print 'min: np.sort(np.unique(theta_phi_all_doc.reshape((1,-1)))): ', np.sort(np.unique(theta_phi_all_doc.reshape((1,-1))))
         return -(np.sign(self.w_array) * theta_phi_all_doc)
     
     def update_LDA_EM(self, name, step):
