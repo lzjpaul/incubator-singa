@@ -100,7 +100,9 @@ class LDARegularizer(Regularizer):
             theta_doc = (np.sum((self.responsibility_all_doc[doc_idx] * np.absolute(self.w_array[:, doc_idx]).reshape((-1,1))), axis=0) + (self.alpha - 1)) / np.sum(np.sum((self.responsibility_all_doc[doc_idx] * np.absolute(self.w_array[:, doc_idx]).reshape((-1,1))), axis=0) + (self.alpha - 1))
             self.theta_alldoc[doc_idx] = theta_doc
             if step % self.ldauptfreq == 0:
+                print 'step: ', step
                 print 'theta_alldoc:', self.theta_alldoc
+        print 'sum: np.sum(self.theta_alldoc): ', np.sum(self.theta_alldoc)
 
     def apply(self, dev, trainnum, net, epoch, value, grad, name, step):
         self.w_array = tensor.to_numpy(value)
