@@ -26,7 +26,7 @@ class LDAOptimizer(Optimizer):
         self.ldaregularizer = LDARegularizer(hyperpara=hyperpara, ldapara=ldapara, theta=theta, phi=phi, uptfreq=uptfreq)
 
     def apply_LDA_regularizer_constraint(self, dev, trainnum, net, epoch, value, grad, name, step):
-        # if name != 'dense1/weight':
+        # if name != 'weight':
         if name != 'dense1/weight':
             return self.apply_regularizer_constraint(epoch, value, grad, name, step)
         else: # dense1/weight parameter

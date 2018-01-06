@@ -52,3 +52,9 @@ away from 0.9206
 (1) lda_register: only one lda regularizer is registered!
 (2) in phi, for some words, all topic is zero!!
 (3) for log(phi*theta), some are zero in log!!
+
+2018-1-6
+(1)if name != 'weight': to adjust LDA or not 
+
+2018-1-6
+(1) the backward function needs to divided by label_class num as well (because the loss function has been divided by label_class num)

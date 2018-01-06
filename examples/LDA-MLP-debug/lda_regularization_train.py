@@ -77,7 +77,8 @@ def train(data, model_name, hyperpara, ldapara, phi, uptfreq, net, max_epoch, ge
         cpudev = dev
     else:
         print 'Using GPU'
-        dev = device.create_cuda_gpu_on(gpuid)
+        # dev = device.create_cuda_gpu_on(gpuid)
+        dev = device.create_cuda_gpu()
         cpudev = device.get_default_device()
 
     net.to_device(dev)
