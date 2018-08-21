@@ -122,7 +122,7 @@ def cal_accuracy(yPredict, yTrue):
 #     return roc_auc_score(yTrue, yPredictProba)
 
 def train(inputfolder, outputfolder, dev, agent, max_epoch, get_lr, use_cpu, batch_size=100):
-    opt = optimizer.SGD(momentum=0.95, weight_decay=0.01)
+    opt = optimizer.SGD(momentum=0.9, weight_decay=0.01)
     agent.push(MsgType.kStatus, 'Downlaoding data...')
     # all_feature, all_label = get_data(os.path.join(inputfolder, 'features.txt'), os.path.join(inputfolder, 'label.txt'))  # PUT THE DATA on/to dbsystem
     train_feature, train_label = get_data(os.path.join(inputfolder, 'DVT_diag_labtest_train_data.csv'), os.path.join(inputfolder, 'DVT_diag_labtest_train_label.csv'))  # PUT THE DATA on/to dbsystem
@@ -219,8 +219,8 @@ def train(inputfolder, outputfolder, dev, agent, max_epoch, get_lr, use_cpu, bat
             agent.push(MsgType.kInfoMetric, info)
             # print 'self calculate valid auc = %f' % auroc(softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1))
             # print 'self calculate valid accuracy = %f' % cal_accuracy(softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1))
-            dvt_precision_1, dvt_recall_1, dvt_F_measure_1 = HealthcareMetrics(probs.shape[0], softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1), 0.5)
-            print 'valid dvt_precision_1 = %f, valid dvt_recall_1 = %f, valid dvt_F_measure_1 = %f' % (dvt_precision_1, dvt_recall_1, dvt_F_measure_1)
+            dvt_accuracy, dvt_precision_1, dvt_recall_1, dvt_F_measure_1 = HealthcareMetrics(probs.shape[0], softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1), 0.2)
+            print 'valid dvt_accuracy = %f, dvt_precision_1 = %f, valid dvt_recall_1 = %f, valid dvt_F_measure_1 = %f' % (dvt_accuracy, dvt_precision_1, dvt_recall_1, dvt_F_measure_1)
 
         if epoch % test_epoch == 0 or epoch == (max_epoch-1):
             loss, acc = 0.0, 0.0
@@ -242,9 +242,13 @@ def train(inputfolder, outputfolder, dev, agent, max_epoch, get_lr, use_cpu, bat
             agent.push(MsgType.kInfoMetric, info)
             # print 'self calculate test auc = %f' % auroc(softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1))
             print 'self calculate test accuracy = %f' % cal_accuracy(softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1))
-            dvt_precision_1, dvt_recall_1, dvt_F_measure_1 = HealthcareMetrics(probs.shape[0], softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1), 0.5)
-            print 'test dvt_precision_1 = %f, test dvt_recall_1 = %f, test dvt_F_measure_1 = %f' % (dvt_precision_1, dvt_recall_1, dvt_F_measure_1)
+            dvt_accuracy, dvt_precision_1, dvt_recall_1, dvt_F_measure_1 = HealthcareMetrics(probs.shape[0], softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), y.reshape(-1, 1), 0.5)
+            print 'test dvt_accuracy = %f, dvt_precision_1 = %f, test dvt_recall_1 = %f, test dvt_F_measure_1 = %f' % (dvt_accuracy, dvt_precision_1, dvt_recall_1, dvt_F_measure_1)
             net.save(os.path.join(outputfolder,'parameter_last'+str(epoch)), 20)
+            if epoch == 40:
+                print 'begin print'
+                np.savetxt('epoch_40_probs.csv', softmax(tensor.to_numpy(probs))[:,1].reshape(-1, 1), fmt = '%6f', delimiter=",")
+                np.savetxt('epoch_40_labels.csv', y.reshape(-1, 1), fmt = '%6f', delimiter=",")
         
     for (s, p) in zip(net.param_specs(), net.param_values()):
         print "last epoch param name: ", s
