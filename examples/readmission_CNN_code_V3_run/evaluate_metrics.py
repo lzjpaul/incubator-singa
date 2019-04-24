@@ -83,6 +83,9 @@ def test():
     print ('#files = %d' % len(files))
     for probfile in files:
         # print ('parameter: ', str(kernel_y), str(kernel_x), str(stride_y), str(stride_x), str(epoch))
+        print ('probfile: ', probfile)
+        if 'readmitted' not in probfile:
+            break
         probability = np.genfromtxt(probfile, delimiter=',', dtype=np.float32)
         prob, ytrue = probability[:, 0], probability[:, 1]
         if sum(np.isnan(prob)) > 0:

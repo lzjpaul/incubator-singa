@@ -161,7 +161,7 @@ def train(inputfolder, outputfolder, visfolder, sampleid, dev, agent, max_epoch,
     # stride_x = 20
     # hyperpara = np.array([12, dim, 3, 10, 1, 3])
     threshold = 1.0
-    variances = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20]
+    variances = [0.0, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20]
     for kernel_y, stride_y in zip([2], [1]):
         for kernel_x in [80]:
             for stride_x in [10]:
