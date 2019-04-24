@@ -14,15 +14,36 @@ class param_process(object):
         """return mean and variance for gaussian"""
         return 0.0, 1.0
 
+    def calculate_clip_coefficient(self, conv1_grad_list, dense_grad_list, threshold):
+        clip_coefficient_dict = {}
+        ### conv1
+        conv1_grad_concatenate = conv1_grad_list[0].reshape(1,-1)
+        for i in range(1,len(conv1_grad_list)):
+            conv1_grad_concatenate = np.concatenate((conv1_grad_concatenate, conv1_grad_list[i].reshape(1,-1)), axis=1)
+        print 'conv1_grad_concatenate shape: ', conv1_grad_concatenate.shape
+        print 'conv1_grad_concatenate norm: ', np.linalg.norm(conv1_grad_concatenate)
+        clip_coefficient_dict['conv1'] = threshold / np.linalg.norm(conv1_grad_concatenate)
+        ### dense
+        dense_grad_concatenate = dense_grad_list[0].reshape(1,-1)
+        for i in range(1,len(dense_grad_list)):
+            dense_grad_concatenate = np.concatenate((dense_grad_concatenate, dense_grad_list[i].reshape(1,-1)), axis=1)
+        print 'dense_grad_concatenate shape: ', dense_grad_concatenate.shape
+        print 'dense_grad_concatenate norm: ', np.linalg.norm(dense_grad_concatenate)
+        clip_coefficient_dict['dense'] = threshold / np.linalg.norm(dense_grad_concatenate)
+        return clip_coefficient_dict
+    
     def regularization(self, coefficient, value, grad):
         if coefficient != 0:
             tensor.axpy(coefficient, value, grad)
         return grad
 
-    def constraint(self, grad, threshold):
-        nrm = grad.l2()
-        if threshold < nrm:
-            grad *= (threshold/nrm)
+    def constraint(self, name, grad, clip_coefficient_dict):
+        if name in 'conv1':
+            clip_coefficient = clip_coefficient_dict['conv1']
+        else:
+            clip_coefficient = clip_coefficient_dict['dense']
+        if clip_coefficient < 1.0:
+            grad *= clip_coefficient
         return grad
 
     def noise_function():
@@ -40,7 +61,7 @@ class param_process(object):
         tensor.axpy(1.0, noises_dev, grad)
         return grad
 
-    def apply_with_regularizer_constraint_noise(self, coefficient, value, grad, threshold, dev):
+    def apply_with_regularizer_constraint_noise(self, coefficient, name, value, grad, clip_coefficient_dict, dev):
         """apply regularization and constraint if available.
 
 
@@ -52,7 +73,7 @@ class param_process(object):
         grad = self.regularization(coefficient, value, grad)
 
         # constraint
-        grad = self.constraint(grad, threshold)
+        grad = self.constraint(name, grad, clip_coefficient_dict)
 
         # add noise
         grad = self.add_noise(grad, dev)

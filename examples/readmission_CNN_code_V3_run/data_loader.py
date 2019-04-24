@@ -23,8 +23,10 @@ def get_data(all_feature_url, all_label_url, all_patient_url, deployment=False):
        print 'Not exist all_feature_url = ', all_feature_url
        return
     # all_feature = np.genfromtxt(all_feature_url, dtype=np.float32, delimiter=',')
+    print 'begin loading all_feature'
     all_feature = load_npz(all_feature_url)
     all_feature = all_feature.toarray()
+    print 'end loading all_feature'
     
     if all_patient_url is not None and not os.path.exists(all_patient_url):
         print 'Not exist all_patient_url = ', all_patient_url

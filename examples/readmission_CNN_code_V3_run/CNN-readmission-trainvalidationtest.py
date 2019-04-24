@@ -78,7 +78,7 @@ def main():
 
         # start to train
         agent = Agent(port)
-        train(args.inputfolder, args.outputfolder, args.visfolder, args.trainratio, args.validationratio, args.testratio, dev, agent, args.max_epoch, use_cpu)
+        train(args.inputfolder, args.outputfolder, args.visfolder, args.trainratio, args.validationratio, args.testratio, dev, agent, int(args.max_epoch), use_cpu)
         # wait the agent finish handling http request
         agent.stop()
     except SystemExit:
@@ -143,6 +143,7 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
     opt = optimizer.SGD()
     agent.push(MsgType.kStatus, 'Downlaoding data...')
     start = time.time()
+    print "max_epoch: ", max_epoch
     print 'start loading data...'
     all_feature, all_label, _ = get_data(os.path.join(inputfolder, 'train_features.npz'), os.path.join(inputfolder, 'train_label.txt'), os.path.join(inputfolder, 'train_patient_ids.txt'))  # PUT THE DATA on/to dbsystem
     # all_feature, all_label, _ = get_data(os.path.join(inputfolder, 'test_features.npz'), os.path.join(inputfolder, 'test_label.txt'), os.path.join(inputfolder, 'test_patient_ids.txt'))  
@@ -169,7 +170,7 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
     # stride_y = 1
     # stride_x = 20
     coefficient = 0.01
-    threshold = 1.0
+    threshold = 4.0
     variances = [0.0, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20]
     for kernel_y, stride_y in zip([2], [1]):
         for kernel_x in [80]:
@@ -207,12 +208,26 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
                             grads, (l, a), probs = net.train(trainx, trainy)
                             loss += l
                             acc += a
+                            conv1_grad_list=[]
+                            dense_grad_list=[]
                             for (s, p, g) in zip(net.param_specs(),
                                                  net.param_values(), grads):
                                 # print 'name: ', str(s.name)
                                 # print 'param l2: ', p.l2()
                                 # print '1.0 * grad l2: ', g.l2()
-                                g = param_pro.apply_with_regularizer_constraint_noise(coefficient, p, g, threshold, dev)
+                                if 'conv1' in str(s.name):
+                                    conv1_grad_list.append(tensor.to_numpy(g))
+                                else:
+                                    dense_grad_list.append(tensor.to_numpy(g))
+                            print 'len(conv1_grad_list): ', len(conv1_grad_list)
+                            print 'len(dense_grad_list): ', len(dense_grad_list)
+                            clip_coefficient_dict = param_pro.calculate_clip_coefficient(conv1_grad_list, dense_grad_list, threshold)
+                            for (s, p, g) in zip(net.param_specs(),
+                                                 net.param_values(), grads):
+                                # print 'name: ', str(s.name)
+                                # print 'param l2: ', p.l2()
+                                # print '1.0 * grad l2: ', g.l2()
+                                g = param_pro.apply_with_regularizer_constraint_noise(coefficient, str(s.name), p, g, clip_coefficient_dict, dev)
                                 opt.apply_with_lr(epoch, get_lr(epoch), g, p, str(s.name))
                             
                             info = 'step = %d, step training loss = %f, step training accuracy = %f' % (b, l, a)
@@ -247,3 +262,6 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
 
 if __name__ == '__main__':
     main()
+
+# CUDA_VISIBLE_DEVICES=1 python CNN-readmission-trainvalidationtest.py -inputfolder ../saved_sparse_data/ -outputfolder 'outputfolder' -visfolder 'visfolder' --max_epoch 50
+# CUDA_VISIBLE_DEVICES=0 python CNN-readmission-trainvalidationtest.py -inputfolder ../saved_sparse_data/ -outputfolder 'outputfolder' -visfolder 'visfolder'
