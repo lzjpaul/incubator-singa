@@ -31,6 +31,7 @@
 import sys, os
 import traceback
 import time
+import datetime
 import urllib
 import numpy as np
 from argparse import ArgumentParser
@@ -182,6 +183,9 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
                 print 'stride_y: ', stride_y
                 print 'stride_x: ', stride_x
                 for var in variances:
+                    start = time.time()
+                    st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
+                    print st
                     net = model.create_net(in_shape, hyperpara, use_cpu)
                     net.to_device(dev)
                     param_pro = param_process.param_process(0, var)
@@ -219,9 +223,9 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
                                     conv1_grad_list.append(tensor.to_numpy(g))
                                 else:
                                     dense_grad_list.append(tensor.to_numpy(g))
-                            print 'len(conv1_grad_list): ', len(conv1_grad_list)
-                            print 'len(dense_grad_list): ', len(dense_grad_list)
-                            clip_coefficient_dict = param_pro.calculate_clip_coefficient(conv1_grad_list, dense_grad_list, threshold)
+                            # print 'len(conv1_grad_list): ', len(conv1_grad_list)
+                            # print 'len(dense_grad_list): ', len(dense_grad_list)
+                            clip_coefficient_dict = param_pro.calculate_clip_coefficient(conv1_grad_list, dense_grad_list, threshold, b)
                             for (s, p, g) in zip(net.param_specs(),
                                                  net.param_values(), grads):
                                 # print 'name: ', str(s.name)
@@ -233,6 +237,12 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
                             info = 'step = %d, step training loss = %f, step training accuracy = %f' % (b, l, a)
                             if b % 100 == 0:
                                 print info
+                                for (s, p, g) in zip(net.param_specs(),
+                                                 net.param_values(), grads):
+                                    print 'name: ', str(s.name)
+                                    print 'param l2: ', np.linalg.norm(tensor.to_numpy(p))
+                                    print 'grad l2: ', np.linalg.norm(tensor.to_numpy(g))
+
                         # utils.update_progress(b * 1.0 / num_train_batch, info)
                         # utils.update_progress(epoch * 1.0 / max_epoch, info)
 
@@ -245,7 +255,12 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
                         info = 'epoch = %d, epoch avg training loss (important) = %f, epoch avg training accuracy = %f' \
                             % (epoch, loss / num_train_batch, acc / num_train_batch)
                         print info
-                      
+                    
+                    done = time.time()
+                    do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
+                    print do
+                    elapsed = done - start
+                    print elapsed  
                     # pdb.set_trace() 
                     check_file = '_'.join(['new_parameter', str(kernel_y), str(kernel_x), str(stride_y), str(stride_x), str(threshold), str(var)])
                     check_file = os.path.join('checkpoints', check_file)

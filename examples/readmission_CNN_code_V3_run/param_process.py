@@ -14,21 +14,23 @@ class param_process(object):
         """return mean and variance for gaussian"""
         return 0.0, 1.0
 
-    def calculate_clip_coefficient(self, conv1_grad_list, dense_grad_list, threshold):
+    def calculate_clip_coefficient(self, conv1_grad_list, dense_grad_list, threshold, step):
         clip_coefficient_dict = {}
         ### conv1
         conv1_grad_concatenate = conv1_grad_list[0].reshape(1,-1)
         for i in range(1,len(conv1_grad_list)):
             conv1_grad_concatenate = np.concatenate((conv1_grad_concatenate, conv1_grad_list[i].reshape(1,-1)), axis=1)
-        print 'conv1_grad_concatenate shape: ', conv1_grad_concatenate.shape
-        print 'conv1_grad_concatenate norm: ', np.linalg.norm(conv1_grad_concatenate)
+        if step % 100 == 0:
+            print 'conv1_grad_concatenate shape: ', conv1_grad_concatenate.shape
+            print 'conv1_grad_concatenate norm: ', np.linalg.norm(conv1_grad_concatenate)
         clip_coefficient_dict['conv1'] = threshold / (np.linalg.norm(conv1_grad_concatenate) + 1e-6)
         ### dense
         dense_grad_concatenate = dense_grad_list[0].reshape(1,-1)
         for i in range(1,len(dense_grad_list)):
             dense_grad_concatenate = np.concatenate((dense_grad_concatenate, dense_grad_list[i].reshape(1,-1)), axis=1)
-        print 'dense_grad_concatenate shape: ', dense_grad_concatenate.shape
-        print 'dense_grad_concatenate norm: ', np.linalg.norm(dense_grad_concatenate)
+        if step % 100 == 0:
+            print 'dense_grad_concatenate shape: ', dense_grad_concatenate.shape
+            print 'dense_grad_concatenate norm: ', np.linalg.norm(dense_grad_concatenate)
         clip_coefficient_dict['dense'] = threshold / (np.linalg.norm(dense_grad_concatenate) + 1e-6)
         return clip_coefficient_dict
     
@@ -38,17 +40,17 @@ class param_process(object):
         return grad
 
     def constraint(self, name, grad, clip_coefficient_dict):
-        print 'name: ', name
-        print 'clip_coefficient_dict: ', clip_coefficient_dict
-        print 'before clip grad l2: ', grad.l2() 
+        # print 'name: ', name
+        # print 'clip_coefficient_dict: ', clip_coefficient_dict
+        # print 'before clip grad l2: ', grad.l2() 
         if 'conv1' in name:
             clip_coefficient = clip_coefficient_dict['conv1']
         else:
             clip_coefficient = clip_coefficient_dict['dense']
-        print 'clip coefficient: ', clip_coefficient
+        # print 'clip coefficient: ', clip_coefficient
         if clip_coefficient < 1.0:
             grad *= clip_coefficient
-        print 'after clip grad l2: ', grad.l2()
+        # print 'after clip grad l2: ', grad.l2()
         return grad
 
     def noise_function():
