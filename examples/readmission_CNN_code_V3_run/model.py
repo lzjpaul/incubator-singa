@@ -43,7 +43,7 @@ def create_net(in_shape, hyperpara, use_cpu=False):
         if len(pvalue.shape) > 1 and 'conv' in pname:
             print "convoultion fan_in and fan_out: ", pname
             fan_in = 1 * kernel_x * kernel_y
-            fan_out = filter_num * kernel_x * kernel_y / (2 * 1)
+            fan_out = filter_num * kernel_x * kernel_y / (2 * 2)
             print "fan_in: ", fan_in
             print "fan_out: ", fan_out
             initializer.gaussian(pvalue, fan_in, fan_out)
