@@ -160,96 +160,94 @@ def train(inputfolder, outputfolder, visfolder, sampleid, dev, agent, max_epoch,
     # stride_y = 1
     # stride_x = 20
     # hyperpara = np.array([12, dim, 3, 10, 1, 3])
-    coefficient = 0.001
-    threshold_list = [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 4, 5]
-    variances = [0.0, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10]
+    threshold = 1000.0
+    variances = [0.0, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20]
     for kernel_y, stride_y in zip([2], [1]):
         for kernel_x in [80]:
             for stride_x in [10]:
                 hyperpara = np.array([12, dim, kernel_y, kernel_x, stride_y, stride_x])
 
                 height, width, kernel_y, kernel_x, stride_y, stride_x = hyperpara[0], hyperpara[1], hyperpara[2], hyperpara[3], hyperpara[4], hyperpara[5]
-                for threshold in threshold_list:
-                    for var in variances: 
-                        net = model.create_net(in_shape, hyperpara, use_cpu)
-                        check_file = '_'.join(['new_parameter', str(kernel_y), str(kernel_x), str(stride_y), str(stride_x), str(threshold), str(var)])
-                        check_file = os.path.join('checkpoints', check_file + '.pickle')
-                        print "checkpoint path: ", check_file
-                        if not os.path.exists(check_file):
-                            continue
-                        net.load(check_file, 20, True)
-                        net.to_device(dev)
-                        for name in zip(net.param_names()):
-                            print "init names: ", name
-                        
-                        if handle_cmd(agent):
-                            break
-                        np.random.seed(10)
-                        loss, acc = 0.0, 0.0
-                        probability = np.zeros((batch_size, 2))
-                        patients = []
-                        ytrue = np.zeros((batch_size, 2))
-                        for b in range(num_test_batch):
-                            x, y = test_feature[b * batch_size: (b+1)* batch_size], test_label[b * batch_size:(b + 1) * batch_size]
-                            patient_id = test_patient_ids[b * batch_size: (b+1)* batch_size]
-                            # x, y = np.copy(test_feature), np.copy(test_label)
-                            x = x.reshape((x.shape[0], in_shape[0], in_shape[1], in_shape[2]))
-                            testx.copy_from_numpy(x)
-                            testy.copy_from_numpy(y)
-                            l, a, probs = net.evaluate(testx, testy)
-                            if b == 0:
-                                probability = tensor.to_numpy(probs)
-                                ytrue = y
-                                patients = patient_id
-                            else:
-                                probability = np.concatenate((probability, tensor.to_numpy(probs)), axis=0)
-                                ytrue = np.concatenate((ytrue, y), axis=0)
-                                patients = np.concatenate((patients, patient_id), axis=0)
-                            loss += l
-                            acc += a
+                for var in variances: 
+                    net = model.create_net(in_shape, hyperpara, use_cpu)
+                    check_file = '_'.join(['new_parameter', str(kernel_y), str(kernel_x), str(stride_y), str(stride_x), str(threshold), str(var), '1'])
+                    check_file = os.path.join('checkpoints', check_file + '.pickle')
+                    print "checkpoint path: ", check_file
+                    if not os.path.exists(check_file):
+                        continue
+                    net.load(check_file, 20, True)
+                    net.to_device(dev)
+                    for name in zip(net.param_names()):
+                        print "init names: ", name
+                    
+                    if handle_cmd(agent):
+                        break
+                    np.random.seed(10)
+                    loss, acc = 0.0, 0.0
+                    probability = np.zeros((batch_size, 2))
+                    patients = []
+                    ytrue = np.zeros((batch_size, 2))
+                    for b in range(num_test_batch):
+                        x, y = test_feature[b * batch_size: (b+1)* batch_size], test_label[b * batch_size:(b + 1) * batch_size]
+                        patient_id = test_patient_ids[b * batch_size: (b+1)* batch_size]
+                        # x, y = np.copy(test_feature), np.copy(test_label)
+                        x = x.reshape((x.shape[0], in_shape[0], in_shape[1], in_shape[2]))
+                        testx.copy_from_numpy(x)
+                        testy.copy_from_numpy(y)
+                        l, a, probs = net.evaluate(testx, testy)
+                        if b == 0:
+                            probability = tensor.to_numpy(probs)
+                            ytrue = y
+                            patients = patient_id
+                        else:
+                            probability = np.concatenate((probability, tensor.to_numpy(probs)), axis=0)
+                            ytrue = np.concatenate((ytrue, y), axis=0)
+                            patients = np.concatenate((patients, patient_id), axis=0)
+                        loss += l
+                        acc += a
 
-                        loss /= num_test_batch
-                        acc /= num_test_batch
-                        print 'testing loss = %f, accuracy = %f' % (loss, acc)
-                        # put test status info into a shared queue
-                        info = dict(
-                            phase='test',
-                            # step = epoch,
-                            accuracy = acc,
-                            loss = loss,
-                            timestamp = time.time())
-                        agent.push(MsgType.kInfoMetric, info)
-                        # print 'self calculate test auc = %f' % auroc(softmax(probability)[:,1].reshape(-1, 1), ytrue.reshape(-1, 1))
-                        print 'self calculate test accuracy = %f' % cal_accuracy(softmax(probability)[:,1].reshape(-1, 1), ytrue.reshape(-1, 1))
-                        cnn_metric_dict = {} # for output to json
-                        cnn_metric_dict['Number of Samples: '] = ytrue.shape[0]
-                        cnn_sensitivity, cnn_specificity, cnn_harmonic = HealthcareMetrics(softmax(probability)[:,1].reshape(-1, 1), ytrue.reshape(-1, 1), 0.25)
-                        # cnn_metric_dict['AUC: '] = auroc(softmax(probability)[:,1].reshape(-1, 1), ytrue.reshape(-1, 1))
-                        cnn_metric_dict['accuracy: '] = cal_accuracy(softmax(probability)[:,1].reshape(-1, 1), ytrue.reshape(-1, 1))
-                        cnn_metric_dict['Sensitivity: '] = cnn_sensitivity
-                        cnn_metric_dict['Specificity: '] = cnn_specificity
+                    loss /= num_test_batch
+                    acc /= num_test_batch
+                    print 'testing loss = %f, accuracy = %f' % (loss, acc)
+                    # put test status info into a shared queue
+                    info = dict(
+                        phase='test',
+                        # step = epoch,
+                        accuracy = acc,
+                        loss = loss,
+                        timestamp = time.time())
+                    agent.push(MsgType.kInfoMetric, info)
+                    # print 'self calculate test auc = %f' % auroc(softmax(probability)[:,1].reshape(-1, 1), ytrue.reshape(-1, 1))
+                    print 'self calculate test accuracy = %f' % cal_accuracy(softmax(probability)[:,1].reshape(-1, 1), ytrue.reshape(-1, 1))
+                    cnn_metric_dict = {} # for output to json
+                    cnn_metric_dict['Number of Samples: '] = ytrue.shape[0]
+                    cnn_sensitivity, cnn_specificity, cnn_harmonic = HealthcareMetrics(softmax(probability)[:,1].reshape(-1, 1), ytrue.reshape(-1, 1), 0.25)
+                    # cnn_metric_dict['AUC: '] = auroc(softmax(probability)[:,1].reshape(-1, 1), ytrue.reshape(-1, 1))
+                    cnn_metric_dict['accuracy: '] = cal_accuracy(softmax(probability)[:,1].reshape(-1, 1), ytrue.reshape(-1, 1))
+                    cnn_metric_dict['Sensitivity: '] = cnn_sensitivity
+                    cnn_metric_dict['Specificity: '] = cnn_specificity
 
-                        try:
-                            with open(os.path.join(visfolder, 'cnn_metric_info.json'), 'a') as cnn_metric_info_writer:
-                                # json.dump(cnn_metric_dict, cnn_metric_info_writer)
-                                cnn_metric_info_writer.write('[')
-                                # cnn_metric_info_writer.write('\"Number of Patients: %d\", '%(y.shape[0]))
-                                cnn_metric_info_writer.write('\"Checkpoint file: %s\", ' % (check_file))
-                                # cnn_metric_info_writer.write('\"AUC: %s\", '% (str(int(100 * round((auroc(softmax(probability)[:,1].reshape(-1, 1), ytrue.reshape(-1, 1))),2)))+'%') )
-                                cnn_metric_info_writer.write('\"Accuracy: %s\", ' % (str(int(100 * cnn_metric_dict['accuracy: '])) + '%'))
-                                cnn_metric_info_writer.write('\"Sensitivity: %s\", '%(str(int(100 * round(cnn_sensitivity,2)))+'%'))
-                                cnn_metric_info_writer.write('\"Specificity: %s\" '%(str(int(100* round(cnn_specificity,2)))+'%'))
-                                cnn_metric_info_writer.write(']\n')
-                        except Exception as e:
-                            os.remove(os.path.join(visfolder, 'cnn_metric_info.json'))
-                            print('output cnn_metric_info.json failed: ', e)
-                        
-                        # save predicted readimission probability
-                        file_s = "_".join(['readmitted_prob', str(kernel_y), str(kernel_x), str(stride_y), str(stride_x), str(threshold), str(var)])
-                        file_s += '.csv'
-                        probpath = os.path.join(outputfolder, file_s)
-                        np.savetxt(probpath, np.transpose((softmax(probability)[:,1], ytrue)), fmt = '%6f, %6f', delimiter=",")
-                        # np.savetxt(probpath, np.transpose((patients, softmax(probability)[:,1])), fmt = '%s,%s', delimiter=",")
+                    try:
+                        with open(os.path.join(visfolder, 'cnn_metric_info.json'), 'a') as cnn_metric_info_writer:
+                            # json.dump(cnn_metric_dict, cnn_metric_info_writer)
+                            cnn_metric_info_writer.write('[')
+                            # cnn_metric_info_writer.write('\"Number of Patients: %d\", '%(y.shape[0]))
+                            cnn_metric_info_writer.write('\"Checkpoint file: %s\", ' % (check_file))
+                            # cnn_metric_info_writer.write('\"AUC: %s\", '% (str(int(100 * round((auroc(softmax(probability)[:,1].reshape(-1, 1), ytrue.reshape(-1, 1))),2)))+'%') )
+                            cnn_metric_info_writer.write('\"Accuracy: %s\", ' % (str(int(100 * cnn_metric_dict['accuracy: '])) + '%'))
+                            cnn_metric_info_writer.write('\"Sensitivity: %s\", '%(str(int(100 * round(cnn_sensitivity,2)))+'%'))
+                            cnn_metric_info_writer.write('\"Specificity: %s\" '%(str(int(100* round(cnn_specificity,2)))+'%'))
+                            cnn_metric_info_writer.write(']\n')
+                    except Exception as e:
+                        os.remove(os.path.join(visfolder, 'cnn_metric_info.json'))
+                        print('output cnn_metric_info.json failed: ', e)
+                    
+                    # save predicted readimission probability
+                    file_s = "_".join(['readmitted_prob', str(kernel_y), str(kernel_x), str(stride_y), str(stride_x), str(threshold), str(var), '1'])
+                    file_s += '.csv'
+                    probpath = os.path.join(outputfolder, file_s)
+                    np.savetxt(probpath, np.transpose((softmax(probability)[:,1], ytrue)), fmt = '%6f, %6f', delimiter=",")
+                    # np.savetxt(probpath, np.transpose((patients, softmax(probability)[:,1])), fmt = '%s,%s', delimiter=",")
                     
 
                 # truelabelprobpath = os.path.join(outputfolder,'true_label_prob_matrix.csv')

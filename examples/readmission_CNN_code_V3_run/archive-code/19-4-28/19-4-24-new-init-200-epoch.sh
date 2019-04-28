@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=1 python CNN-readmission-trainvalidationtest.py -inputfolder ../saved_sparse_data/ -outputfolder 'outputfolder' -visfolder 'visfolder' --max_epoch 200 | tee -a 19-4-24-new-init-max-epoch-200

@@ -171,7 +171,7 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
     # stride_y = 1
     # stride_x = 20
     coefficient = 0.001
-    threshold_list = [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 4, 5]
+    threshold_list = [0.05, 0.1, 0.2, 0.5]
     variances = [0.0, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10]
     for kernel_y, stride_y in zip([2], [1]):
         for kernel_x in [80]:

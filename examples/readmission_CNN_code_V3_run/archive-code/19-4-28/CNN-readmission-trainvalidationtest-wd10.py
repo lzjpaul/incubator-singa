@@ -170,9 +170,9 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
     # kernel_x = 80
     # stride_y = 1
     # stride_x = 20
-    coefficient = 0.001
-    threshold_list = [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 4, 5]
-    variances = [0.0, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10]
+    coefficient = 10.0
+    threshold = 1000.0
+    variances = [0.0, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20]
     for kernel_y, stride_y in zip([2], [1]):
         for kernel_x in [80]:
             for stride_x in [10]:
@@ -182,94 +182,89 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
                 print 'kernel_x: ', kernel_x
                 print 'stride_y: ', stride_y
                 print 'stride_x: ', stride_x
-                print 'coefficient: ', coefficient
-                for threshold in threshold_list:
-                    for var in variances:
-                        print 'threshold: ', threshold
-                        print 'var: ', var
-                        start = time.time()
-                        st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
-                        print st
-                        net = model.create_net(in_shape, hyperpara, use_cpu)
-                        net.to_device(dev)
-                        param_pro = param_process.param_process(0, var)
+                for var in variances:
+                    start = time.time()
+                    st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
+                    print st
+                    net = model.create_net(in_shape, hyperpara, use_cpu)
+                    net.to_device(dev)
+                    param_pro = param_process.param_process(0, var)
 
-                        test_epoch = 10
-                        occlude_test_epoch = 100
-                        for epoch in range(max_epoch):
-                            if handle_cmd(agent):
-                                break
-                            # np.random.seed(10)
-                            # np.random.shuffle(idx)
-                            # train_feature, train_label = train_feature[idx], train_label[idx]
-                            # actually it is epoch step
-                            print 'Epoch: %d' % epoch
-                            
-                            loss, acc = 0.0, 0.0
-                            for b in range(num_train_batch):
-                                sample_index = np.random.choice(num_train, size=batch_size, replace=True)
-                                # x, y = train_feature[b * batch_size:(b + 1) * batch_size], train_label[b * batch_size:(b + 1) * batch_size]
-                                x, y = train_feature[sample_index], train_label[sample_index]
-                                x = x.reshape((batch_size, in_shape[0], in_shape[1], in_shape[2]))
-                                trainx.copy_from_numpy(x)
-                                trainy.copy_from_numpy(y)
-                                grads, (l, a), probs = net.train(trainx, trainy)
-                                loss += l
-                                acc += a
-                                conv1_grad_list=[]
-                                dense_grad_list=[]
-                                for (s, p, g) in zip(net.param_specs(),
-                                                     net.param_values(), grads):
-                                    # print 'name: ', str(s.name)
-                                    # print 'param l2: ', p.l2()
-                                    # print '1.0 * grad l2: ', g.l2()
-                                    if 'conv1' in str(s.name):
-                                        conv1_grad_list.append(tensor.to_numpy(g))
-                                    else:
-                                        dense_grad_list.append(tensor.to_numpy(g))
-                                # print 'len(conv1_grad_list): ', len(conv1_grad_list)
-                                # print 'len(dense_grad_list): ', len(dense_grad_list)
-                                clip_coefficient_dict = param_pro.calculate_clip_coefficient(conv1_grad_list, dense_grad_list, threshold, b)
-                                for (s, p, g) in zip(net.param_specs(),
-                                                     net.param_values(), grads):
-                                    # print 'name: ', str(s.name)
-                                    # print 'param l2: ', p.l2()
-                                    # print '1.0 * grad l2: ', g.l2()
-                                    g = param_pro.apply_with_regularizer_constraint_noise(coefficient, str(s.name), p, g, clip_coefficient_dict, dev)
-                                    opt.apply_with_lr(epoch, get_lr(epoch), g, p, str(s.name))
-                                
-                                info = 'step = %d, step training loss = %f, step training accuracy = %f' % (b, l, a)
-                                if b % 200 == 0:
-                                    print info
-                                    for (s, p, g) in zip(net.param_specs(),
-                                                     net.param_values(), grads):
-                                        print 'name: ', str(s.name)
-                                        print 'param l2: ', np.linalg.norm(tensor.to_numpy(p))
-                                        print 'grad l2: ', np.linalg.norm(tensor.to_numpy(g))
-
-                            # utils.update_progress(b * 1.0 / num_train_batch, info)
-                            # utils.update_progress(epoch * 1.0 / max_epoch, info)
-
-                            # put training status info into a shared queue
-                            info = dict(phase='train', step=epoch,
-                                        accuracy=acc/num_train_batch,
-                                        loss=loss/num_train_batch,
-                                        timestamp=time.time())
-                            agent.push(MsgType.kInfoMetric, info)
-                            info = 'epoch = %d, epoch avg training loss (important) = %f, epoch avg training accuracy = %f' \
-                                % (epoch, loss / num_train_batch, acc / num_train_batch)
-                            print info
+                    test_epoch = 10
+                    occlude_test_epoch = 100
+                    for epoch in range(max_epoch):
+                        if handle_cmd(agent):
+                            break
+                        # np.random.seed(10)
+                        # np.random.shuffle(idx)
+                        # train_feature, train_label = train_feature[idx], train_label[idx]
+                        # actually it is epoch step
+                        print 'Epoch: %d' % epoch
                         
-                        done = time.time()
-                        do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
-                        print do
-                        elapsed = done - start
-                        print elapsed  
-                        # pdb.set_trace() 
-                        check_file = '_'.join(['new_parameter', str(kernel_y), str(kernel_x), str(stride_y), str(stride_x), str(threshold), str(var)])
-                        check_file = os.path.join('checkpoints', check_file)
-                        print 'checkpoint_file = ', check_file
-                        net.save(check_file, 20, True)     
+                        loss, acc = 0.0, 0.0
+                        for b in range(num_train_batch):
+                            sample_index = np.random.choice(num_train, size=batch_size, replace=True)
+                            # x, y = train_feature[b * batch_size:(b + 1) * batch_size], train_label[b * batch_size:(b + 1) * batch_size]
+                            x, y = train_feature[sample_index], train_label[sample_index]
+                            x = x.reshape((batch_size, in_shape[0], in_shape[1], in_shape[2]))
+                            trainx.copy_from_numpy(x)
+                            trainy.copy_from_numpy(y)
+                            grads, (l, a), probs = net.train(trainx, trainy)
+                            loss += l
+                            acc += a
+                            conv1_grad_list=[]
+                            dense_grad_list=[]
+                            for (s, p, g) in zip(net.param_specs(),
+                                                 net.param_values(), grads):
+                                # print 'name: ', str(s.name)
+                                # print 'param l2: ', p.l2()
+                                # print '1.0 * grad l2: ', g.l2()
+                                if 'conv1' in str(s.name):
+                                    conv1_grad_list.append(tensor.to_numpy(g))
+                                else:
+                                    dense_grad_list.append(tensor.to_numpy(g))
+                            # print 'len(conv1_grad_list): ', len(conv1_grad_list)
+                            # print 'len(dense_grad_list): ', len(dense_grad_list)
+                            clip_coefficient_dict = param_pro.calculate_clip_coefficient(conv1_grad_list, dense_grad_list, threshold, b)
+                            for (s, p, g) in zip(net.param_specs(),
+                                                 net.param_values(), grads):
+                                # print 'name: ', str(s.name)
+                                # print 'param l2: ', p.l2()
+                                # print '1.0 * grad l2: ', g.l2()
+                                g = param_pro.apply_with_regularizer_constraint_noise(coefficient, str(s.name), p, g, clip_coefficient_dict, dev)
+                                opt.apply_with_lr(epoch, get_lr(epoch), g, p, str(s.name))
+                            
+                            info = 'step = %d, step training loss = %f, step training accuracy = %f' % (b, l, a)
+                            if b % 100 == 0:
+                                print info
+                                for (s, p, g) in zip(net.param_specs(),
+                                                 net.param_values(), grads):
+                                    print 'name: ', str(s.name)
+                                    print 'param l2: ', np.linalg.norm(tensor.to_numpy(p))
+                                    print 'grad l2: ', np.linalg.norm(tensor.to_numpy(g))
+                        # utils.update_progress(b * 1.0 / num_train_batch, info)
+                        # utils.update_progress(epoch * 1.0 / max_epoch, info)
+
+                        # put training status info into a shared queue
+                        info = dict(phase='train', step=epoch,
+                                    accuracy=acc/num_train_batch,
+                                    loss=loss/num_train_batch,
+                                    timestamp=time.time())
+                        agent.push(MsgType.kInfoMetric, info)
+                        info = 'epoch = %d, epoch avg training loss (important) = %f, epoch avg training accuracy = %f' \
+                            % (epoch, loss / num_train_batch, acc / num_train_batch)
+                        print info
+                    
+                    done = time.time()
+                    do = datetime.datetime.fromtimestamp(done).strftime('%Y-%m-%d %H:%M:%S')
+                    print do
+                    elapsed = done - start
+                    print elapsed  
+                    # pdb.set_trace() 
+                    check_file = '_'.join(['new_parameter', str(kernel_y), str(kernel_x), str(stride_y), str(stride_x), str(threshold), str(var), '10'])
+                    check_file = os.path.join('checkpoints', check_file)
+                    print 'checkpoint_file = ', check_file
+                    net.save(check_file, 20, True)     
     # print "begin explain"
     # explain_occlude_area(np.copy(test_feature), np.copy(test_label), 'readmitted_prob.csv', 'true_label_prob_matrix.csv', 'meta_data.csv', top_n = 20)
     # print "begin explain format out"
