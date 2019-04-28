@@ -182,7 +182,10 @@ def train(inputfolder, outputfolder, visfolder, trainratio, validationratio, tes
                 print 'kernel_x: ', kernel_x
                 print 'stride_y: ', stride_y
                 print 'stride_x: ', stride_x
+                print 'coefficient: ', coefficient
                 for var in variances:
+                    print 'threshold: ', threshold
+                    print 'var: ', var
                     start = time.time()
                     st = datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S')
                     print st
