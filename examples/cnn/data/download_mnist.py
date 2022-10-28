@@ -23,7 +23,7 @@ import urllib.request
 
 def check_exist_or_download(url):
 
-    download_dir = '/tmp/'
+    download_dir = '/home/sadm/singa_data/'
     name = url.rsplit('/', 1)[-1]
     filename = os.path.join(download_dir, name)
 

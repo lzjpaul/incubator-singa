@@ -30,7 +30,7 @@ def extract_tarfile(filepath):
     if os.path.exists(filepath):
         print('The tar file does exist. Extracting it now..')
         with tarfile.open(filepath, 'r') as f:
-            f.extractall('/tmp/')
+            f.extractall('/home/sadm/singa_data/')
         print('Finished!')
         sys.exit(0)
 
@@ -43,7 +43,7 @@ def do_download(dirpath, gzfile, url):
 
 
 if __name__ == '__main__':
-    dirpath = '/tmp/'
+    dirpath = '/home/sadm/singa_data/'
     gzfile = dirpath + 'cifar-10-python.tar.gz'
     url = 'http://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
     do_download(dirpath, gzfile, url)

@@ -94,7 +94,8 @@ def resize_dataset(x, image_size):
     return X
 
 
-def run(global_rank,
+def run(args,
+        global_rank,
         world_size,
         local_rank,
         max_epoch,
@@ -107,7 +108,8 @@ def run(global_rank,
         dist_option='plain',
         spars=None,
         precision='float32'):
-    dev = device.create_cuda_gpu_on(local_rank)
+    # dev = device.create_cuda_gpu_on(local_rank)
+    dev = device.get_default_device()
     dev.SetRandSeed(0)
     np.random.seed(0)
 
@@ -192,6 +194,8 @@ def run(global_rank,
     model.compile([tx], is_train=True, use_graph=graph, sequential=sequential)
     dev.SetVerbosity(verbosity)
 
+    print ("num_train_batch: \n", num_train_batch)
+    print ()
     # Training and evaluation loop
     for epoch in range(max_epoch):
         start_time = time.time()
@@ -208,6 +212,8 @@ def run(global_rank,
         model.train()
         for b in range(num_train_batch):
             # Generate the patch data in this iteration
+            # if b % 100 == 0:
+            #     print ("b: \n", b)
             x = train_x[idx[b * batch_size:(b + 1) * batch_size]]
             if model.dimension == 4:
                 x = augmentation(x, batch_size)
@@ -232,6 +238,7 @@ def run(global_rank,
             train_loss = reduce_variable(train_loss, sgd, reducer)
 
         if global_rank == 0:
+            print(f'max_epoch {max_epoch:d}, batch_size {args.batch_size:d}, learning_rate {args.lr:.8f}, momentum {args.momentum:.8f}, weight_decay {args.weight_decay:.10f}')
             print('Training loss = %f, training accuracy = %f' %
                   (train_loss, train_correct /
                    (num_train_batch * batch_size * world_size)),
@@ -261,6 +268,7 @@ def run(global_rank,
                   (test_correct / (num_val_batch * batch_size * world_size),
                    time.time() - start_time),
                   flush=True)
+            print ()
 
     dev.PrintTimeProfiling()
 
@@ -282,7 +290,7 @@ if __name__ == '__main__':
                         dest='precision')
     parser.add_argument('-m',
                         '--max-epoch',
-                        default=10,
+                        default=20,
                         type=int,
                         help='maximum epochs',
                         dest='max_epoch')
@@ -298,6 +306,18 @@ if __name__ == '__main__':
                         type=float,
                         help='initial learning rate',
                         dest='lr')
+    parser.add_argument('-mt',
+                        '--momentum',
+                        default=0.9,
+                        type=float,
+                        help='initial momentum',
+                        dest='momentum')
+    parser.add_argument('-wd',
+                        '--weight_decay',
+                        default=1e-5,
+                        type=float,
+                        help='initial weight decay',
+                        dest='weight_decay')
     # Determine which gpu to use
     parser.add_argument('-i',
                         '--device-id',
@@ -320,8 +340,15 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    sgd = opt.SGD(lr=args.lr, momentum=0.9, weight_decay=1e-5, dtype=singa_dtype[args.precision])
-    run(0,
+    # sgd = opt.SGD(lr=args.lr, momentum=0.9, weight_decay=1e-5, dtype=singa_dtype[args.precision])
+    print ("args.lr: \n", args.lr)
+    print ("args.momentum: \n", args.momentum)
+    print ("args.weight_decay: \n", args.weight_decay)
+    print ("args.batch_size: \n", args.batch_size)
+    print ("args.max_epoch: \n", args.max_epoch)
+    sgd = opt.SGD(lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay, dtype=singa_dtype[args.precision])
+    run(args,
+        0,
         1,
         args.device_id,
         args.max_epoch,

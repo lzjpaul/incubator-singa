@@ -40,12 +40,12 @@ def load_dataset(filepath):
     return image, label
 
 
-def load_train_data(dir_path='/tmp/cifar-100-python'):
+def load_train_data(dir_path='/home/sadm/singa_data/cifar-100-python'):
     images, labels = load_dataset(check_dataset_exist(dir_path + "/train"))
     return np.array(images, dtype=np.float32), np.array(labels, dtype=np.int32)
 
 
-def load_test_data(dir_path='/tmp/cifar-100-python'):
+def load_test_data(dir_path='/home/sadm/singa_data/cifar-100-python'):
     images, labels = load_dataset(check_dataset_exist(dir_path + "/test"))
     return np.array(images, dtype=np.float32), np.array(labels, dtype=np.int32)
 
