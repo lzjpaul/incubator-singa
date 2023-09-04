@@ -107,7 +107,8 @@ def run(global_rank,
         dist_option='plain',
         spars=None,
         precision='float32'):
-    dev = device.create_cuda_gpu_on(local_rank)  # need to change to CPU device for CPU-only machines
+    # dev = device.create_cuda_gpu_on(local_rank)  # need to change to CPU device for CPU-only machines
+    dev = device.get_default_device()
     dev.SetRandSeed(0)
     np.random.seed(0)
 
@@ -216,6 +217,8 @@ def run(global_rank,
             ty.copy_from_numpy(y)
 
             # Train the model
+            print ("train_cnn tx: \n", tx)
+            print ("train_cnn ty: \n", ty)
             out, loss = model(tx, ty, dist_option, spars)
             train_correct += accuracy(tensor.to_numpy(out), y)
             train_loss += tensor.to_numpy(loss)[0]

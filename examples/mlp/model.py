@@ -49,8 +49,11 @@ class MLP(model.Model):
         return y
 
     def train_one_batch(self, x, y, dist_option, spars):
+        # print ("train_one_batch x: \n", x)
+        # print ("train_one_batch y: \n", y)
         out = self.forward(x)
         loss = self.softmax_cross_entropy(out, y)
+        print ("loss.data: \n", loss.data)
 
         if dist_option == 'plain':
             self.optimizer(loss)

@@ -42,12 +42,17 @@ class MSOptimizer(Optimizer):
         return pn_p_g_list
 
     def call_with_returns(self, loss):
+        # print ("call_with_returns loss.data: \n", loss.data)
         pn_p_g_list = []
         for p, g in autograd.backward(loss):
             if p.name is None:
                 p.name = id(p)
             self.apply(p.name, p, g)
-            pn_p_g_list.append(p.name, p, g)
+            # print ("call with returns")
+            # print ("p.name: \n", p.name)
+            # print ("p.data: \n", p.data)
+            # print ("g.data: \n", g.data)
+            pn_p_g_list.append([p.name, p, g])  # need iterables
         return pn_p_g_list
 
 # MSSGD -- actually no change of code
@@ -414,34 +419,39 @@ def run(global_rank,
                 synflow_flag = True
                 ### step 1: all one input
                 # Copy the patch data into input tensors
-                tx.copy_from_numpy(np.ones(x.shape))
+                tx.copy_from_numpy(np.ones(x.shape, dtype=np.float32))
                 ty.copy_from_numpy(y)
                 ### step 2: all weights turned to positive (done)
                 ### step 3: new loss (done)
-                pn_p_g_list, out, loss = model(tx, ty, synflow_flag, dist_option, spars)
+                pn_p_g_list, out, loss = model(tx, ty, dist_option, spars, synflow_flag)
                 ### step 4: calculate the multiplication of weights
                 synflow_score = 0.0
                 for pn_p_g_item in pn_p_g_list:
                     print ("calculate weight param * grad parameter name: \n", pn_p_g_item[0])
-                    if len(pn_p_g_item[1].data.shape) == 2: # param_value.data is "weight"
-                        synflow_score += np.sum(np.absolute(tensor.to_numpy(pn_p_g_item[1].data) * tensor.to_numpy(pn_p_g_item[2].data)))
+                    if len(pn_p_g_item[1].shape) == 2: # param_value.data is "weight"
+                        print ("pn_p_g_item[1].shape: \n", pn_p_g_item[1].shape)
+                        synflow_score += np.sum(np.absolute(tensor.to_numpy(pn_p_g_item[1]) * tensor.to_numpy(pn_p_g_item[2])))
                 print ("synflow_score: \n", synflow_score)
             elif epoch == (max_epoch - 1) and b == (num_train_batch - 2): # all weights turned to positive
                 # Copy the patch data into input tensors
                 tx.copy_from_numpy(x)
                 ty.copy_from_numpy(y)
-                pn_p_g_list, out, loss = model(tx, ty, synflow_flag, dist_option, spars)
+                pn_p_g_list, out, loss = model(tx, ty, dist_option, spars, synflow_flag)
                 train_correct += accuracy(tensor.to_numpy(out), y)
                 train_loss += tensor.to_numpy(loss)[0]
                 # all params turned to positive
                 for pn_p_g_item in pn_p_g_list:
                     print ("absolute value parameter name: \n", pn_p_g_item[0])
-                    pn_p_g_item[1].data = tensor.abs(pn_p_g_item[1].data)
+                    pn_p_g_item[1] = tensor.abs(pn_p_g_item[1])  # tensor actually ...
             else:  # normal train steps
                 # Copy the patch data into input tensors
                 tx.copy_from_numpy(x)
                 ty.copy_from_numpy(y)
-                pn_p_g_list, out, loss = model(tx, ty, synflow_flag, dist_option, spars)
+                # print ("normal before model(tx, ty, synflow_flag, dist_option, spars)")
+                # print ("train_cnn tx: \n", tx)
+                # print ("train_cnn ty: \n", ty)
+                pn_p_g_list, out, loss = model(tx, ty, dist_option, spars, synflow_flag)
+                # print ("normal after model(tx, ty, synflow_flag, dist_option, spars)")
                 train_correct += accuracy(tensor.to_numpy(out), y)
                 train_loss += tensor.to_numpy(loss)[0]
 
@@ -491,7 +501,7 @@ if __name__ == '__main__':
         description='Training using the autograd and graph.')
     parser.add_argument(
         'model',
-        choices=['cnn', 'resnet', 'xceptionnet', 'mlp', 'alexnet'],
+        choices=['cnn', 'resnet', 'xceptionnet', 'mlp', 'msmlp', 'alexnet'],
         default='cnn')
     parser.add_argument('data',
                         choices=['mnist', 'cifar10', 'cifar100'],
@@ -502,7 +512,7 @@ if __name__ == '__main__':
                         dest='precision')
     parser.add_argument('-m',
                         '--max-epoch',
-                        default=100,
+                        default=3,
                         type=int,
                         help='maximum epochs',
                         dest='max_epoch')
