@@ -27,8 +27,8 @@ import numpy as np
 
 np_dtype = {"float16": np.float16, "float32": np.float32}
 
-singa_dtype = {"float16": tensor.float16, "float32": tensor.float32}
-
+# singa_dtype = {"float16": tensor.float16, "float32": tensor.float32}
+singa_dtype = {"float32": tensor.float32}
 
 class MLP(model.Model):
 

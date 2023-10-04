@@ -30,7 +30,8 @@ import numpy as np
 
 np_dtype = {"float16": np.float16, "float32": np.float32}
 
-singa_dtype = {"float16": tensor.float16, "float32": tensor.float32}
+# singa_dtype = {"float16": tensor.float16, "float32": tensor.float32}
+singa_dtype = {"float32": tensor.float32}
 
 #### self-defined loss begin
 
@@ -110,11 +111,11 @@ class MSMLP(model.Model):
         return y
 
     def train_one_batch(self, x, y, dist_option, spars, synflow_flag):
-        # print ("in train_one_batch")
+        # print ("in train_one_batch before forward")
         out = self.forward(x)
         # print ("train_one_batch x.data: \n", x.data)
         # print ("train_one_batch y.data: \n", y.data)
-        # print ("train_one_batch out.data: \n", out.data)
+        # print ("train_one_batch out.data after forward: \n", out.data)
         if synflow_flag:
             # print ("sum_error")
             loss = self.sum_error(out)

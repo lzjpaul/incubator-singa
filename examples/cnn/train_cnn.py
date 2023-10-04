@@ -28,8 +28,8 @@ from PIL import Image
 
 np_dtype = {"float16": np.float16, "float32": np.float32}
 
-singa_dtype = {"float16": tensor.float16, "float32": tensor.float32}
-
+# singa_dtype = {"float16": tensor.float16, "float32": tensor.float32}
+singa_dtype = {"float32": tensor.float32}
 
 # Data augmentation
 def augmentation(x, batch_size):
@@ -201,8 +201,8 @@ def run(global_rank,
 
         model.train()
         for b in range(num_train_batch):
-            # if b % 100 == 0:
-            #     print ("b: \n", b)
+            if b % 100 == 0:
+                print ("b: \n", b)
             # Generate the patch data in this iteration
             x = train_x[idx[b * batch_size:(b + 1) * batch_size]]
             if model.dimension == 4:
@@ -217,8 +217,8 @@ def run(global_rank,
             ty.copy_from_numpy(y)
 
             # Train the model
-            print ("train_cnn tx: \n", tx)
-            print ("train_cnn ty: \n", ty)
+            # print ("train_cnn tx: \n", tx)
+            # print ("train_cnn ty: \n", ty)
             out, loss = model(tx, ty, dist_option, spars)
             train_correct += accuracy(tensor.to_numpy(out), y)
             train_loss += tensor.to_numpy(loss)[0]
@@ -318,7 +318,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    sgd = opt.SGD(lr=args.lr, momentum=0.9, weight_decay=1e-5, dtype=singa_dtype[args.precision])
+    # sgd = opt.SGD(lr=args.lr, momentum=0.9, weight_decay=1e-5, dtype=singa_dtype[args.precision])
+    sgd = opt.SGD(lr=args.lr, momentum=0.9, weight_decay=1e-5)
     run(0,
         1,
         args.device_id,
