@@ -5,7 +5,6 @@ import threading
 import time
 from src.tools.io_tools import write_json
 import sys
-# import torch
 
 def print_cpu_gpu_usage(interval=1, output_file="path_to_folder", stop_event=None):
     def print_usage():

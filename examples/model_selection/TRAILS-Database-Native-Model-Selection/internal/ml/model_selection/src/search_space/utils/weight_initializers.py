@@ -13,9 +13,6 @@
 # limitations under the License.
 # =============================================================================
 
-# import torch.nn as nn
-
-
 def init_net(net, w_type, b_type):
     """
     Init network with various algorithms
@@ -79,5 +76,3 @@ def _init_bias_zero(m):
     if type(m) == nn.Linear or type(m) == nn.Conv2d:
         if m.bias is not None:
             m.bias.data.fill_(.0)
-
-

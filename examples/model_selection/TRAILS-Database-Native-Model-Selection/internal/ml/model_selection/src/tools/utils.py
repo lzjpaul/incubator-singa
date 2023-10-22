@@ -7,15 +7,8 @@ import warnings
 
 import numpy
 import numpy as np
-# import torch
 import shutil
 import logging
-
-# import torchvision.transforms as transforms
-# from torch.autograd import Variable
-# import torch.nn.functional as F
-# import torchvision.datasets as dset
-# import torch.nn as nn
 
 warnings.filterwarnings("error")
 

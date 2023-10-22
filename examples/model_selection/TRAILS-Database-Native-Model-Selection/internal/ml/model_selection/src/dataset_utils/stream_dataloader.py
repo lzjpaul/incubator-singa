@@ -2,7 +2,6 @@ import queue
 import threading
 import requests
 import time
-# import torch
 from src.logger import logger
 
 
@@ -76,6 +75,4 @@ class StreamingDataLoader:
     def stop(self):
         self.stop_event.set()
         self.thread.join()
-
-
 

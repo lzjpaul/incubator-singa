@@ -10,7 +10,6 @@
 ###################################################################
 import os, sys, time, random, argparse, collections
 from copy import deepcopy
-# import torch
 
 from src.tools.env_tools import prepare_seed
 from src.logger import logger
@@ -24,7 +23,6 @@ import hpbandster.core.nameserver as hpns
 from hpbandster.core.worker import Worker
 
 from nats_bench import create
-
 
 
 def time_string():
@@ -284,5 +282,4 @@ if __name__ == "__main__":
         torch.save(all_info, save_path)
     else:
         main(args, api)
-
 

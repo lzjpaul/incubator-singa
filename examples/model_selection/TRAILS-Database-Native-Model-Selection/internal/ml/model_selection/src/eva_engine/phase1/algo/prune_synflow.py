@@ -1,8 +1,5 @@
-# import torch
-# from torch import nn
 from src.eva_engine.phase1.algo.alg_base import Evaluator
 from src.common.constant import Config
-# from src.eva_engine.phase1.utils.p_utils import get_layer_metric_array
 
 from singa import singa_wrap as singa
 from singa import device as singa_device
@@ -349,24 +346,6 @@ class SynFlowEvaluator(Evaluator):
         model.compile([tx], is_train=True, use_graph=graph, sequential=sequential)
         dev.SetVerbosity(verbosity)
 
-        # 1. Convert params to their abs. Record sign for converting it back.
-        # @torch.no_grad()
-        # def linearize(arch):
-        #     signs = {}
-        #     for name, param in arch.state_dict().items():
-        #         signs[name] = torch.sign(param)
-        #         param.abs_()
-        #     return signs
-
-        # convert to orig values with sign
-        # @torch.no_grad()
-        # def nonlinearize(arch, signs):
-        #     for name, param in arch.state_dict().items():
-        #         if 'weight_mask' not in name:
-        #             param.mul_(signs[name])
-
-        # record signs of all params
-        # signs = linearize(arch)
 
         # 1. Convert params to their abs.
         synflow_flag = True ### just change the model to the absolute value
@@ -391,29 +370,8 @@ class SynFlowEvaluator(Evaluator):
             # print ("after abs pn_p_g_item[1][0]: \n", pn_p_g_item[1][0])
 
         # 2. Compute gradients with input of one dummy example ( 1-vector with dimension [1, c, h, w] )
-        # arch.double()
-
-        # if space_name == Config.MLPSP:
-        #     output = arch.forward_wo_embedding(batch_data.double())
-        # else:
-        #     output = arch.forward(batch_data.double())
-
         # 3.R = sum(output)
-        # torch.sum(output).backward()
-
         # 4. Select the gradients that we want to use for search/prune
-        # def synflow(layer):
-        #    if layer.weight.grad is not None:
-        #         return torch.abs(layer.weight * layer.weight.grad)
-        #     else:
-        #         return torch.zeros_like(layer.weight)
-
-        # grads_abs = get_layer_metric_array(arch, synflow, "param")
-
-        # apply signs of all params, get original
-        # nonlinearize(arch, signs)
-
-        # 5. Sum over all parameter's results to get the final score.
         # 5. Sum over all parameter's results to get the final score.
         # score = sum([grad.sum() for grad in grads_abs])
 
@@ -447,52 +405,3 @@ class SynFlowEvaluator(Evaluator):
         print ("score: \n", score)
 
         return score
-    """ 
-    def evaluate_origin(self, arch: nn.Module, device, batch_data: object, batch_labels: torch.Tensor, space_name: str) -> float:
-        # 1. Convert params to their abs. Record sign for converting it back.
-        @torch.no_grad()
-        def linearize(arch):
-            signs = {}
-            for name, param in arch.state_dict().items():
-                signs[name] = torch.sign(param)
-                param.abs_()
-            return signs
-
-        # convert to orig values with sign
-        @torch.no_grad()
-        def nonlinearize(arch, signs):
-            for name, param in arch.state_dict().items():
-                if 'weight_mask' not in name:
-                    param.mul_(signs[name])
-
-        # record signs of all params
-        signs = linearize(arch)
-
-        # 2. Compute gradients with input of one dummy example ( 1-vector with dimension [1, c, h, w] )
-        arch.double()
-
-        if space_name == Config.MLPSP:
-            output = arch.forward_wo_embedding(batch_data.double())
-        else:
-            output = arch.forward(batch_data.double())
-
-        # 3.R = sum(output)
-        torch.sum(output).backward()
-
-        # 4. Select the gradients that we want to use for search/prune
-        def synflow(layer):
-            if layer.weight.grad is not None:
-                return torch.abs(layer.weight * layer.weight.grad)
-            else:
-                return torch.zeros_like(layer.weight)
-
-        grads_abs = get_layer_metric_array(arch, synflow, "param")
-
-        # apply signs of all params, get original
-        nonlinearize(arch, signs)
-
-        # 5. Sum over all parameter's results to get the final score.
-        # 5. Sum over all parameter's results to get the final score.
-        score = sum([grad.sum() for grad in grads_abs])
-        return score
-    """

@@ -5,7 +5,6 @@ import time
 from copy import deepcopy
 from typing import Generator
 
-# import torch
 from src.common.constant import Config, CommonVars
 from src.eva_engine import evaluator_register
 from src.eva_engine.phase2.algo.trainer import ModelTrainer
@@ -13,8 +12,6 @@ from src.logger import logger
 from src.search_space.core.model_params import ModelMicroCfg, ModelMacroCfg
 from src.search_space.core.space import SpaceWrapper
 from src.search_space.mlp_api.model_params import MlpMacroCfg
-# import torch.nn as nn
-# from torch.utils.data import DataLoader
 from src.query_api.interface import profile_NK_trade_off
 from src.query_api.query_api_mlp import GTMLP
 
@@ -56,72 +53,6 @@ class MlpMicroCfg(ModelMicroCfg):
 
     def __str__(self):
         return "-".join(str(x) for x in self.hidden_layer_list)
-
-'''
-class Embedding(nn.Module):
-
-    def __init__(self, nfeat, nemb):
-        super().__init__()
-        self.embedding = nn.Embedding(nfeat, nemb)
-        nn.init.xavier_uniform_(self.embedding.weight)
-
-    def forward(self, x: dict):
-        emb = self.embedding(x['id'])  # B*F*E
-        return emb * x['value'].unsqueeze(2)  # B*F*E
-'''
-'''
-class MLP(nn.Module):
-
-    def __init__(self, ninput: int, hidden_layer_list: list, dropout_rate: float, noutput: int, use_bn: bool):
-        super().__init__()
-
-        layers = list()
-        # 1. all hidden layers.
-        for index, layer_size in enumerate(hidden_layer_list):
-            layers.append(nn.Linear(ninput, layer_size))
-            if use_bn:
-                layers.append(nn.BatchNorm1d(layer_size))
-            layers.append(nn.ReLU())
-            layers.append(nn.Dropout(p=dropout_rate))
-            ninput = layer_size
-        # 2. last hidden layer
-        if len(hidden_layer_list) == 0:
-            last_hidden_layer_num = ninput
-        else:
-            last_hidden_layer_num = hidden_layer_list[-1]
-        layers.append(nn.Linear(last_hidden_layer_num, noutput))
-
-        # 3. generate the MLP
-        self.mlp = nn.Sequential(*layers)
-
-        self._initialize_weights()
-
-    def forward(self, x):
-        """
-        each element represents the probability of the positive class.
-        :param x:   FloatTensor B*ninput
-        :return:    FloatTensor B*nouput
-        """
-        return self.mlp(x)
-
-    def _initialize_weights(self, method='xavier'):
-        for m in self.modules():
-            if isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
-            elif isinstance(m, nn.Linear):
-                if method == 'lecun':
-                    nn.init.kaiming_normal_(m.weight, mode='fan_in', nonlinearity='linear')
-                elif method == 'xavier':
-                    nn.init.xavier_uniform_(m.weight)
-                elif method == 'he':
-                    nn.init.kaiming_uniform_(m.weight)
-                # m.weight.data.normal_(0, 0.01)
-                # m.bias.data.zero_()
-
-    def reset_zero_grads(self):
-        self.zero_grad()
-'''
 
 #### self-defined loss begin
 
@@ -319,117 +250,6 @@ def create_model(pretrained=False, **kwargs):
 
 
 __all__ = ['SINGADNNModel', 'create_model']
-
-'''
-class DNNModel(torch.nn.Module):
-    """
-    Model:  Deep Neural Networks
-    """
-
-    def __init__(self, nfield: int, nfeat: int, nemb: int,
-                 hidden_layer_list: list, dropout_rate: float,
-                 noutput: int, use_bn: bool = True):
-        """
-        Args:
-            nfield: the number of fields
-            nfeat: the number of features
-            nemb: embedding size
-        """
-        super().__init__()
-        self.nfeat = nfeat
-        self.nemb = nemb
-        self.embedding = None
-        self.mlp_ninput = nfield * nemb
-        self.mlp = MLP(self.mlp_ninput, hidden_layer_list, dropout_rate, noutput, use_bn)
-        # self.sigmoid = nn.Sigmoid()
-
-        # for weight-sharing
-        self.is_masked_subnet = False
-        self.hidden_layer_list = hidden_layer_list
-        # Initialize subnet mask with ones
-        self.subnet_mask = [torch.ones(size) for size in hidden_layer_list]
-
-    def init_embedding(self, cached_embedding=None, requires_grad=False):
-        """
-        This is slow, in filtering phase, we could enable caching here.
-        """
-        if self.embedding is None:
-            if cached_embedding is None:
-                self.embedding = Embedding(self.nfeat, self.nemb)
-            else:
-                self.embedding = cached_embedding
-
-        # in scoring process
-        # Disable gradients for all parameters in the embedding layer
-        if not requires_grad:
-            for param in self.embedding.parameters():
-                param.requires_grad = False
-
-    def generate_all_ones_embedding(self):
-        """
-        Only for the MLP
-        Returns:
-        """
-        batch_data = torch.ones(1, self.mlp_ninput).double()
-        return batch_data
-
-    def forward_wo_embedding(self, x):
-        """
-        Only used when embedding is generated outside, eg, all 1 embedding.
-        """
-        y = self.mlp(x)  # B*label
-        return y.squeeze(1)
-
-    def forward(self, x):
-        """
-        :param x:   {'id': LongTensor B*F, 'value': FloatTensor B*F}
-        :return:    y of size B, Regression and Classification (+sigmoid)
-        """
-        if self.is_masked_subnet:
-            return self.forward_w_mask(x)
-        else:
-            x_emb = self.embedding(x)  # B*F*E
-            y = self.mlp(x_emb.view(-1, self.mlp_ninput))  # B*label
-            # this is for binary classification
-            return y.squeeze(1)
-
-    def sample_subnet(self, arch_id: str, device: str):
-        # arch_id e.g., '128-128-128-128'
-        sizes = list(map(int, arch_id.split('-')))
-        self.is_masked_subnet = True
-        # randomly mask neurons in the layers.
-
-        for idx, size in enumerate(sizes):
-            # Create a mask of ones and zeros with the required length
-            mask = torch.cat([
-                torch.ones(size),
-                torch.zeros(self.hidden_layer_list[idx] - size)],
-                dim=0).to(device)
-            # Shuffle the mask to randomize which neurons are active
-            mask = mask[torch.randperm(mask.size(0))]
-            self.subnet_mask[idx] = mask
-
-    def forward_w_mask(self, x):
-        x_emb = self.embedding(x)  # B*F*E
-        x_emb = x_emb.view(-1, self.mlp_ninput)
-
-        # Loop till the second last layer of the MLP
-        for idx, layer in enumerate(self.mlp.mlp[:-1]):  # Exclude the last Linear layer
-            # 1. subnet_mask: idx // 4 is to map computation later => mlp later
-            # 2. unsqueeze(1): convert to 2 dimension,
-            #    and then the mask is broadcasted across the row, correspond to one neuron,
-            # 3. matrix multiplication between input and the transposed weight
-            if isinstance(layer, nn.Linear):
-                weight = layer.weight * self.subnet_mask[idx // 4].unsqueeze(1)
-                x_emb = torch.nn.functional.linear(x_emb, weight, layer.bias)
-            else:
-                x_emb = layer(x_emb)  # apply activation, dropout, batchnorm, etc.
-
-        # Handle the output layer
-        output_layer = self.mlp.mlp[-1]
-        y = output_layer(x_emb)
-        return y.squeeze(1)
-'''
 
 from torch.utils.data import DataLoader
 class MlpSpace(SpaceWrapper):
