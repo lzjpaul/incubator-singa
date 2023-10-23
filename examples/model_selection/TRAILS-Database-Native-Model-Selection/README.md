@@ -9,18 +9,19 @@
 ## Build Docker Image
 
 ```bash
-git clone https://github.com/NLGithubWP/TRAILS-Database-Native-Model-Selection.git
-cd TRAILS-Database-Native-Model-Selection
+git clone https://github.com/apache/singa.git
+cd singa/examples/model_selection/TRAILS-Database-Native-Model-Selection/
 docker build -t trails-singa .
 ```
 
 ## Run Docker Image
-
+Download exp_data.zip from https://www.dropbox.com/scl/fi/xz4teosklwmfc5j4x2ug6/exp_data.zip?rlkey=5fk2ttib0zt49suyppcjhsrn2&dl=0
+and unzip the exp_data/ folder to a specific directory (path_to_exp_data_folder)
 ```bash
 docker run -d --name trails-singa \
   --network="host" \
-  -v /hdd1/xingnaili/exp_data/:/project/exp_data \
-  trails
+  -v path_to_exp_data_folder:/project/exp_data \
+  trails-singa
 ```
 
 ## Start PostgreSQL Instance
@@ -30,11 +31,19 @@ docker run -d --name trails-singa \
 docker exec -it trails-singa bash 
 # 2. Clone the code
 cd ~
-git clone https://github.com/NLGithubWP/TRAILS-Database-Native-Model-Selection.git
-# 3. Load data into RDBMS
-bash /project/TRAILS-Database-Native-Model-Selection/internal/ml/model_selection/scripts/database/load_data_to_db.sh /project/exp_data/data/structure_data/frappe frappe
-# 4. Run database server
-cd TRAILS-Database-Native-Model-Selection/internal/pg_extension
+git clone https://github.com/apache/singa.git
+cd singa/examples/model_selection/TRAILS-Database-Native-Model-Selection/
+# 3. Export PYTHONPATH
+export PYTHONPATH=$PYTHONPATH:./internal/ml/model_selection
+# 4. Start the RDBMS and then exit
+cd internal/pg_extension
+cargo pgrx run
+exit
+cd ../..
+# 5. Load data into RDBMS
+bash internal/ml/model_selection/scripts/database/load_data_to_db.sh /project/exp_data/data/structure_data/frappe frappe
+# 6. Run database server
+cd internal/pg_extension
 cargo pgrx run
 
 ```
@@ -84,8 +93,11 @@ END; $$;
 # Try compile the UDF
 DROP EXTENSION IF EXISTS pg_extension;
 CREATE EXTENSION pg_extension;
-# If the above fail, open another terminal and goes to the docker via docker exec -it trails-singa bash 
-# Then run those 
+```
+
+If the above fails, open another terminal and go into the docker via docker exec -it trails-singa bash
+Then run the following 
+```bash
 rm /home/postgres/.pgrx/14.9/pgrx-install/share/extension/pg_extension--0.1.0.sql
 vi /home/postgres/.pgrx/14.9/pgrx-install/share/extension/pg_extension--0.1.0.sql
 # Copy the following to the /home/postgres/.pgrx/14.9/pgrx-install/share/extension/pg_extension--0.1.0.sql
@@ -100,6 +112,13 @@ CREATE  FUNCTION "filtering_phase"(
     IMMUTABLE STRICT PARALLEL SAFE
 LANGUAGE c /* Rust */
 AS 'MODULE_PATHNAME', 'filtering_phase_wrapper';
+```
+
+Go back to the first terminal and run the following in the database server again  
+```bash
+# Try compile the UDF
+DROP EXTENSION IF EXISTS pg_extension;
+CREATE EXTENSION pg_extension;
 ```
 
 ## Run Model Selection 
@@ -117,11 +136,11 @@ CALL model_selection_sp(
 
 # For example
 CALL model_selection_sp(
-  	'frappe_train',
-  	ARRAY['col1', 'col2', 'col3', 'label'], 
+       'frappe_train',
+       ARRAY['col1', 'col2', 'col3', 'label'], 
     10, 
     32, 
-  '/home/postgres/TRAILS-Database-Native-Model-Selection/internal/ml/model_selection/config.ini');
+  '/home/postgres/singa/examples/model_selection/TRAILS-Database-Native-Model-Selection/internal/ml/model_selection/config.ini');
 ```
 
 # Example Result
