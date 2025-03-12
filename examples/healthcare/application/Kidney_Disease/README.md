@@ -17,9 +17,9 @@
     under the License.
 -->
 
-# Singa for Kidney disease Prediction
+# Singa for Kidney Disease Prediction
 
-## Kidney disease Prediction Task
+## Kidney Disease Prediction Task
 
 Kidney disease prediction is an important tool that uses data science and machine learning techniques to predict the likelihood of a patient suffering from Kidney disease. The core goal of this technology is to judge whether a patient suffers from kidney disease by analyzing multiple data such as a patient’s medical history, physiological indicators, diagnostic information, treatment options, and socioeconomic factors, so as to take appropriate interventions in advance to provide treatment.
 
