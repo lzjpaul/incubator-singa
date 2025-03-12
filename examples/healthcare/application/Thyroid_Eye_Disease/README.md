@@ -1,6 +1,6 @@
 # Convolutional Prototype Learning
 
-We have successfully applied the idea of prototype loss in various medical image classification task to improve performance, for example detection thyroid eye disease from CT images. Here we provide the implementation of the convolution prototype model in Singa. Due to data privacy, we are not able to release the CT image dataset used. The training scripts `./train.py` demonstrate how to apply this model on cifar-10 dataset.
+We have successfully applied the idea of prototype loss in various medical image classification task to improve performance, for example, detecting thyroid eye disease from CT images. Here we provide the implementation of the convolution prototype model in Singa. Due to data privacy, we are not able to release the CT image dataset used. The training script `./train.py` demonstrates how to apply this model on the cifar-10 dataset.
 
 
 ## run
